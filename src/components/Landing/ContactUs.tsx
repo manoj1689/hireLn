@@ -1,3 +1,4 @@
+"use client"
 import { FaUser, FaEnvelope, FaPhone, FaPaperPlane } from 'react-icons/fa';
 import { IoChatbubblesOutline } from "react-icons/io5";
 

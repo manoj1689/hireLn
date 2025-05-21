@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useEffect } from "react";
 import { FiMenu, FiX } from "react-icons/fi"; // Import icons from react-icons
 import Login from "../Landing/Login"

@@ -1,6 +1,7 @@
+"use client"
 import React from 'react'
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { auth, provider } from "../../firebase/firebaseConfig";
 import { signInWithPopup, signOut, User } from "firebase/auth";
 import Navbar from '@/components/Navbar';

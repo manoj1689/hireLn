@@ -1,11 +1,14 @@
+"use client"; // Ensure it's a client component
+
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation"; // ✅ FIXED
 import { auth, provider } from "../../firebase/firebaseConfig";
 import { signInWithPopup, signOut, User } from "firebase/auth";
 
 export default function Home() {
-  const [user, setUser] = useState<User | null>(null);
   const router = useRouter(); // Initialize router
+  const [user, setUser] = useState<User | null>(null);
+  
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {

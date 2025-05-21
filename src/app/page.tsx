@@ -1,6 +1,7 @@
 import React from 'react'
-import Landing from "../pages/Landing/index"
-function index() {
+import Landing from "./Landing/page"
+
+function page() {
   return (
     <div>
         <Landing/>
@@ -8,4 +9,4 @@ function index() {
   )
 }
 
-export default index
+export default page

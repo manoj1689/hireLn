@@ -1,5 +1,15 @@
+
+// app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
+import { Lexend } from "next/font/google";
+import { Provider } from "react-redux";
+import { store } from "../redux/store";
+import ClientProvider from "./ClientProvider"; 
+const lexendFont = Lexend({
+  subsets: ["latin"],
+  weight: ["100","200","300","400","500","600","700","800","900"],
+});
 
 export const metadata: Metadata = {
   title: "HireLn – AI-Powered Resume & Interview Screening Platform",
@@ -24,7 +34,7 @@ export const metadata: Metadata = {
     siteName: "HireLn",
     images: [
       {
-        url: "https://hireln.com/og-image.png", // Replace with actual image path
+        url: "https://hireln.com/og-image.png",
         width: 1200,
         height: 630,
         alt: "HireLn AI Recruitment",
@@ -38,20 +48,24 @@ export const metadata: Metadata = {
     title: "HireLn – AI-Powered Candidate Screening",
     description:
       "Filter resumes and interviews using AI. Hire faster, smarter, and better with HireLn.",
-    images: ["https://hireln.com/og-image.png"], // Replace with actual image path
-    site: "@HireLn", // Replace with actual Twitter handle
+    images: ["https://hireln.com/og-image.png"],
+    site: "@HireLn",
   },
-  themeColor: "#0A66C2", // LinkedIn-like blue, change as per your branding
+  themeColor: "#0A66C2",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={lexendFont.className}>
+        <body className={lexendFont.className}>
+        {children}
+      </body>
+      </body>
     </html>
   );
 }
