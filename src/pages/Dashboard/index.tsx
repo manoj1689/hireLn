@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { auth, provider } from "../../firebase/firebaseConfig";
 import { signInWithPopup, signOut, User } from "firebase/auth";
+import Navbar from '@/components/Navbar';
 function index() {
   const router=useRouter();
  
@@ -15,7 +16,11 @@ function index() {
     }
   };
   return (
-    <div className='container mx-auto my-12'>
+    <>
+    <div>
+      <Navbar/>
+    </div>
+      <div className='container mx-auto my-12'>
     <div className='text-2xl'>Dashboard Page</div>
     <div>
           <button
@@ -25,6 +30,10 @@ function index() {
             Sign Out
           </button></div>
     </div>
+    
+    
+    </>
+  
   )
 }
 
