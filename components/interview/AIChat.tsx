@@ -1,0 +1,659 @@
+import React, { useState, useRef, useEffect } from "react";
+import bowser from "bowser";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
+
+import {
+  getChatbotResponse,
+  explainChatbotResponse
+} from "../../services/OpenaiService";
+
+
+import { CountdownCircleTimer } from "react-countdown-circle-timer";
+import Modal from "react-responsive-modal";
+import "react-responsive-modal/styles.css";
+//@ts-ignore
+import WaveEffect from "./WaveEffect";
+import Speech from "speak-tts";
+import { IoMdMic } from "react-icons/io";
+import { HiSpeakerWave } from "react-icons/hi2";
+//Avatar images
+import FemaleAvatar from "../../public/images/Avatar/femaleAi.jpeg";
+import AiFemaleAssistant from "../../public/images/Avatar/AiFemaleAssistant.webp";
+import FemaleUsAvatar from "../../public/images/Avatar/femaleUsAi.jpeg";
+import MaleUsAvatar from "../../public/images/Avatar/MaleUsAi.jpeg";
+import { InterviewQuestion } from "@/interface/questions";
+import { submitInterviewAnswer } from "@/lib/slices/questions/submit-answer-slice";
+import { autoEvaluateAnswer, reset } from "@/lib/slices/questions/auto-evaluate-answer-slice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/lib/store";
+import { MdToken } from "react-icons/md";
+
+interface AIChatProps {
+  interviewId: string,
+  questionList: InterviewQuestion[];
+  token: string
+  examID: string;
+  handleExamEnd: () => void;
+
+  onTranscriptChange: (transcript: string) => void;
+  selectedAvatar: string;
+}
+
+type MessageRole = "system" | "user" | "assistant";
+
+interface Message {
+  role: MessageRole;
+  content: string;
+}
+
+const AIChat: React.FC<AIChatProps> = ({
+  interviewId,
+  questionList,
+  handleExamEnd,
+  token,
+  examID,
+  onTranscriptChange,
+
+}) => {
+
+  const dispatch = useDispatch<AppDispatch>()
+  const [chatHistory, setChatHistory] = useState<Message[]>([]);
+  const [assistantAlert, setAssistantAlert] = useState<Message[]>([]);
+  const [audioTranscript, setAudioTranscript] = useState("");
+  const [transcriptAi, setTranscriptAi] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [intro, setIntro] = useState(false);
+  const currentQuestionIndexRef = useRef(0);
+
+  const [questionNumber, setQuestionNumber] = useState(1);
+  const [listeningEnabled, setListeningEnabled] = useState(true);
+  const [showWave, setShowWave] = useState(false);
+  const [selectedAvatarlogo, setSelectedAvatarlogo] = useState<any>(FemaleAvatar);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [noResponse, setNoResponse] = useState(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [speechData, setSpeechData] = useState<any>(null);
+  const [open, setOpen] = useState(false);
+  const [whichBrowser, setWhichBrowser] = useState("");
+  const [enableChrome, setEnableChrome] = useState(false);
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
+
+  if (!browserSupportsSpeechRecognition) {
+    return (
+      <div className="flex justify-center items-center ">
+        <div className="text-lg">
+          Browser doesn't support speech recognition.
+        </div>{" "}
+      </div>
+    );
+  }
+  //  console.log("recorded blob direct",recordingBlob)
+  const continueListening = () => {
+    if (listeningEnabled) {
+      SpeechRecognition.startListening({
+        continuous: true,
+        language: "en-IN",
+      });
+    }
+  };
+
+  const questionId = questionList[currentQuestionIndexRef.current]?.id;
+
+  //console.log("question List",questionId)
+  const browser = bowser.getParser(window.navigator.userAgent);
+  const browserName = browser.getBrowserName();
+
+  //  // Initialize Speech
+  const speech = new Speech();
+  const avatars = [
+    {
+      name: "Ava",
+      src: FemaleAvatar,
+      voice: {
+        chrome: "Google UK English Female",
+        safari: "com.apple.speech.synthesis.voice.daniel", // English (UK)
+        edge: "Microsoft Libby Online (Natural) - English (United Kingdom)", // Edge (US English Female)
+      },
+    },
+    {
+      name: "Jack",
+      src: MaleUsAvatar,
+      voice: {
+        chrome: "Google UK English Male",
+        safari: "com.apple.speech.synthesis.voice.daniel", // English (UK)
+        edge: "Microsoft Ryan Online (Natural) - English (United Kingdom)", // Edge (US English Male)
+      },
+    },
+    {
+      name: "Luna",
+      src: FemaleUsAvatar,
+      voice: {
+        chrome: "Google US English",
+        safari: "com.apple.speech.synthesis.voice.siri", // English (US)
+        edge: "Microsoft Sonia Online (Natural) - English (United Kingdom)", // Edge (US English Female)
+      },
+    },
+    {
+      name: "Zara",
+      src: AiFemaleAssistant,
+      voice: {
+        chrome: "Google Deutsch",
+        safari: "com.apple.speech.synthesis.voice.jorge", // Spanish (Spain)
+        edge: "Microsoft Jenny Online (Natural) - English (United States)", //Microsoft Eric Online (Natural) - English (United States)
+      },
+    },
+  ];
+  //console.log("whichbrowser", whichBrowser);
+  useEffect(() => {
+    setWhichBrowser(browserName);
+    // Initialize Speech with configuration
+    const avatar = avatars.find((av) => av.name === "Ava"); // Find the selected avatar
+    setSelectedAvatarlogo(avatar?.src);
+    if (!avatar) {
+      console.error("Selected avatar not found");
+      return;
+    }
+
+    let selectedVoice = avatar.voice.chrome; // Default to Chrome voice
+
+    if (browserName === "Safari") {
+      selectedVoice = avatar.voice.safari;
+    } else if (browserName === "Microsoft Edge") {
+      selectedVoice = avatar.voice.edge;
+    }
+
+    speech
+      .init({
+        volume: 1,
+        lang: "en-In",
+        rate: 1,
+        pitch: 1,
+        voice: selectedVoice,
+        splitSentences: true,
+      })
+      .then((data) => {
+        console.log("Speech is ready, voices available:", data.voices);
+        setSpeechData(speech);
+      })
+      .catch((e) => {
+        console.error("An error occurred while initializing speech:", e || "Speech initialization failed")
+        // Continue without speech functionality
+        setSpeechData(null)
+      })
+  }, [browserName]); // Add selectedAvatar and browserName to the dependency array
+
+  useEffect(() => {
+    if (!speechData) return;
+
+    const initialMessage: Message = {
+      role: "assistant",
+      content:
+        "Welcome to HireLane. Introduce yourself, and then provide an overview of your professional journey and expertise.",
+    };
+
+    setChatHistory((prev) => [...prev, initialMessage]);
+    speakText(initialMessage.content, continueListening);
+  }, [speechData]);
+
+  useEffect(() => {
+    const transcriptData = transcript;
+    onTranscriptChange(transcriptData);
+  }, [transcript, onTranscriptChange]);
+
+
+
+  useEffect(() => {
+    if (listening) {
+      // Clear any existing timeouts when starting listening
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      if (transcript.trim()) {
+        console.log("Transcript detected. Starting 3-second timer.");
+        setNoResponse(true);
+
+        timeoutRef.current = setTimeout(() => {
+          SpeechRecognition.stopListening();
+          setAudioTranscript(transcript.trim()); // ✅ Trigger OpenAI intent handler
+          setShowWave(false);
+        }, 3000);
+      } else {
+        if (noResponse) {
+          console.log("No transcript detected. Starting 20-second timer.");
+
+          timeoutRef.current = setTimeout(() => {
+            SpeechRecognition.stopListening();
+            setAudioTranscript("This is an automated response, I'm not available to chat.");
+            setShowWave(false);
+            setNoResponse(false);
+          }, 20000);
+        } else {
+          console.log("No transcript detected. Starting 10-second timer.");
+
+          timeoutRef.current = setTimeout(() => {
+            SpeechRecognition.stopListening();
+            setShowWave(false);
+            const userNotAvailableMessage: Message = {
+              role: "assistant",
+              content: "Thank you for participating. It appears you are not available during the exam. Your score will be updated shortly. For further assistance, please contact us."
+            };
+
+            setAssistantAlert([userNotAvailableMessage]);
+            ExamEndMessage(userNotAvailableMessage.content, continueListening);
+            resetTranscript();
+            setAudioTranscript("");
+          }, 10000);
+        }
+      }
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [listening, transcript, noResponse]);
+
+  const ExamEndMessage = (text: string, continueListening: () => void) => {
+    console.log("exam end msg");
+
+    speechData
+      .speak({
+        text: text,
+        queue: false, // Ensures that previous speech is canceled before new text is spoken
+        listeners: {
+          onstart: () => {
+            console.log("Speech started for ending exam");
+            setTranscriptAi(text);
+          },
+          onend: () => {
+            console.log("Speech ended, now you can stop exam.");
+          },
+        },
+      })
+      .then(() => {
+        console.log("Text spoken successfully for end Exam");
+
+        handleExamEnd();
+
+        setShowWave(false);
+        resetTranscript();
+        setTranscriptAi("");
+        setAudioTranscript("");
+      })
+      .catch((e: any) => {
+        console.error("An error occurred while speaking text:", e);
+      });
+  };
+
+  const handleExamLeave = () => {
+    // Stop all listening and recording processes
+    SpeechRecognition.stopListening();
+
+    setShowWave(false);
+
+    // Set recording and transcript data
+
+    resetTranscript();
+    setAudioTranscript("");
+
+    // Open the modal immediately
+    setOpen(true);
+
+    // Set a timeout to close the modal after 3 seconds and handle exam end
+    setTimeout(() => {
+      setOpen(false); // Close the modal
+      handleExamEnd(); // Call the function to handle exam end
+    }, 5000); // 5 seconds
+  };
+
+  const speakText = (text: string, continueListening: () => void) => {
+    setShowWave(false);
+    SpeechRecognition.stopListening();
+
+    if (!speechData) {
+      console.error("SpeechData is not initialized yet.");
+      return;
+    }
+    speechData
+      .speak({
+        text: text,
+        queue: false, // Ensures that previous speech is canceled before new text is spoken
+        listeners: {
+          onstart: () => {
+            console.log("Speech started");
+            setTranscriptAi(text);
+          },
+          onend: () => {
+            console.log("Speech ended, now you can start listening again.");
+          },
+          onerror: (e: any) => {
+            console.error("An error occurred during speech:", e);
+          },
+        },
+      })
+      .then(() => {
+        console.log("Text spoken successfully");
+        continueListening();
+        setEnableChrome(true);
+
+        setShowWave(true);
+      })
+      .catch((e: any) => {
+        console.error("An error occurred while speaking text:", e);
+      });
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+
+  const handleSubmitAnswer = async (
+    interviewId: string,
+    answerText: string,
+    token: string,
+    questionId: string
+  ) => {
+    setLoading(true);
+    try {
+      // First: submit answer
+      const response = await dispatch(
+        submitInterviewAnswer({ interviewId, questionId, token, answerText })
+      ).unwrap();
+
+      const submittedAnswerId = response.id; // Must be returned in the response
+
+      console.log("Answer submitted:", submittedAnswerId);
+
+      // Then: auto-evaluate the submitted answer
+      await dispatch(autoEvaluateAnswer({ answerId: submittedAnswerId, token }));
+
+    } catch (error) {
+      console.error("Submit or Evaluation failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  console.log("audio transcript ", audioTranscript)
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistory]);
+
+
+  useEffect(() => {
+    const testIntentDetermination = async () => {
+      if (!audioTranscript || audioTranscript.trim() === "") return;
+
+      // Save user's message to chat history
+      setChatHistory(prev => [...prev, { role: "user", content: audioTranscript }]);
+      setLoading(true);
+
+      try {
+        const intent = await getChatbotResponse([{ role: "user", content: audioTranscript }]);
+        console.log(`Intent for message "${audioTranscript}": ${intent}`);
+        setLoading(false);
+
+        let assistantMessage: Message | null = null;
+
+        switch (intent) {
+          case "Introduce":
+            assistantMessage = {
+              role: "assistant",
+              content: "Hey, nice to meet you! We've assembled a set of questions to understand your strengths better. Would you like to continue or proceed?"
+
+            };
+            break;
+
+
+          case "Repeat":
+            if (
+              currentQuestionIndexRef.current >= 0 &&
+              currentQuestionIndexRef.current < questionList.length
+            ) {
+              assistantMessage = {
+                role: "assistant",
+                content: questionList[currentQuestionIndexRef.current].questionText,
+              };
+            } else {
+              assistantMessage = {
+                role: "assistant",
+                content: "No previous message to repeat.",
+              };
+            }
+            break;
+
+          case "Continue":
+            if (!intro) {
+              setIntro(true);
+              currentQuestionIndexRef.current = 0;
+              setQuestionNumber(1);
+
+              assistantMessage = {
+                role: "assistant",
+                content: questionList[0].questionText,
+              };
+            } else {
+              await handleSubmitAnswer(interviewId, audioTranscript, token, questionId);
+
+              const nextIndex = currentQuestionIndexRef.current + 1;
+              if (nextIndex < questionList.length) {
+                currentQuestionIndexRef.current = nextIndex;
+                setQuestionNumber(nextIndex + 1);
+
+                assistantMessage = {
+                  role: "assistant",
+                  content: questionList[nextIndex].questionText,
+                };
+              } else {
+                handleExamLeave();
+                return;
+              }
+            }
+            break;
+
+          case "Move to a new question":
+            await handleSubmitAnswer(interviewId, "NOT ANSWERED", token, questionId);
+            const moveNextIndex = currentQuestionIndexRef.current + 1;
+
+            if (moveNextIndex < questionList.length) {
+              currentQuestionIndexRef.current = moveNextIndex;
+              setQuestionNumber(moveNextIndex + 1);
+
+              assistantMessage = {
+                role: "assistant",
+                content: questionList[moveNextIndex].questionText,
+              };
+            } else {
+              handleExamLeave();
+              return;
+            }
+            break;
+
+          case "Unclear":
+            assistantMessage = {
+              role: "assistant",
+              content:
+                "It seems I didn't quite catch that. Would you like to ask a different question or would you prefer to end the exam?",
+            };
+            break;
+
+          case "User Not Available":
+            assistantMessage = {
+              role: "assistant",
+              content:
+                "It looks like you're not available at the moment. Please tell me whether you’d like to repeat the current question, move on to the next one, or leave the exam.",
+            };
+            break;
+
+          case "Explain":
+          case "Clarify Question":
+            if (chatHistory.length > 0) {
+              const lastAssistant = [...chatHistory]
+                .reverse()
+                .find((m) => m.role === "assistant");
+              if (lastAssistant) {
+                const explanation = await explainChatbotResponse([
+                  {
+                    role: "system",
+                    content: `Could you rephrase this in a simpler way to make it easier to understand: "${lastAssistant.content}"?`,
+                  },
+                ]);
+                assistantMessage = { role: "assistant", content: explanation ?? "Sorry, I couldn't simplify that." };
+              } else {
+                assistantMessage = { role: "assistant", content: "Nothing to explain." };
+              }
+            }
+            break;
+
+          case "Leave":
+            for (let i = currentQuestionIndexRef.current; i < questionList.length; i++) {
+              await handleSubmitAnswer(interviewId, "NOT ANSWERED", token, questionList[i].id);
+            }
+            handleExamLeave();
+            return;
+
+          default:
+            console.error("Unknown intent:", intent);
+            return;
+        }
+
+        if (assistantMessage) {
+          // ✅ Add assistant message to chat and speak
+          setChatHistory(prev => [...prev, assistantMessage]);
+          speakText(assistantMessage.content, continueListening);
+          resetTranscript();
+          setAudioTranscript("");
+        }
+      } catch (error) {
+        console.error("Error determining intent:", error);
+        setLoading(false);
+      }
+    };
+
+    testIntentDetermination();
+  }, [audioTranscript]);
+
+  console.log("question number ", questionNumber, questionId)
+  return (
+    <div>
+      <div className="p-2 h-full flex flex-col rounded-md">
+        <div className="flex flex-col h-[70vh] overflow-y-scroll p-2 sm:p-4"
+        >
+          <div className="flex flex-col space-y-4">
+            {chatHistory.map((message, index) => (
+              <div
+                key={index}
+                className={`flex w-full gap-2 ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                {/* Avatar */}
+                {message.role !== "user" && (
+                  <div className="flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-sky-300 text-white flex items-center justify-center font-bold">
+                      AI
+                    </div>
+                  </div>
+                )}
+
+                {/* Message Bubble */}
+                <div
+                  className={`p-4 rounded-xl max-w-[75%] ${message.role === "user"
+                    ? "bg-red-200 text-left"
+                    : "bg-sky-200 text-left"
+                    }`}
+                >
+                  <div className="text-slate-800 font-bold text-sm sm:text-md">
+                    {message.role === "user" ? "User Response" : "Assistant AI"}
+                  </div>
+                  <div className="text-slate-600 text-md">
+                    {message.content}
+                  </div>
+                </div>
+
+                {/* User Avatar */}
+                {message.role === "user" && (
+                  <div className="flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-red-500 text-white flex items-center justify-center font-bold">
+                      U
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+
+            {loading && (
+              <div className="p-2 my-2 rounded-md bg-white self-end">
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef}></div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        center
+        styles={{
+          modal: {
+            maxWidth: "600px",
+            width: "90%",
+            borderRadius: "5px",
+          },
+        }}
+      >
+        <div className="mt-5 flex flex-col  w-full justify-center items-center">
+          <div className="text-xl my-4 font-bold text-gray-700 uppercase">
+            THANK YOU FOR PARTICIPATING
+          </div>
+
+          <CountdownCircleTimer
+            isPlaying
+            duration={5}
+            colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
+            colorsTime={[5, 3, 2, 0]}
+          >
+            {({ remainingTime }) => (
+              <div
+                role="timer"
+                className=" flex flex-col gap-3 justify-center items-center"
+              >
+                <div className="text-red-500 font-bold text-4xl">
+                  {remainingTime}
+                </div>{" "}
+                <div className="text-sky-400 text-md">seconds</div>
+              </div>
+            )}
+          </CountdownCircleTimer>
+          <div className="flex text-lg font-middle justify-center items-center my-8  text-gray-800">
+            Your progress will be saved, and you will be notified of the results
+            shortly. If you have any questions or need further assistance, feel
+            free to reach out.
+          </div>
+        </div>
+      </Modal>
+    </div>
+  );
+};
+
+export default AIChat;
