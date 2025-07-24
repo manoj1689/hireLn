@@ -7,6 +7,7 @@ import { fetchInterviewEvaluation } from '@/lib/slices/final_evaluation/final-ev
 import { completeInterview } from "@/lib/slices/join_interview/interview-join-slice"
 import { useSearchParams } from 'next/navigation'
 import { ChevronDown, ChevronUp } from "lucide-react"
+import PreventBackForward from '@/components/BlockBackForward'
 
 const getBadgeColor = (status: string) => {
   switch (status) {
@@ -29,6 +30,12 @@ const EvaluationPage = () => {
   const { interview } = useSelector((state: RootState) => state.joinInterview)
 
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null)
+   // Toggle fullscreen off
+  const exitFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(console.error);
+    }
+  };
 
   useEffect(() => {
     const fetchEvaluationAndComplete = async () => {
@@ -36,6 +43,7 @@ const EvaluationPage = () => {
         try {
           await dispatch(fetchInterviewEvaluation({ interviewId, token }) as any)
           await dispatch(completeInterview(interview.id))
+            exitFullscreen();
         } catch (err) {
           console.error("Error fetching evaluation or completing interview:", err)
         }
@@ -50,8 +58,12 @@ const EvaluationPage = () => {
   if (!data) return <p className="p-4">No evaluation data available</p>
 
   return (
-    <div className="max-w-4xl mx-auto h-full p-6 justify-center items-center space-y-6">
-       div
+      <div className="h-screen flex items-center justify-center bg-white text-center px-4">
+         <PreventBackForward />
+         <div>
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">Interview Completed!</h1>
+        <p className="text-lg text-gray-600">Thank you for your time. We’ll get back to you shortly.</p>
+      </div>
     
       {/* Evaluation Summary */}
       {/* <div className="bg-white shadow border rounded-lg p-6">

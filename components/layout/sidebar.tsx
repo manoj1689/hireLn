@@ -35,14 +35,14 @@ export function Sidebar() {
       {/* Sidebar: visible on lg, toggleable below lg */}
       <div
         className={cn(
-          "fixed top-16 left-0  max-lg:h-full h-auto w-64 border-r bg-white transition-transform duration-300",
+          "fixed top-16 left-0 z-10 lg:z-0 max-lg:h-full h-auto w-64 border-r bg-white transition-transform duration-300",
           isOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0 lg:static lg:mt-16 "
         )}
       >
         <div className="flex h-full flex-col">
           <div className="flex-1 overflow-auto py-2">
-            <nav className="grid items-start px-2 text-sm">
+            <nav className="grid items-start px-2 text-sm space-y-2">
               <NavItem href="/dashboard" icon={Home} title="Dashboard" isActive={pathname === "/dashboard"} />
               <NavItem href="/jobs" icon={Briefcase} title="Jobs" isActive={pathname.startsWith("/jobs")} />
               <NavItem

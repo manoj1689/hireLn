@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useDispatch } from "react-redux"
-import { fetchMatchedCandidatesByJobId } from "@/lib/slices/aitools/matched-candidate-Slice" // Async thunk to fetch matched candidates
-import { AppDispatch } from "@/lib/store"
-import { Modal } from "react-responsive-modal" // Import react-responsive-modal
-import "react-responsive-modal/styles.css" // Modal styles
-import { CandidateResponse } from "@/interface/candidate" // Import the CandidateResponse type
+import { Modal } from "react-responsive-modal"
+import "react-responsive-modal/styles.css"
 import { useRouter } from "next/navigation"
+import { CandidateResponse } from "@/interface/candidate"
+import { AppDispatch } from "@/lib/store"
+import { fetchMatchedCandidatesByJobId } from "@/lib/slices/aitools/matched-candidate-Slice"
+
 type MatchedCandidateModalProps = {
   jobId: string | null
   openModal: boolean
@@ -15,17 +16,16 @@ type MatchedCandidateModalProps = {
 }
 
 export default function MatchedCandidateModal({ jobId, openModal, closeModal }: MatchedCandidateModalProps) {
-   const dispatch = useDispatch<AppDispatch>()
-   const router=useRouter() 
-  const [candidates, setCandidates] = useState<CandidateResponse[]>([]) // Correctly type candidates
- 
+  const dispatch = useDispatch<AppDispatch>()
+  const router = useRouter()
+  const [candidates, setCandidates] = useState<CandidateResponse[]>([])
 
   useEffect(() => {
     if (jobId) {
       const fetchData = async () => {
-        const result = await dispatch(fetchMatchedCandidatesByJobId(jobId)) // Dispatch the action
+        const result = await dispatch(fetchMatchedCandidatesByJobId(jobId))
         if (fetchMatchedCandidatesByJobId.fulfilled.match(result)) {
-          setCandidates(result.payload) // Set the payload as the candidates
+          setCandidates(result.payload)
         }
       }
       fetchData()
@@ -33,101 +33,98 @@ export default function MatchedCandidateModal({ jobId, openModal, closeModal }: 
   }, [jobId, dispatch])
   console.log("candidates", candidates)
   return (
-    <Modal open={openModal} onClose={closeModal} center classNames={{ modal: 'max-w-7xl rounded-lg' }}>
-      <h2 className="text-2xl font-bold mb-6 text-center">Matched Candidates</h2>
-      {candidates.length > 0 ? (
-        <div className="flex flex-col  space-y-6 h-[600px] p-4 overflow-y-auto">
+    <Modal open={openModal} onClose={closeModal} center classNames={{ modal: "max-w-6xl rounded-lg" }}>
+      <h2 className="text-2xl font-bold mb-4 text-center">Match Candidate</h2>
+
+      {candidates.length >= 1 ? (
+        <div className="max-w-[450px] gap-6 max-h-[80vh] overflow-x-auto py-4">
           {candidates.map((candidate: CandidateResponse, index: number) => (
-            <div key={index} className="border p-6 rounded-lg shadow-lg bg-white hover:shadow-xl hover:bg-cyan-50  cursor-pointer  transition duration-300 ease-in-out"
-            onClick={() => router.push(`/candidates/view-candidate?job_id=${jobId}&candidate_id=${candidate.id}`)} >
-              <div className="flex justify-end items-center">
-                <span
-                  className={`text-xs px-3 py-2 rounded-full font-semibold ${(candidate.applicationStatus ?? "NEW") === "APPLIED" ? "bg-blue-100 text-blue-800" :
-                      (candidate.applicationStatus ?? "NEW") === "SCREENING" ? "bg-yellow-100 text-yellow-800" :
-                        (candidate.applicationStatus ?? "NEW") === "INTERVIEW" ? "bg-purple-100 text-purple-800" :
-                          (candidate.applicationStatus ?? "NEW") === "OFFER" ? "bg-indigo-100 text-indigo-800" :
-                            (candidate.applicationStatus ?? "NEW") === "HIRED" ? "bg-green-100 text-green-800" :
-                              (candidate.applicationStatus ?? "NEW") === "REJECTED" ? "bg-red-100 text-red-800" :
-                                "text-neutral-600 bg-orange-300"
-                    }`}
-                >
-                  {candidate.applicationStatus ?? "NEW"}
-                </span>
+            <div
+              key={index}
+              onClick={() =>
+                router.push(`/candidates/view-candidate?job_id=${jobId}&candidate_id=${candidate.id}`)
+              }
+              className="bg-white rounded-xl  shadow-lg hover:bg-pink-50 cursor-pointer p-4 relative"
+            >
+              {/* Status Badge */}
+              <span className="absolute top-4 right-0 text-xs text-white bg-red-400 px-4  py-2 rounded-l-lg">
+                {candidate.interviewStatus ?? "NEW"}
+              </span>
 
-
+              {/* Top Circle and Degree */}
+              <div className="flex flex-col items-center mb-4">
+                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-3xl font-semibold text-stone-600">
+                  {candidate.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()}
+                </div>
+                <p className="text-center text-sm text-muted-foreground mt-2">
+                  {candidate.education || "Degree info not available"}
+                </p>
               </div>
-              {/* Top Section: Avatar, Name, Location */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                {/* Left Column: Avatar, Name, Location */}
-                <div className="flex items-center gap-6">
-                  <img
-                    src={candidate.avatarUrl || "/default-avatar.png"}
-                    alt={candidate.name}
-                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-300 shadow-sm"
-                  />
-                  <div className="flex flex-col">
-                    <h3 className="text-xl font-semibold text-gray-800">{candidate.name}</h3>
-                    <p className="text-sm text-muted-foreground">{candidate.location}</p>
+
+              {/* Name & Salary */}
+              <div className="bg-blue-50 py-2 px-3 gap-4 rounded flex justify-between items-center my-8">
+                <div>
+                  <p className="font-medium text-gray-800 text-lg">{candidate.name}</p>
+                  <p className="text-sm text-gray-600">{candidate.location}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-medium text-gray-900">${candidate.salaryExpectation}</p>
+                  <p className="text-xs text-gray-600">Salary Expectation</p>
+                </div>
+              </div>
+
+              {/* Skills & Phone */}
+              <div className="space-y-8 text-sm mb-4">
+                {/* Skills Section */}
+                <div className="flex items-start ">
+                  <span className="w-20 font-semibold text-[#3B82F6]">Skills</span>
+                  <div className="flex flex-wrap gap-1 max-w-96">
+                    {(Array.isArray(candidate.skills) ? candidate.skills : String(candidate.skills).split(",")).map(
+                      (skill: string, index: number) => {
+                        const hue = Math.floor(Math.random() * 360);
+                        const bgColor = `hsl(${hue}, 90%, 90%)`;
+                        const textColor = `hsl(${hue}, 90%, 30%)`;
+                        return (
+                          <span
+                            key={index}
+                            className="px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
+                            style={{ backgroundColor: bgColor, color: textColor }}
+                          >
+                            {skill.trim()}
+                          </span>
+                        );
+                      }
+                    )}
                   </div>
                 </div>
-
-                {/* Middle Column: Skills, Phone, Salary Expectation */}
-                <div className="flex flex-col justify-start gap-3 text-sm text-muted-foreground">
-                  <p><strong>Skills:</strong> {candidate.skills.length ? candidate.skills.join(", ") : "No skills listed"}</p>
-                  <p><strong>Phone:</strong> {candidate.phone}</p>
-                  <p><strong>Salary Expectation:</strong> ${candidate.salaryExpectation}</p>
+                {/* Phone Section */}
+                <div className="flex">
+                  <span className="w-20 font-semibold text-[#3B82F6]">Phone</span>
+                  <span>{candidate.phone}</span>
                 </div>
 
-                {/* Right Column: Status */}
 
               </div>
 
-              {/* Bottom Section: Experience, AI Match, Resume Links */}
-              <div className=" mb-6">
-                <div className="text-left">
-                  <p className="text-sm font-medium text-gray-700">{candidate.experience} years of experience</p>
-                </div>
 
-                <div className="w-2/3 text-center">
-                  <p className="text-sm font-medium text-green-600">
-                    {/* Mock AI match score */}
-                    {Math.floor(Math.random() * 21) + 80}% <span className="text-gray-500">AI match</span>
-                  </p>
-                  <div className=" h-2 bg-gray-200 rounded mt-2 overflow-hidden">
-                    <div className="h-full bg-green-500" style={{ width: `${Math.floor(Math.random() * 21) + 80}%` }} />
-                  </div>
-                </div>
+              {/* Experience */}
+              <p className="text-sm text-stone-500 text-center my-4">
+                {candidate.experience}
+              </p>
+
+              <div className="flex justify-end text-sm text-neutral-500">
+                {candidate.createdAt ? new Date(candidate.createdAt).toDateString() : "2 days ago"}
               </div>
-
-
-              {/* Links: Resume, Portfolio, LinkedIn, GitHub */}
-              {/* <div className="mt-4 text-sm text-gray-700">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <p><strong>Resume:</strong> <a href={candidate.resume} target="_blank" className="text-blue-500 hover:text-blue-700">View Resume</a></p>
-                  <p><strong>Portfolio:</strong> <a href={candidate.portfolio} target="_blank" className="text-blue-500 hover:text-blue-700">View Portfolio</a></p>
-                  <p><strong>LinkedIn:</strong> <a href={candidate.linkedin} target="_blank" className="text-blue-500 hover:text-blue-700">View LinkedIn</a></p>
-                  <p><strong>GitHub:</strong> <a href={candidate.github} target="_blank" className="text-blue-500 hover:text-blue-700">View GitHub</a></p>
-                </div>
-              </div> */}
-
-
-              {/* Education */}
-              <div className="mt-4 text-sm text-muted-foreground">
-                <p><strong>Education:</strong> {candidate.education}</p>
-              </div>
-
-              {/* Interview Status */}
-              {/* <div className="mt-4 text-sm text-muted-foreground">
-                <p><strong>Interview Status:</strong> {candidate.interviewStatus}</p>
-              </div> */}
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">No candidates found or loading...</p>
+        <p className="text-sm text-muted-foreground text-center py-8">No candidates found or loading...</p>
       )}
-
-
     </Modal>
   )
 }

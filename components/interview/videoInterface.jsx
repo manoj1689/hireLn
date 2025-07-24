@@ -45,22 +45,7 @@ export default function VideoInterfacePage({
     [setFaceDetectionResults]
   );
 
-  // 🧠 Auto-disable features on examStatus = "COMPLETED"
-  useEffect(() => {
-    if (examStatus === "COMPLETED") {
-      setPermissions((prev) => ({
-        ...prev,
-        camera: false,
-        microphone: false,
-        fullscreen: false,
-      }));
 
-      // Exit fullscreen
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(console.error);
-      }
-    }
-  }, [examStatus, setPermissions]);
 
   return (
     <div className="relative h-auto overflow-hidden">
@@ -80,11 +65,10 @@ export default function VideoInterfacePage({
               </div>
             )}
             <div
-              className={`flex items-center gap-1 ${
-                faceDetectionResults.faceVerified
+              className={`flex items-center gap-1 ${faceDetectionResults.faceVerified
                   ? "text-green-600"
                   : "text-yellow-600"
-              }`}
+                }`}
             >
               {faceDetectionResults.faceVerified ? (
                 <>
@@ -110,9 +94,8 @@ export default function VideoInterfacePage({
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 items-center">
         <button
           onClick={() => togglePermission("camera")}
-          className={`w-16 h-16 rounded-full flex items-center justify-center shadow transition backdrop-blur bg-white/10 ${
-            permissions.camera ? "text-emerald-300" : "text-gray-500"
-          }`}
+          className={`w-16 h-16 rounded-full flex items-center justify-center shadow transition backdrop-blur bg-white/10 ${permissions.camera ? "text-emerald-300" : "text-gray-500"
+            }`}
         >
           {permissions.camera ? (
             <HiMiniVideoCamera size={30} />
@@ -123,9 +106,8 @@ export default function VideoInterfacePage({
 
         <button
           onClick={() => togglePermission("microphone")}
-          className={`w-16 h-16 rounded-full flex items-center justify-center shadow transition backdrop-blur bg-white/10 ${
-            permissions.microphone ? "text-green-400" : "text-gray-500"
-          }`}
+          className={`w-16 h-16 rounded-full flex items-center justify-center shadow transition backdrop-blur bg-white/10 ${permissions.microphone ? "text-green-400" : "text-gray-500"
+            }`}
         >
           {permissions.microphone ? (
             <MdMic size={30} />
@@ -140,9 +122,8 @@ export default function VideoInterfacePage({
 
         <button
           onClick={() => togglePermission("devToolsOpen")}
-          className={`w-16 h-16 rounded-full flex items-center justify-center shadow transition backdrop-blur bg-white/10 ${
-            permissions.devToolsOpen ? "text-red-500" : "text-gray-500"
-          }`}
+          className={`w-16 h-16 rounded-full flex items-center justify-center shadow transition backdrop-blur bg-white/10 ${permissions.devToolsOpen ? "text-red-500" : "text-gray-500"
+            }`}
         >
           {permissions.devToolsOpen ? (
             <IoCodeSharp size={30} />
@@ -153,9 +134,8 @@ export default function VideoInterfacePage({
 
         <button
           onClick={toggleFullscreen}
-          className={`w-16 h-16 rounded-full flex items-center justify-center shadow transition backdrop-blur bg-white/10 ${
-            permissions.fullscreen ? "text-indigo-500" : "text-gray-500"
-          }`}
+          className={`w-16 h-16 rounded-full flex items-center justify-center shadow transition backdrop-blur bg-white/10 ${permissions.fullscreen ? "text-indigo-500" : "text-gray-500"
+            }`}
         >
           {permissions.fullscreen ? (
             <RxExitFullScreen size={30} />

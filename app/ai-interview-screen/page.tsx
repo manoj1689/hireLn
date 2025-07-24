@@ -26,6 +26,8 @@ import SpeakingAvatar from "@/components/interview/SpeakingAvatar"
 import { IoMdEye, IoMdEyeOff } from "react-icons/io"
 import { Divide } from "lucide-react"
 import { MdFullscreenExit } from "react-icons/md"
+import PreventBackForward from "@/components/BlockBackForward"
+import { RotatingLines } from "react-loader-spinner"
 
 const InterviewScreenPage = () => {
   const dispatch = useDispatch<AppDispatch>()
@@ -168,29 +170,52 @@ const InterviewScreenPage = () => {
     setTranscript(newTranscript)
   }
 
-  const handleExamLeave = async () => {
-     setExamStatus("COMPLETED")
+  const handleExamEnd = async () => {
     router.push(`/ai-interview-result?interview_id=${interview.id}&token=${token}`)
     console.log("exam ended")
   }
 
   // 🔁 EARLY RETURNS (but hooks are already above this!)
-  
+  if (examStatus === "COMPLETED") {
+    return <p className="p-6 text-blue-600">Exam Ending...</p>
+  }
+ 
+
+
   if (interviewLoading) return <p className="p-6">Loading interview...</p>
   if (interviewError) return <p className="p-6 text-red-500">Error: {interviewError}</p>
   if (!interview) return <p className="p-6">No interview found.</p>
+
+
   if (questionLoading || uploadLoading || !interviewReady) {
-    return <p className="p-6 text-blue-600">Preparing your interview...</p>
+    return <div className="flex items-center justify-center h-screen ">
+      <div className="flex flex-col w-full gap-8">
+        <div className="flex w-full justify-center">
+          <RotatingLines
+            visible={true}
+            height="96"
+            width="96"
+            color="#F472B6"
+            strokeWidth="5"
+            animationDuration="0.75"
+            ariaLabel="rotating-lines-loading"
+            wrapperStyle={{}}
+            wrapperClass=""
+          />
+        </div>
+        <div className="flex justify-center text-lg lg:text-2xl font-semibold text-stone-600">
+          Your AI-powered interview questions are on their way...
+        </div>
+      </div>
+    </div>
   }
   if (questionError || uploadError) {
     return <p className="p-6 text-red-500">Error: {questionError || uploadError}</p>
   }
-   if (examStatus==="COMPLETED") {
-    return <p className="p-6 text-blue-600">Exam Ending...</p>
-  }
+
   return (
     <div className="flex h-screen ">
-
+      <PreventBackForward />
       <div className="flex-1 h-auto  container mx-auto px-4">
         <ToastContainer />
 
@@ -237,17 +262,17 @@ const InterviewScreenPage = () => {
                 examStatus={examStatus}
               />
             </div>
-           
-              {showTranscript && (
-                 <div className="max-sm:hidden flex w-full justify-center  ">
+
+            {showTranscript && (
+              <div className="max-sm:hidden flex w-full justify-center  ">
                 <SpeakingAvatar
                   text={transcript}
                   imgSrc="/public/images/Avatar/femaleUsAi.jpeg"
                 />
-                </div>
-              )}
+              </div>
+            )}
 
-            
+
 
             <div className="flex flex-col w-full bg-gray-200 rounded-lg shadow-lg lg:w-5/6 mx-auto   ">
 
@@ -291,7 +316,7 @@ const InterviewScreenPage = () => {
                   <AIChat
                     interviewId={interviewId}
                     questionList={questions}
-                    handleExamEnd={handleExamLeave}
+                    handleExamEnd={handleExamEnd}
                     token={token}
                     examID={interview.id}
                     onTranscriptChange={handleTranscriptChange}
@@ -307,7 +332,7 @@ const InterviewScreenPage = () => {
         </div>
 
         <div className="max-md:hidden">
-          <Checklist permissions={permissions}  />
+          <Checklist permissions={permissions} />
         </div>
       </div>
     </div>

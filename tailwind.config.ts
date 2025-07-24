@@ -62,6 +62,9 @@ const config: Config = {
   				ring: 'hsl(var(--sidebar-ring))'
   			}
   		},
+		backgroundImage: {
+        'primary-gradient': 'linear-gradient(to left, #F295BE, #63A7D4)',
+      },
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',

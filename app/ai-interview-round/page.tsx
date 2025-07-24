@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "@/lib/store"
+
 import {
   fetchInterviewJoin,
   confirmInterview,
@@ -11,6 +12,7 @@ import {
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import utc from "dayjs/plugin/utc"
+import { ColorRing } from 'react-loader-spinner'
 
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
@@ -84,27 +86,44 @@ const InterviewInfoPage = () => {
     }
   }, [status, interview?.id, token, router])
 
-useEffect(() => {
-  let timeoutId: ReturnType<typeof setTimeout>
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>
 
-  if (interviewId && confirmationMessage && !toastShown) {
-    console.log("confirmation", confirmationMessage)
+    if (interviewId && confirmationMessage && !toastShown) {
+      console.log("confirmation", confirmationMessage)
 
-    timeoutId = setTimeout(() => {
-      toast.success(confirmationMessage, {
-        position: "top-right",
-        autoClose: 2000,
-      })
-      setToastShown(true)
-    }, 2000) // 20 seconds
-  }
+      timeoutId = setTimeout(() => {
+        toast.success(confirmationMessage, {
+          position: "top-right",
+          autoClose: 2000,
+        })
+        setToastShown(true)
+      }, 2000) // 20 seconds
+    }
 
-  return () => clearTimeout(timeoutId) // Cleanup on unmount
-}, [interviewId, confirmationMessage, toastShown])
+    return () => clearTimeout(timeoutId) // Cleanup on unmount
+  }, [interviewId, confirmationMessage, toastShown])
 
 
   if (loading || confirming) {
-    return <p className="p-6 text-lg animate-pulse text-center">⏳ Confirming interview...</p>
+    return <div className="flex items-center justify-center h-screen ">
+      <div className="flex flex-col w-full gap-8">
+        <div className="flex w-full justify-center">
+          <ColorRing
+            visible={true}
+            height="80"
+            width="80"
+            ariaLabel="color-ring-loading"
+            wrapperStyle={{}}
+            wrapperClass="color-ring-wrapper"
+            colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
+          />
+        </div>
+        <div className="flex justify-center text-lg lg:text-2xl font-semibold text-stone-600">
+          Confirming Interview ....
+        </div>
+      </div>
+    </div>
   }
 
   if (error) return <p className="p-6 text-red-500">Error: {error}</p>

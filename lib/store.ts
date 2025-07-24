@@ -1,15 +1,4 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
-import {
-  persistStore,
-  persistReducer,
-  FLUSH,
-  REHYDRATE,
-  PAUSE,
-  PERSIST,
-  PURGE,
-  REGISTER,
-} from "redux-persist";
-import storage from "redux-persist/lib/storage";
 
 // All your reducers...
 import registerStep1Reducer from "@/lib/slices/register/register-step-1";
@@ -38,13 +27,6 @@ import interviewResultReducer from "@/lib/slices/interview_result/interview-resu
 import companyProfileReducer from "@/lib/slices/company/company-profile";
 import companyLocationReducer from "@/lib/slices/company/company-location";
 import settingReducer from "@/lib/slices/settings/settings-slice";
-
-// Configure redux-persist
-const persistConfig = {
-  key: "root",
-  storage,
-  whitelist: ["auth"], // Only persist the auth slice
-};
 
 const rootReducer = combineReducers({
   registerStep1: registerStep1Reducer,
@@ -75,22 +57,9 @@ const rootReducer = combineReducers({
   setting: settingReducer,
 });
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
-
-// ✅ FINAL STORE CONFIGURATION WITH FIXED MIDDLEWARE
 export const store = configureStore({
-  reducer: persistedReducer,
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: {
-        // Ignore redux-persist non-serializable action types
-        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-      },
-    }),
+  reducer: rootReducer,
 });
 
-export const persistor = persistStore(store);
-
-// Types
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

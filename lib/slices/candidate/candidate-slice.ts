@@ -34,15 +34,32 @@ export const addCandidate = createAsyncThunk<CandidateResponse, CandidateRequest
 
 // Async action to fetch a list of candidates
 export const fetchCandidates = createAsyncThunk<
-  CandidateResponse[], 
-  { skip: number; limit: number; search: string }
+  CandidateResponse[],
+  {
+    skip: number;
+    limit: number;
+    search?: string;
+    skills?: string[];
+    location?: string;
+    experience?: string;
+  }
 >(
   'candidate/fetch',
-  async ({ skip, limit, search }, { rejectWithValue }) => {
+  async ({ skip, limit, search, skills, location, experience }, { rejectWithValue }) => {
     try {
-      const response = await axiosApi.get<CandidateResponse[]>(
-        `/api/candidates/?skip=${skip}&limit=${limit}&search=${search}`
-      );
+      const params = new URLSearchParams();
+
+      params.append('skip', skip.toString());
+      params.append('limit', limit.toString());
+
+      if (search) params.append('search', search);
+      if (location) params.append('location', location);
+      if (experience) params.append('experience', experience);
+      if (skills && skills.length > 0) {
+        skills.forEach(skill => params.append('skills', skill));
+      }
+
+      const response = await axiosApi.get<CandidateResponse[]>(`/api/candidates/?${params.toString()}`);
       console.log('Candidates response:', response.data);
       return response.data;
     } catch (error: any) {
@@ -53,7 +70,7 @@ export const fetchCandidates = createAsyncThunk<
 
 // Async action to fetch a single candidate by ID
 export const fetchCandidateById = createAsyncThunk<
-  CandidateResponse, 
+  CandidateResponse,
   string  // candidate_id
 >(
   'candidate/fetchById',
@@ -68,6 +85,37 @@ export const fetchCandidateById = createAsyncThunk<
     }
   }
 );
+
+export const updateCandidate = createAsyncThunk<
+  CandidateResponse,
+  { id: string; formData: Partial<CandidateRequest> }
+>(
+  'candidate/update',
+  async ({ id, formData }, { rejectWithValue }) => {
+    try {
+      const response = await axiosApi.put<CandidateResponse>(`/api/candidates/${id}`, formData);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update candidate');
+    }
+  }
+);
+
+export const deleteCandidate = createAsyncThunk<
+  string, // return deleted candidate ID
+  string // candidate ID
+>(
+  'candidate/delete',
+  async (id, { rejectWithValue }) => {
+    try {
+      await axiosApi.delete(`/api/candidates/${id}`);
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete candidate');
+    }
+  }
+);
+
 
 const candidateSlice = createSlice({
   name: 'candidate',
@@ -126,6 +174,43 @@ const candidateSlice = createSlice({
         state.singleCandidate = action.payload;
       })
       .addCase(fetchCandidateById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateCandidate.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateCandidate.fulfilled, (state, action: PayloadAction<CandidateResponse>) => {
+        state.loading = false;
+        if (state.data) {
+          const index = state.data.findIndex(c => c.id === action.payload.id);
+          if (index !== -1) state.data[index] = action.payload;
+        }
+        if (state.singleCandidate?.id === action.payload.id) {
+          state.singleCandidate = action.payload;
+        }
+      })
+      .addCase(updateCandidate.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // Delete Candidate
+      .addCase(deleteCandidate.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteCandidate.fulfilled, (state, action: PayloadAction<string>) => {
+        state.loading = false;
+        if (state.data) {
+          state.data = state.data.filter(c => c.id !== action.payload);
+        }
+        if (state.singleCandidate?.id === action.payload) {
+          state.singleCandidate = null;
+        }
+      })
+      .addCase(deleteCandidate.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

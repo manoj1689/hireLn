@@ -32,7 +32,7 @@ export default function InterviewsPage() {
   const dispatch = useDispatch<AppDispatch>()
   const { interviews, loading, error } = useSelector((state: RootState) => state.fetchInterview);
   //const { interviews, currentInterview, loading, error, filters } = useSelector((state: RootState) => state.fetchInterview)
-
+  console.log("interview list",interviews)
   // State for dialogs and forms
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>();

@@ -28,16 +28,38 @@ import VideoInterfacePage from "@/components/interview/videoInterface"
 import { startInterview } from "@/lib/slices/join_interview/interview-join-slice"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-
+import PreventBackForward from "@/components/BlockBackForward"
+import { DNA } from "react-loader-spinner"
+const tips = [
+    {
+        icon: Lightbulb,
+        title: "Be Confident",
+        description: "Confidence in your answers shows clarity and preparation.",
+        color: "text-yellow-500",
+        bg: "bg-yellow-50",
+    },
+    {
+        icon: Mic,
+        title: "Speak Clearly",
+        description: "Use a moderate pace and pronounce words clearly.",
+        color: "text-blue-500",
+        bg: "bg-blue-50",
+    },
+    {
+        icon: FiCamera,
+        title: "Maintain Eye Contact",
+        description: "Look into the camera for better engagement.",
+        color: "text-purple-500",
+        bg: "bg-purple-50",
+    },
+]
 
 export default function InterviewConfirmation() {
+    const dispatch = useDispatch<AppDispatch>()
     const router = useRouter()
     const searchParams = useSearchParams()
     const interviewId = searchParams.get("interview_id") || ""
     const token = searchParams.get("token") || ""
-
-    const dispatch = useDispatch<AppDispatch>()
-    const { interview, loading, error, confirmationMessage, status } = useSelector((state: RootState) => state.joinInterview)
 
     const [consentChecked, setConsentChecked] = useState(false)
     const [showReadyModal, setShowReadyModal] = useState(false)
@@ -55,6 +77,11 @@ export default function InterviewConfirmation() {
         tabActive: true,
     })
     const [joining, setJoining] = useState(false);
+
+
+
+    const { interview, loading, error, confirmationMessage, status } = useSelector((state: RootState) => state.joinInterview)
+
 
     const handleStartInterview = async () => {
         const allOk =
@@ -139,62 +166,16 @@ export default function InterviewConfirmation() {
         return () => clearTimeout(timeoutId) // Cleanup on unmount
     }, [interviewId, confirmationMessage, toastShown])
 
-    const tips = [
-        {
-            icon: Lightbulb,
-            title: "Be Confident",
-            description: "Confidence in your answers shows clarity and preparation.",
-            color: "text-yellow-500",
-            bg: "bg-yellow-50",
-        },
-        {
-            icon: Mic,
-            title: "Speak Clearly",
-            description: "Use a moderate pace and pronounce words clearly.",
-            color: "text-blue-500",
-            bg: "bg-blue-50",
-        },
-        {
-            icon: FiCamera,
-            title: "Maintain Eye Contact",
-            description: "Look into the camera for better engagement.",
-            color: "text-purple-500",
-            bg: "bg-purple-50",
-        },
-    ]
+
 
     if (!interview || loading) {
         return <div className="p-8 text-center text-gray-500">Loading interview...</div>
     }
     return (
         <div className="min-h-screen">
+            <PreventBackForward />
             <ToastContainer />
-            <header className="flex  rounded-lg bg-cyan-50 border-b border-gray-200 sticky top-0 z-50">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                                <Brain className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-lg font-semibold text-gray-900">HireLn</h1>
-                                <p className="text-xs text-gray-500">Smart Interview Platform</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setShowTipsModal(true)}
-                                className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                            >
-                                <Lightbulb className="w-4 h-4 mr-2" />
-                                Quick Tips
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </header>
+
             <Dialog open={showTipsModal} onOpenChange={setShowTipsModal}>
                 <DialogContent>
                     <DialogHeader>
@@ -214,11 +195,50 @@ export default function InterviewConfirmation() {
                 </DialogContent>
             </Dialog>
             {joining ? (
-                <div className="min-h-screen flex items-center justify-center text-xl text-gray-600">
-                    ⏳ Joining interview...
+                <div className="flex items-center justify-center h-screen ">
+                    <div className="flex flex-col w-full gap-8">
+                        <div className="flex w-full justify-center">
+                            <DNA
+                                visible={true}
+                                height="80"
+                                width="80"
+                                ariaLabel="dna-loading"
+                                wrapperStyle={{}}
+                                wrapperClass="dna-wrapper"
+                            />
+                        </div>
+                        <div className="flex justify-center text-lg lg:text-2xl font-semibold text-stone-600">
+                            Joining Interview ....
+                        </div>
+                    </div>
                 </div>
             ) : (
-                <>
+                <> <header className="flex  rounded-lg bg-cyan-50 border-b border-gray-200 sticky top-0 z-50">
+                    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center h-16">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                    <Brain className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-lg font-semibold text-gray-900">HireLn</h1>
+                                    <p className="text-xs text-gray-500">Smart Interview Platform</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setShowTipsModal(true)}
+                                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                >
+                                    <Lightbulb className="w-4 h-4 mr-2" />
+                                    Quick Tips
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </header>
                     <main className="container mx-auto py-4 px-4 space-y-4 bg-gray-100 mt-4 rounded-lg">
                         <section>
                             <Card className="bg-gradient-to-r from-sky-400 to-pink-400 rounded-xl shadow-md">

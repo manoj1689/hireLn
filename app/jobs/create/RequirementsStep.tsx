@@ -8,6 +8,15 @@ import { Button } from "@/components/ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/lib/store";
 import { submitJobRequirementsStep } from "@/lib/slices/job/jobRequirements-slice";
+import {
+  BadgeCheck,
+  GraduationCap,
+  Globe,
+  User,
+  Wand2,
+  RotateCcw,
+  ArrowRight,
+} from "lucide-react";
 
 const languageOptions = [
   { label: "English", value: "English" },
@@ -49,7 +58,6 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
   const [languages, setLanguages] = useState<{ name: string; proficiency: string }[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState(languageOptions[0]);
   const [selectedLevel, setSelectedLevel] = useState(levelOptions[0]);
-
   const [selectedSoftSkills, setSelectedSoftSkills] = useState<string[]>([]);
 
   const softSkills = [
@@ -61,7 +69,6 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
   ];
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-
   const JobStep2 = useSelector((state: RootState) => state.jobDetails);
 
   const validate = () => {
@@ -119,13 +126,10 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
       softSkills: selectedSoftSkills,
     };
 
-    console.log("requirement payload", payload);
     try {
       const res = await dispatch(
         submitJobRequirementsStep({ sessionId: JobStep2.response?.sessionId, details: payload })
       ).unwrap();
-
-      console.log("Review Job after submit requirement Data:", res);
       onSuccess();
     } catch (err) {
       console.error("Error submitting requirements", err);
@@ -133,7 +137,6 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
     }
   };
 
-  // Reset the form and errors
   const resetForm = () => {
     setRequiredSkills([]);
     setSkillInput("");
@@ -149,66 +152,79 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
 
   return (
     <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-      {/* Required Skills */}
-      <div className="space-y-2">
-        <Label htmlFor="requiredSkills">Required Skills</Label>
-        <Input
-          id="requiredSkills"
-          placeholder="Type a skill and press Enter"
-          value={skillInput}
-          onChange={(e) => setSkillInput(e.target.value)}
-          onKeyDown={handleSkillKeyDown}
-        />
-        {errors.requiredSkills && <p className="text-red-500 text-sm">{errors.requiredSkills}</p>}
-        <div className="flex flex-wrap gap-2 mt-2">
-          {requiredSkills.map((skill, index) => (
-            <span key={index} className="bg-muted text-sm px-3 py-1 rounded-full">
-              {skill}
-            </span>
-          ))}
+      <div className="flex flex-col lg:flex-row  gap-4">
+        {/* Required Skills */}
+        <div className="space-y-2  lg:w-1/2">
+          <Label htmlFor="requiredSkills" className="flex items-center gap-1">
+            <Wand2 className="h-4 w-4" />
+            Required Skills
+          </Label>
+          <Input
+            id="requiredSkills"
+            placeholder="Type a skill and press Enter"
+            value={skillInput}
+            onChange={(e) => setSkillInput(e.target.value)}
+            onKeyDown={handleSkillKeyDown}
+          />
+          {errors.requiredSkills && <p className="text-red-500 text-sm">{errors.requiredSkills}</p>}
+          <div className="flex flex-wrap gap-2 mt-2">
+            {requiredSkills.map((skill, index) => (
+              <span key={index} className="bg-muted text-sm px-3 py-1 rounded-full">{skill}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Education Level */}
+        <div className="space-y-2  lg:w-1/2">
+          <Label className="flex items-center gap-1">
+            <GraduationCap className="h-4 w-4" />
+            Education Level
+          </Label>
+          <Select
+            options={educationOptions}
+            value={education}
+            onChange={(option) => {
+              setEducation(option);
+              setErrors((prev) => ({ ...prev, education: "" }));
+            }}
+          />
+          {errors.education && <p className="text-red-500 text-sm">{errors.education}</p>}
         </div>
       </div>
 
-      {/* Education Level */}
-      <div className="space-y-2">
-        <Label>Education Level</Label>
-        <Select
-          options={educationOptions}
-          value={education}
-          onChange={(option) => {
-            setEducation(option);
-            setErrors((prev) => ({ ...prev, education: "" }));
-          }}
-          className="text-sm"
-        />
-        {errors.education && <p className="text-red-500 text-sm">{errors.education}</p>}
-      </div>
 
       {/* Certifications */}
       <div className="space-y-2">
-        <Label htmlFor="certifications">Certifications</Label>
-        <Input
-          id="certifications"
-          placeholder="Add certification"
-          value={certInput}
-          onChange={(e) => setCertInput(e.target.value)}
-        />
-        <Button type="button" variant="outline" size="sm" className="mt-2" onClick={handleAddCertification}>
-          + Add
-        </Button>
+        <Label htmlFor="certifications" className="flex items-center gap-1">
+          <BadgeCheck className="h-4 w-4" />
+          Certifications
+        </Label>
+        <div className="flex gap-4 items-center">
+          <Input
+            id="certifications"
+            placeholder="Add certification"
+            value={certInput}
+            onChange={(e) => setCertInput(e.target.value)}
+          />
+          <Button type="button" variant="default"  size="sm" className="" onClick={handleAddCertification}>
+            + Add
+          </Button>
+        </div>
+
         {errors.certifications && <p className="text-red-500 text-sm">{errors.certifications}</p>}
         <div className="flex flex-wrap gap-2 mt-2">
           {certifications.map((cert, idx) => (
-            <span key={idx} className="bg-muted text-sm px-3 py-1 rounded-full">
-              {cert}
-            </span>
+            <span key={idx} className="bg-muted text-sm px-3 py-1 rounded-full">{cert}</span>
           ))}
         </div>
       </div>
 
       {/* Languages */}
       <div className="space-y-2">
-        <Label>Languages</Label>
+        <Label className="flex items-center gap-1">
+          <Globe className="h-4 w-4" />
+          Languages
+        </Label>
         <div className="flex items-center gap-4">
           <div className="w-[200px]">
             <Select
@@ -224,8 +240,8 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
               onChange={(val) => setSelectedLevel(val!)}
             />
           </div>
-          <Button type="button" variant="outline" size="icon" onClick={handleAddLanguage}>
-            +
+          <Button type="button" variant="default"  onClick={handleAddLanguage}>
+            + Add
           </Button>
         </div>
         {errors.languages && <p className="text-red-500 text-sm">{errors.languages}</p>}
@@ -240,7 +256,10 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
 
       {/* Soft Skills */}
       <div className="space-y-2">
-        <Label>Soft Skills</Label>
+        <Label className="flex items-center gap-1">
+          <User className="h-4 w-4" />
+          Soft Skills
+        </Label>
         <div className="flex flex-wrap gap-4">
           {softSkills.map((skill, index) => (
             <div key={index} className="flex items-center gap-2">
@@ -249,28 +268,34 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
                 id={skill}
                 checked={selectedSoftSkills.includes(skill)}
                 onChange={() => handleSoftSkillChange(skill)}
+                className="w-5 h-5 text-xs accent-teal-600 rounded-md"
               />
               <label htmlFor={skill} className="text-sm">{skill}</label>
             </div>
           ))}
         </div>
         {errors.softSkills && <p className="text-red-500 text-sm">{errors.softSkills}</p>}
-        <div className="flex flex-wrap gap-2 mt-2">
-          {selectedSoftSkills.map((skill, index) => (
-            <span key={index} className="bg-muted text-sm px-3 py-1 rounded-full">
-              {skill}
-            </span>
-          ))}
-        </div>
       </div>
 
-      {/* Reset and Continue Buttons */}
+      {/* Reset and Continue */}
       <div className="flex justify-between">
-        <Button type="button" variant="outline" onClick={resetForm} className="bg-green-600 text-white py-2 px-4 rounded">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={resetForm}
+        
+        >
+          <RotateCcw className="h-4 w-4" />
           Reset
         </Button>
-        <Button type="submit" className="bg-cyan-600 text-white py-2 px-4 rounded">
+
+        <Button
+          type="submit"
+          variant="default" 
+          
+        >
           Continue
+          <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
     </form>

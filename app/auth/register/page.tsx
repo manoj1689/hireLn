@@ -13,6 +13,11 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Select from "react-select"
 import { ToastContainer, toast } from 'react-toastify';
+import AuthNavbar from "@/components/auth-navbar/page"
+import { FaArrowLeft } from "react-icons/fa"
+import { Mail, Lock, User } from "lucide-react";
+import { FiBriefcase, FiGrid, FiUsers, FiTrendingUp, FiClipboard } from "react-icons/fi";
+import { FiCreditCard, FiCalendar, FiLock, FiMapPin, FiHome } from "react-icons/fi"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -25,12 +30,12 @@ export default function RegisterPage() {
   const step2 = useSelector((state: RootState) => state.registerStep2)
   const step3 = useSelector((state: RootState) => state.registerStep3)
 
-const options = [
-  { label: "Engineers", value: "engineers" },
-  { label: "Designers", value: "designers" },
-  { label: "Managers", value: "managers" },
-  { label: "Sales", value: "sales" },
-];
+  const options = [
+    { label: "Engineers", value: "engineers" },
+    { label: "Designers", value: "designers" },
+    { label: "Managers", value: "managers" },
+    { label: "Sales", value: "sales" },
+  ];
 
 
   useEffect(() => {
@@ -133,199 +138,411 @@ const options = [
 
   // Simple Step Indicator UI
   const StepIndicator = () => (
-    <div className="mb-6 flex justify-center space-x-6">
-      {[1, 2, 3].map((s) => (
-        <div
-          key={s}
-          onClick={() => setStep(s)}
-          className={`cursor-pointer rounded-full w-10 h-10 flex items-center justify-center border-2 ${s === step
-            ? "border-primary bg-primary text-white font-bold"
-            : "border-gray-300 text-gray-500"
-            }`}
-          title={s === 1 ? "Basic Info" : s === 2 ? "Company Details" : "Payment Info"}
-        >
-          {s}
-        </div>
-      ))}
-    </div>
-  )
+    <div className=" flex justify-center">
+      <div className="relative w-full max-w-xl px-4 flex items-center justify-between">
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
-      <ToastContainer
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-      <div className="w-full max-w-3xl">
-        <div className="text-center text-3xl font-bold text-primary mb-6">HireIn</div>
+        {/* Horizontal connecting line */}
+        <div className="absolute top-1/4 left-0 right-0 h-0.5 text-primary-foreground bg-gray-300 z-0" />
 
-        <StepIndicator />
+        {[1, 2, 3].map((s, index) => (
+          <div key={s} className="flex flex-col justify-center items-center">
+            <div
+              key={s}
+              onClick={() => setStep(s)}
+              className={`z-10 cursor-pointer w-10 h-10 rounded-full flex items-center justify-center border-2
+            ${s === step
+                  ? "border bg-gradient-to-r from-[#63A7D4] to-[#F295BE] text-white font-bold"
+                  : "border-gray-300 text-gray-500 bg-white"
+                }`}
+              title={s === 1 ? "Basic Info" : s === 2 ? "Company Details" : "Payment Info"}
+            >
+              {s}
+            </div>
+            <div className=" text-xs text-center text-muted-foreground">
+              <div className="mt-4">{s === 1 ? "Basic Info" : s === 2 ? "Company Details" : "Payment Info"}</div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {step === 1 && "Basic Information"}
-              {step === 2 && "Company Details"}
-              {step === 3 && "Payment Information"}
-            </CardTitle>
-            <CardDescription>
-              {step === 1 && "Please provide your account details"}
-              {step === 2 && "Tell us about your organization"}
-              {step === 3 && "Set up your payment method for after trial"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {step === 1 && (
-                <>
-                  <div>
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" value={step1.formValues.firstName || ""} onChange={handleChange} />
-                    {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" value={step1.formValues.lastName || ""} onChange={handleChange} />
-                    {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="workEmail">Work Email</Label>
-                    <Input id="workEmail" value={step1.formValues.workEmail || ""} onChange={handleChange} />
-                    {errors.workEmail && <p className="text-red-500 text-sm">{errors.workEmail}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Password</Label>
-                    <Input id="password" type="password" value={step1.formValues.password || ""} onChange={handleChange} />
-                    {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <Input id="confirmPassword" type="password" value={step1.formValues.confirmPassword || ""} onChange={handleChange} />
-                    {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
-                  </div>
-                </>
-              )}
+            </div>
+          </div>
 
-              {step === 2 && (
-                <>
-                  <div>
-                    <Label htmlFor="companyName">Company Name</Label>
-                    <Input id="companyName" value={step2.formValues.companyName || ""} onChange={handleChange} />
-                    {errors.companyName && <p className="text-red-500 text-sm">{errors.companyName}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="industry">Industry</Label>
-                    <Input id="industry" value={step2.formValues.industry || ""} onChange={handleChange} />
-                    {errors.industry && <p className="text-red-500 text-sm">{errors.industry}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="companySize">Company Size</Label>
-                    <Input id="companySize" value={step2.formValues.companySize || ""} onChange={handleChange} />
-                    {errors.companySize && <p className="text-red-500 text-sm">{errors.companySize}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="hiringVolume">Hiring Volume</Label>
-                    <Input id="hiringVolume" value={step2.formValues.hiringVolume || ""} onChange={handleChange} />
-                    {errors.hiringVolume && <p className="text-red-500 text-sm">{errors.hiringVolume}</p>}
-                  </div>
-                  <div>
-                    <Label>Primary Hiring Needs</Label>
-                    <Select
-                      isMulti
-                      options={options}
-                      value={(step2.formValues.primaryHiringNeeds || []).map((val: string) =>
-                        options.find((opt) => opt.value === val) || { label: val, value: val }
-                      )}
-                      onChange={(selectedOptions) => {
-                        dispatch(
-                          updateStep2Form({
-                            primaryHiringNeeds: selectedOptions.map((opt) => opt.value),
-                          })
-                        );
-                      }}
-                      className="react-select-container"
-                      classNamePrefix="react-select"
-                    />
-
-                    {errors.primaryHiringNeeds && <p className="text-red-500 text-sm">{errors.primaryHiringNeeds}</p>}
-                  </div>
-                </>
-              )}
-
-              {step === 3 && (
-                <>
-                  <div>
-                    <Label htmlFor="cardNumber">Card Number</Label>
-                    <Input id="cardNumber" value={step3.formValues.cardNumber || ""} onChange={handleChange} />
-                    {errors.cardNumber && <p className="text-red-500 text-sm">{errors.cardNumber}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="expirationDate">Expiration Date</Label>
-                    <Input id="expirationDate" placeholder="MM/YY" value={step3.formValues.expirationDate || ""} onChange={handleChange} />
-                    {errors.expirationDate && <p className="text-red-500 text-sm">{errors.expirationDate}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="cvv">CVV</Label>
-                    <Input id="cvv" value={step3.formValues.cvv || ""} onChange={handleChange} />
-                    {errors.cvv && <p className="text-red-500 text-sm">{errors.cvv}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="billingAddress">Billing Address</Label>
-                    <Input id="billingAddress" value={step3.formValues.billingAddress || ""} onChange={handleChange} />
-                    {errors.billingAddress && <p className="text-red-500 text-sm">{errors.billingAddress}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="city">City</Label>
-                    <Input id="city" value={step3.formValues.city || ""} onChange={handleChange} />
-                    {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="zipCode">Zip Code</Label>
-                    <Input id="zipCode" value={step3.formValues.zipCode || ""} onChange={handleChange} />
-                    {errors.zipCode && <p className="text-red-500 text-sm">{errors.zipCode}</p>}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="termsAgreement"
-                      checked={step3.formValues.termsAgreement || false}
-                      onChange={handleChange}
-                    />
-                    <Label htmlFor="termsAgreement">I agree to the Terms and Conditions</Label>
-                  </div>
-                  {errors.termsAgreement && <p className="text-red-500 text-sm">{errors.termsAgreement}</p>}
-                </>
-              )}
-
-              <div className="flex justify-between pt-6">
-                {step > 1 && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setErrors({})
-                      setStep(step - 1)
-                    }}
-                    disabled={loading}
-                  >
-                    Previous
-                  </Button>
-                )}
-                <Button type="submit" disabled={loading}>
-                  {step === 3 ? "Submit" : "Next"}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+        ))}
       </div>
     </div>
+  );
+
+
+  return (
+    <>
+      <div>
+        <AuthNavbar />
+      </div>
+      <div className="flex flex-col  min-h-screen items-center  bg-gradient-to-r from-[#63A7D4] to-[#F295BE] px-4 ">
+           <div className="flex container  pt-24 py-12  w-full">
+          <button
+            onClick={() => router.push("/")}
+            className="flex items-center gap-2 text-white text-sm font-medium hover:underline"
+          >
+            <FaArrowLeft /> back to home
+          </button>
+        </div>
+
+        <ToastContainer
+          position="top-right"
+          autoClose={2000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={false}
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
+        <div className="w-full  border-8  bg-white max-w-4xl shadow-lg rounded-3xl overflow-hidden ">
+
+          <div className="mt-4 space-y-4">
+            <div className="text-center text-2xl lg:text-3xl">
+              Registration
+            </div>
+            <div>
+              <StepIndicator />
+            </div>
+
+          </div>
+
+
+          <Card className="border-none">
+            <CardHeader className="flex w-full items-center">
+              <CardTitle>
+                {step === 1 && "Basic Information"}
+                {step === 2 && "Company Details"}
+                {step === 3 && "Payment Information"}
+              </CardTitle>
+              <CardDescription>
+                {step === 1 && "Please provide your account details"}
+                {step === 2 && "Tell us about your organization"}
+                {step === 3 && "Set up your payment method for after trial"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto px-4 ">
+                {step === 1 && (
+                  <>
+                    <div className="flex w-full flex-col md:flex-row gap-4">
+                      <div className="space-y-2 w-full">
+                        <Label htmlFor="firstName">First Name</Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                          <Input
+                            id="firstName"
+                            placeholder="Enter your first name"
+                            value={step1.formValues.firstName || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                        </div>
+                        {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
+                      </div>
+
+                      <div className="space-y-2 w-full">
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                          <Input
+                            id="lastName"
+                            placeholder="Enter your last name"
+                            value={step1.formValues.lastName || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                        </div>
+                        {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 w-full mt-4">
+                      <Label htmlFor="workEmail">Work Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                        <Input
+                          id="workEmail"
+                          placeholder="Enter your work email"
+                          value={step1.formValues.workEmail || ""}
+                          onChange={handleChange}
+                          className="pl-10"
+                        />
+                      </div>
+                      {errors.workEmail && <p className="text-red-500 text-sm">{errors.workEmail}</p>}
+                    </div>
+
+                    <div className="flex w-full flex-col md:flex-row gap-4 mt-4">
+                      <div className="space-y-2 w-full">
+                        <Label htmlFor="password">Password</Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                          <Input
+                            id="password"
+                            type="password"
+                            placeholder="Enter password"
+                            value={step1.formValues.password || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                        </div>
+                        {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+                      </div>
+
+                      <div className="space-y-2 w-full">
+                        <Label htmlFor="confirmPassword">Confirm Password</Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                          <Input
+                            id="confirmPassword"
+                            type="password"
+                            placeholder="Confirm password"
+                            value={step1.formValues.confirmPassword || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                        </div>
+                        {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {step === 2 && (
+                  <>
+                    <div className="flex w-full flex-col md:flex-row gap-4">
+                      <div className="space-y-2 w-full">
+                        <Label htmlFor="companyName">Company Name</Label>
+                        <div className="relative">
+                          <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                            <FiBriefcase />
+                          </span>
+                          <Input
+                            id="companyName"
+                            placeholder="e.g., MobiRizer Pvt. Ltd."
+                            value={step2.formValues.companyName || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                        </div>
+                        {errors.companyName && <p className="text-red-500 text-sm">{errors.companyName}</p>}
+                      </div>
+
+                      <div className="space-y-2 w-full">
+                        <Label htmlFor="industry">Industry</Label>
+                        <div className="relative">
+                          <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                            <FiGrid />
+                          </span>
+                          <Input
+                            id="industry"
+                            placeholder="e.g., Software Development"
+                            value={step2.formValues.industry || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                        </div>
+                        {errors.industry && <p className="text-red-500 text-sm">{errors.industry}</p>}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 mt-4">
+                      <Label>Primary Hiring Needs</Label>
+                      <Select
+                        isMulti
+                        options={options}
+                        placeholder="Select primary roles you are hiring for"
+                        value={(step2.formValues.primaryHiringNeeds || []).map((val: string) =>
+                          options.find((opt) => opt.value === val) || { label: val, value: val }
+                        )}
+                        onChange={(selectedOptions) => {
+                          dispatch(
+                            updateStep2Form({
+                              primaryHiringNeeds: selectedOptions.map((opt) => opt.value),
+                            })
+                          );
+                        }}
+                        className="react-select-container"
+                        classNamePrefix="react-select"
+                      />
+                      {errors.primaryHiringNeeds && <p className="text-red-500 text-sm">{errors.primaryHiringNeeds}</p>}
+                    </div>
+
+                    <div className="flex w-full flex-col md:flex-row gap-4 mt-4">
+                      <div className="space-y-2 w-full">
+                        <Label htmlFor="companySize">Company Size</Label>
+                        <div className="relative">
+                          <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                            <FiUsers />
+                          </span>
+                          <Input
+                            id="companySize"
+                            placeholder="e.g., 50-100 employees"
+                            value={step2.formValues.companySize || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                        </div>
+                        {errors.companySize && <p className="text-red-500 text-sm">{errors.companySize}</p>}
+                      </div>
+
+                      <div className="space-y-2 w-full">
+                        <Label htmlFor="hiringVolume">Hiring Volume</Label>
+                        <div className="relative">
+                          <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                            <FiTrendingUp />
+                          </span>
+                          <Input
+                            id="hiringVolume"
+                            placeholder="e.g., 10-20 candidates per month"
+                            value={step2.formValues.hiringVolume || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                        </div>
+                        {errors.hiringVolume && <p className="text-red-500 text-sm">{errors.hiringVolume}</p>}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {step === 3 && (
+                  <>
+                    {/* Card Number + Expiration */}
+                    <div className="flex w-full flex-col md:flex-row gap-4 mt-4">
+                      <div className="space-y-2 w-full relative">
+                        <Label htmlFor="cardNumber">Card Number</Label>
+                        <div className="relative">
+                          <Input
+                            id="cardNumber"
+                            placeholder="1234 5678 9012 3456"
+                            value={step3.formValues.cardNumber || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                          <FiCreditCard className="absolute left-3 top-3.5 text-gray-400" />
+                        </div>
+                        {errors.cardNumber && <p className="text-red-500 text-sm">{errors.cardNumber}</p>}
+                      </div>
+                      <div className="space-y-2 w-full relative">
+                        <Label htmlFor="expirationDate">Expiration Date</Label>
+                        <div className="relative">
+                          <Input
+                            id="expirationDate"
+                            placeholder="MM/YY"
+                            value={step3.formValues.expirationDate || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                          <FiCalendar className="absolute left-3 top-3.5 text-gray-400" />
+                        </div>
+                        {errors.expirationDate && <p className="text-red-500 text-sm">{errors.expirationDate}</p>}
+                      </div>
+                    </div>
+
+                    {/* CVV + Billing Address */}
+                    <div className="flex w-full flex-col md:flex-row gap-4 mt-4">
+                      <div className="space-y-2 w-full relative">
+                        <Label htmlFor="cvv">CVV</Label>
+                        <div className="relative">
+                          <Input
+                            id="cvv"
+                            placeholder="123"
+                            value={step3.formValues.cvv || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                          <FiLock className="absolute left-3 top-3.5 text-gray-400" />
+                        </div>
+                        {errors.cvv && <p className="text-red-500 text-sm">{errors.cvv}</p>}
+                      </div>
+                      <div className="space-y-2 w-full relative">
+                        <Label htmlFor="billingAddress">Billing Address</Label>
+                        <div className="relative">
+                          <Input
+                            id="billingAddress"
+                            placeholder="123 Street Name"
+                            value={step3.formValues.billingAddress || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                          <FiHome className="absolute left-3 top-3.5 text-gray-400" />
+                        </div>
+                        {errors.billingAddress && <p className="text-red-500 text-sm">{errors.billingAddress}</p>}
+                      </div>
+                    </div>
+
+                    {/* City + Zip Code */}
+                    <div className="flex w-full flex-col md:flex-row gap-4 mt-4">
+                      <div className="space-y-2 w-full relative">
+                        <Label htmlFor="city">City</Label>
+                        <div className="relative">
+                          <Input
+                            id="city"
+                            placeholder="Mumbai"
+                            value={step3.formValues.city || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                          <FiMapPin className="absolute left-3 top-3.5 text-gray-400" />
+                        </div>
+                        {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
+                      </div>
+                      <div className="space-y-2 w-full relative">
+                        <Label htmlFor="zipCode">Zip Code</Label>
+                        <div className="relative">
+                          <Input
+                            id="zipCode"
+                            placeholder="400001"
+                            value={step3.formValues.zipCode || ""}
+                            onChange={handleChange}
+                            className="pl-10"
+                          />
+                          <FiMapPin className="absolute left-3 top-3.5 text-gray-400" />
+                        </div>
+                        {errors.zipCode && <p className="text-red-500 text-sm">{errors.zipCode}</p>}
+                      </div>
+                    </div>
+
+                    {/* Terms Agreement */}
+                    <div className="flex items-center space-x-2 mt-4">
+                      <input
+                        type="checkbox"
+                        id="termsAgreement"
+                        checked={step3.formValues.termsAgreement || false}
+                        onChange={handleChange}
+                      />
+                      <Label htmlFor="termsAgreement">I agree to the Terms and Conditions</Label>
+                    </div>
+                    {errors.termsAgreement && <p className="text-red-500 text-sm">{errors.termsAgreement}</p>}
+                  </>
+                )}
+                <div className="flex justify-between pt-6">
+                  {step > 1 && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setErrors({})
+                        setStep(step - 1)
+                      }}
+                      disabled={loading}
+                    >
+                      Previous
+                    </Button>
+                  )}
+                  <Button type="submit" disabled={loading}>
+                    {step === 3 ? "Submit" : "Next"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+    </>
+
   )
 }

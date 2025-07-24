@@ -43,6 +43,15 @@ interface InterviewDetailsDialogProps {
 }
 
 export function InterviewDetailsDialog({ open, onOpenChange, interview }: InterviewDetailsDialogProps) {
+
+
+  const hue = Math.floor(Math.random() * 360);
+  const avatarBgColor = `hsl(${hue}, 90%, 85%)`;
+  const avatarTextColor = `hsl(${hue}, 40%, 40%)`;
+  const borderColor = `hsl(${hue}, 90%, 85%)`;
+
+
+
   const statusConfig = useMemo(() => {
     const configs = {
       SCHEDULED: {
@@ -72,36 +81,36 @@ export function InterviewDetailsDialog({ open, onOpenChange, interview }: Interv
   const typeConfig = useMemo(() => {
     const configs = {
       VIDEO: {
-        color: "bg-gradient-to-r from-blue-500 to-blue-600",
-        icon: <Video className="h-5 w-5" />,
-        label: "Video Call",
+        color: "text-sky-400",
+        icon: <Video className="h-8 w-8" />,
+        label: "Video",
       },
       PHONE: {
-        color: "bg-gradient-to-r from-green-500 to-green-600",
-        icon: <Phone className="h-5 w-5" />,
-        label: "Phone Call",
+        color: "text-green-400",
+        icon: <Phone className="h-4 w-4" />,
+        label: "Phone",
       },
       IN_PERSON: {
-        color: "bg-gradient-to-r from-purple-500 to-purple-600",
-        icon: <MapPin className="h-5 w-5" />,
+        color: "text-purple-400",
+        icon: <MapPin className="h-4 w-4" />,
         label: "In Person",
       },
       PANEL: {
-        color: "bg-gradient-to-r from-orange-500 to-orange-600",
-        icon: <Users className="h-5 w-5" />,
-        label: "Panel Interview",
+        color: "text-orange-400",
+        icon: <Users className="h-4 w-4" />,
+        label: "Panel",
       },
       TECHNICAL: {
-        color: "bg-gradient-to-r from-indigo-500 to-indigo-600",
-        icon: <Brain className="h-5 w-5" />,
-        label: "Technical Interview",
+        color: "text-indigo-400",
+        icon: <Brain className="h-4 w-4" />,
+        label: "Technical",
       },
       BEHAVIORAL: {
-        color: "bg-gradient-to-r from-pink-500 to-pink-600",
-        icon: <Heart className="h-5 w-5" />,
-        label: "Behavioral Interview",
+        color: "text-pink-400",
+        icon: <Heart className="h-4 w-4" />,
+        label: "Behavioral",
       },
-    }
+    };
     return configs[interview?.interviewType as keyof typeof configs] || configs.VIDEO
   }, [interview?.interviewType])
 
@@ -128,46 +137,56 @@ export function InterviewDetailsDialog({ open, onOpenChange, interview }: Interv
   if (!interview) return null
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">Interview Details</DialogTitle>
-        </DialogHeader>
+    <Dialog open={open} onOpenChange={onOpenChange} >
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+
 
         <div className="space-y-6">
+
           {/* Header Section */}
-          <div className="flex items-start gap-6 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-            <Avatar className="h-20 w-20 ring-4 ring-white shadow-lg">
-              <AvatarFallback className={cn("text-white font-bold text-2xl", typeConfig.color)}>
-                {getInitials(interview.candidateName)}
-              </AvatarFallback>
-            </Avatar>
+          <div className=" bg-primary-gradient  ">
 
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-2xl font-bold text-gray-900">{interview.candidateName}</h2>
-                {interview.feedback?.rating && interview.feedback.rating >= 4 && (
-                  <Award className="h-6 w-6 text-yellow-500" />
-                )}
+            <DialogHeader>
+              <DialogTitle className="text-xl font-medium text-white text-center py-4">Interview Details</DialogTitle>
+            </DialogHeader>
+
+
+            <div className="flex justify-between p-4 ">
+              <div className="flex gap-4">
+                <Avatar className="h-20 w-20  shadow-xl">
+                  <AvatarFallback className={cn("text-white font-bold text-2xl")} style={{ backgroundColor: avatarBgColor, color: avatarTextColor }}>
+                    {getInitials(interview.candidateName)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="gap-4 ">
+                  <div className="flex  items-center gap-3 mb-2">
+                    <h2 className="text-2xl font-bold text-white">{interview.candidateName}</h2>
+                    {interview.feedback?.rating && interview.feedback.rating >= 4 && (
+                      <Award className="h-6 w-6 text-yellow-500" />
+                    )}
+                  </div>
+                  <p className="text-white mb-2">{interview.candidateEmail}</p>
+                  <div className="flex items-center gap-2">
+                    <Building className="h-5 w-5 text-white" />
+                    <span className="font-semibold" style={{  color: avatarTextColor }}>{interview.jobTitle}</span>
+                  </div>
+                </div>
+
               </div>
-              <p className="text-gray-600 mb-2">{interview.candidateEmail}</p>
-              <div className="flex items-center gap-2">
-                <Building className="h-5 w-5 text-gray-500" />
-                <span className="font-semibold text-gray-800">{interview.jobTitle}</span>
+
+              <div className="flex flex-col items-end gap-2">
+                <Badge className={cn("font-medium text-sm px-3 py-1", statusConfig.color)}>
+                  {statusConfig.icon}
+                  <span className="ml-2">{interview.status.replace("_", " ")}</span>
+                </Badge>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <TrendingUp className="h-4 w-4 text-green-600" />
+                  <span className="text-white">Match Score: </span>
+                  <span className="font-bold text-stone-600">{Math.round(matchScore)}%</span>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col items-end gap-2">
-              <Badge className={cn("font-medium text-sm px-3 py-1", statusConfig.color)}>
-                {statusConfig.icon}
-                <span className="ml-2">{interview.status.replace("_", " ")}</span>
-              </Badge>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-                <span>Match Score: </span>
-                <span className="font-bold text-green-600">{Math.round(matchScore)}%</span>
-              </div>
-            </div>
           </div>
 
           {/* Interview Type & Schedule */}

@@ -90,7 +90,7 @@ const CameraFeed = ({ onFacesDetected, enableAudio, examStatus }) => {
                     audio={enableAudio}
                     muted
                     autoPlay
-                    mirrored={false}
+                    mirrored={true}
                     style={{ width: '100%', borderRadius: '1%'}}
                 />
             )}

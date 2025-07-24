@@ -27,8 +27,11 @@ export function Header() {
     <header className="border-b fixed bg-white z-10  w-full">
       <div className="flex h-16 items-center px-6">
         <Link href="/dashboard" className="pl-8 flex items-center gap-2">
-          <Logo />
-          <span className="text-xl font-bold text-primary">HireIn</span>
+          <img
+              src="/images/logo/company-logo.png"
+              alt="Company Logo"
+              className="w-28"
+            />
         </Link>
         <div className="ml-auto flex items-center gap-4">
           <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>
@@ -136,13 +139,4 @@ function NotificationItem({ title, description, time, isNew = false }) {
   )
 }
 
-function Logo() {
-  return (
-    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="4" y="4" width="8" height="8" rx="2" fill="#FF5A5A" />
-      <rect x="4" y="14" width="8" height="8" rx="2" fill="#5A9CFF" />
-      <rect x="4" y="24" width="8" height="8" rx="2" fill="#FFB800" />
-      <rect x="14" y="4" width="18" height="28" rx="2" fill="#0CC5B9" />
-    </svg>
-  )
-}
+

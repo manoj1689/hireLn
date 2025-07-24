@@ -29,6 +29,7 @@ import { autoEvaluateAnswer, reset } from "@/lib/slices/questions/auto-evaluate-
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/lib/store";
 import { MdToken } from "react-icons/md";
+import { DNA } from "react-loader-spinner";
 
 interface AIChatProps {
   interviewId: string,
@@ -47,20 +48,56 @@ interface Message {
   role: MessageRole;
   content: string;
 }
+const avatars = [
+  {
+    name: "Ava",
+    src: FemaleAvatar,
+    voice: {
+      chrome: "Google UK English Female",
+      safari: "com.apple.speech.synthesis.voice.daniel", // English (UK)
+      edge: "Microsoft Libby Online (Natural) - English (United Kingdom)", // Edge (US English Female)
+    },
+  },
+  {
+    name: "Jack",
+    src: MaleUsAvatar,
+    voice: {
+      chrome: "Google UK English Male",
+      safari: "com.apple.speech.synthesis.voice.daniel", // English (UK)
+      edge: "Microsoft Ryan Online (Natural) - English (United Kingdom)", // Edge (US English Male)
+    },
+  },
+  {
+    name: "Luna",
+    src: FemaleUsAvatar,
+    voice: {
+      chrome: "Google US English",
+      safari: "com.apple.speech.synthesis.voice.siri", // English (US)
+      edge: "Microsoft Sonia Online (Natural) - English (United Kingdom)", // Edge (US English Female)
+    },
+  },
+  {
+    name: "Zara",
+    src: AiFemaleAssistant,
+    voice: {
+      chrome: "Google Deutsch",
+      safari: "com.apple.speech.synthesis.voice.jorge", // Spanish (Spain)
+      edge: "Microsoft Jenny Online (Natural) - English (United States)", //Microsoft Eric Online (Natural) - English (United States)
+    },
+  },
+];
 
 const AIChat: React.FC<AIChatProps> = ({
   interviewId,
   questionList,
   handleExamEnd,
   token,
-  examID,
   onTranscriptChange,
 
 }) => {
 
   const dispatch = useDispatch<AppDispatch>()
   const [chatHistory, setChatHistory] = useState<Message[]>([]);
-  const [assistantAlert, setAssistantAlert] = useState<Message[]>([]);
   const [audioTranscript, setAudioTranscript] = useState("");
   const [transcriptAi, setTranscriptAi] = useState("");
   const [loading, setLoading] = useState(false);
@@ -69,13 +106,13 @@ const AIChat: React.FC<AIChatProps> = ({
 
   const [questionNumber, setQuestionNumber] = useState(1);
   const [listeningEnabled, setListeningEnabled] = useState(true);
-  const [showWave, setShowWave] = useState(false);
+
   const [selectedAvatarlogo, setSelectedAvatarlogo] = useState<any>(FemaleAvatar);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [noResponse, setNoResponse] = useState(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [speechData, setSpeechData] = useState<any>(null);
-  const [open, setOpen] = useState(false);
+
   const [whichBrowser, setWhichBrowser] = useState("");
   const [enableChrome, setEnableChrome] = useState(false);
   const {
@@ -112,44 +149,7 @@ const AIChat: React.FC<AIChatProps> = ({
 
   //  // Initialize Speech
   const speech = new Speech();
-  const avatars = [
-    {
-      name: "Ava",
-      src: FemaleAvatar,
-      voice: {
-        chrome: "Google UK English Female",
-        safari: "com.apple.speech.synthesis.voice.daniel", // English (UK)
-        edge: "Microsoft Libby Online (Natural) - English (United Kingdom)", // Edge (US English Female)
-      },
-    },
-    {
-      name: "Jack",
-      src: MaleUsAvatar,
-      voice: {
-        chrome: "Google UK English Male",
-        safari: "com.apple.speech.synthesis.voice.daniel", // English (UK)
-        edge: "Microsoft Ryan Online (Natural) - English (United Kingdom)", // Edge (US English Male)
-      },
-    },
-    {
-      name: "Luna",
-      src: FemaleUsAvatar,
-      voice: {
-        chrome: "Google US English",
-        safari: "com.apple.speech.synthesis.voice.siri", // English (US)
-        edge: "Microsoft Sonia Online (Natural) - English (United Kingdom)", // Edge (US English Female)
-      },
-    },
-    {
-      name: "Zara",
-      src: AiFemaleAssistant,
-      voice: {
-        chrome: "Google Deutsch",
-        safari: "com.apple.speech.synthesis.voice.jorge", // Spanish (Spain)
-        edge: "Microsoft Jenny Online (Natural) - English (United States)", //Microsoft Eric Online (Natural) - English (United States)
-      },
-    },
-  ];
+
   //console.log("whichbrowser", whichBrowser);
   useEffect(() => {
     setWhichBrowser(browserName);
@@ -223,7 +223,7 @@ const AIChat: React.FC<AIChatProps> = ({
         timeoutRef.current = setTimeout(() => {
           SpeechRecognition.stopListening();
           setAudioTranscript(transcript.trim()); // ✅ Trigger OpenAI intent handler
-          setShowWave(false);
+
         }, 3000);
       } else {
         if (noResponse) {
@@ -232,7 +232,6 @@ const AIChat: React.FC<AIChatProps> = ({
           timeoutRef.current = setTimeout(() => {
             SpeechRecognition.stopListening();
             setAudioTranscript("This is an automated response, I'm not available to chat.");
-            setShowWave(false);
             setNoResponse(false);
           }, 20000);
         } else {
@@ -240,13 +239,11 @@ const AIChat: React.FC<AIChatProps> = ({
 
           timeoutRef.current = setTimeout(() => {
             SpeechRecognition.stopListening();
-            setShowWave(false);
             const userNotAvailableMessage: Message = {
               role: "assistant",
               content: "Thank you for participating. It appears you are not available during the exam. Your score will be updated shortly. For further assistance, please contact us."
             };
-
-            setAssistantAlert([userNotAvailableMessage]);
+            setChatHistory(prev => [...prev, userNotAvailableMessage]);
             ExamEndMessage(userNotAvailableMessage.content, continueListening);
             resetTranscript();
             setAudioTranscript("");
@@ -272,7 +269,7 @@ const AIChat: React.FC<AIChatProps> = ({
         listeners: {
           onstart: () => {
             console.log("Speech started for ending exam");
-            setTranscriptAi(text);
+
           },
           onend: () => {
             console.log("Speech ended, now you can stop exam.");
@@ -284,7 +281,7 @@ const AIChat: React.FC<AIChatProps> = ({
 
         handleExamEnd();
 
-        setShowWave(false);
+
         resetTranscript();
         setTranscriptAi("");
         setAudioTranscript("");
@@ -293,30 +290,28 @@ const AIChat: React.FC<AIChatProps> = ({
         console.error("An error occurred while speaking text:", e);
       });
   };
-
   const handleExamLeave = () => {
     // Stop all listening and recording processes
     SpeechRecognition.stopListening();
 
-    setShowWave(false);
-
-    // Set recording and transcript data
-
+    // Reset transcript and audio data
     resetTranscript();
     setAudioTranscript("");
-
-    // Open the modal immediately
-    setOpen(true);
-
-    // Set a timeout to close the modal after 3 seconds and handle exam end
-    setTimeout(() => {
-      setOpen(false); // Close the modal
+    const examCompleteMessage: Message = {
+      role: "assistant",
+      content: "Thank you for participating. We will connect you shortly."
+    };
+    setChatHistory(prev => [...prev, examCompleteMessage]);
+    ExamEndMessage(examCompleteMessage.content, continueListening);
+     setTimeout(() => {
+     
       handleExamEnd(); // Call the function to handle exam end
-    }, 5000); // 5 seconds
+    }, 2000); // 5 seconds
   };
 
+
   const speakText = (text: string, continueListening: () => void) => {
-    setShowWave(false);
+
     SpeechRecognition.stopListening();
 
     if (!speechData) {
@@ -345,15 +340,11 @@ const AIChat: React.FC<AIChatProps> = ({
         continueListening();
         setEnableChrome(true);
 
-        setShowWave(true);
+
       })
       .catch((e: any) => {
         console.error("An error occurred while speaking text:", e);
       });
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
 
@@ -545,7 +536,8 @@ const AIChat: React.FC<AIChatProps> = ({
     testIntentDetermination();
   }, [audioTranscript]);
 
-  console.log("question number ", questionNumber, questionId)
+
+
   return (
     <div>
       <div className="p-2 h-full flex flex-col rounded-md">
@@ -595,11 +587,14 @@ const AIChat: React.FC<AIChatProps> = ({
 
             {loading && (
               <div className="p-2 my-2 rounded-md bg-white self-end">
-                <div className="flex space-x-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                </div>
+                <DNA
+                  visible={true}
+                  height="80"
+                  width="80"
+                  ariaLabel="dna-loading"
+                  wrapperStyle={{}}
+                  wrapperClass="dna-wrapper"
+                />
               </div>
             )}
 
@@ -610,48 +605,7 @@ const AIChat: React.FC<AIChatProps> = ({
       </div>
 
 
-      <Modal
-        open={open}
-        onClose={() => setOpen(false)}
-        center
-        styles={{
-          modal: {
-            maxWidth: "600px",
-            width: "90%",
-            borderRadius: "5px",
-          },
-        }}
-      >
-        <div className="mt-5 flex flex-col  w-full justify-center items-center">
-          <div className="text-xl my-4 font-bold text-gray-700 uppercase">
-            THANK YOU FOR PARTICIPATING
-          </div>
 
-          <CountdownCircleTimer
-            isPlaying
-            duration={5}
-            colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
-            colorsTime={[5, 3, 2, 0]}
-          >
-            {({ remainingTime }) => (
-              <div
-                role="timer"
-                className=" flex flex-col gap-3 justify-center items-center"
-              >
-                <div className="text-red-500 font-bold text-4xl">
-                  {remainingTime}
-                </div>{" "}
-                <div className="text-sky-400 text-md">seconds</div>
-              </div>
-            )}
-          </CountdownCircleTimer>
-          <div className="flex text-lg font-middle justify-center items-center my-8  text-gray-800">
-            Your progress will be saved, and you will be notified of the results
-            shortly. If you have any questions or need further assistance, feel
-            free to reach out.
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };

@@ -8,7 +8,8 @@ import { Modal } from "react-responsive-modal"
 import "react-responsive-modal/styles.css"
 import Select from "react-select"
 import { Button } from "@/components/ui/button"
-
+import { Pencil, MapPin, Layers, Book, Brain, Trash2, PlusCircle } from "lucide-react"
+import { IoCloseOutline } from "react-icons/io5";
 const departmentOptions = [
   { value: 'engineering', label: 'Engineering' },
   { value: 'product', label: 'Product' },
@@ -18,7 +19,7 @@ const departmentOptions = [
   { value: 'hr', label: 'Human Resources' },
   { value: 'finance', label: 'Finance' },
   { value: 'operations', label: 'Operations' },
-];
+]
 
 const employmentOptions = [
   { value: 'FULL_TIME', label: 'Full-time' },
@@ -26,30 +27,14 @@ const employmentOptions = [
   { value: 'CONTRACT', label: 'Contract' },
   { value: 'TEMPORARY', label: 'Temporary' },
   { value: 'INTERN', label: 'Internship' },
-];
-
-const salaryPeriodOptions = [
-  { value: 'yearly', label: 'Yearly' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'hourly', label: 'Hourly' },
-];
+]
 
 const statusOptions = [
   { value: 'DRAFT', label: 'Draft' },
   { value: 'ACTIVE', label: 'Active' },
   { value: 'PAUSED', label: 'Paused' },
   { value: 'CLOSED', label: 'Closed' },
-];
-
-const languageOptions = [
-  { label: "English", value: "English" },
-  { label: "Spanish", value: "Spanish" },
-  { label: "French", value: "French" },
-  { label: "German", value: "German" },
-  { label: "Chinese", value: "Chinese" },
-  { label: "Japanese", value: "Japanese" },
-];
+]
 
 const educationOptions = [
   { label: "High School", value: "High School" },
@@ -58,17 +43,13 @@ const educationOptions = [
   { label: "Master's Degree", value: "Master's Degree" },
   { label: "PhD", value: "PhD" },
   { label: "No specific requirement", value: "None" },
-];
+]
 
-type EditJobModalProps = {
-  jobId: string | null
-  openModal: boolean
-  closeModal: () => void
-}
-
-export default function EditJobModal({ jobId, openModal, closeModal }: EditJobModalProps) {
+export default function EditJobModal({ jobId, openModal, closeModal }: any) {
   const [jobData, setJobData] = useState<any>(null)
   const [formData, setFormData] = useState<any>(null)
+  const [newSkill, setNewSkill] = useState("")
+  const [newSoftSkill, setNewSoftSkill] = useState("")
   const dispatch = useDispatch<AppDispatch>()
 
   useEffect(() => {
@@ -95,7 +76,6 @@ export default function EditJobModal({ jobId, openModal, closeModal }: EditJobMo
   }
 
   const handleSubmit = () => {
-    console.log("form data",formData)
     if (jobId && formData) {
       dispatch(updateJob({ jobId, updatedJob: formData }))
         .then(() => closeModal())
@@ -103,104 +83,145 @@ export default function EditJobModal({ jobId, openModal, closeModal }: EditJobMo
     }
   }
 
+  const removeItem = (key: "skills" | "softSkills", index: number) => {
+    const updated = [...formData[key]]
+    updated.splice(index, 1)
+    setFormData({ ...formData, [key]: updated })
+  }
+
+  const addSkill = () => {
+    if (newSkill.trim()) {
+      setFormData({ ...formData, skills: [...(formData.skills || []), newSkill.trim()] })
+      setNewSkill("")
+    }
+  }
+
+  const addSoftSkill = () => {
+    if (newSoftSkill.trim()) {
+      setFormData({ ...formData, softSkills: [...(formData.softSkills || []), newSoftSkill.trim()] })
+      setNewSoftSkill("")
+    }
+  }
+
   return (
-    <Modal open={openModal} onClose={closeModal} classNames={{ modal: 'w-full max-w-5xl mx-auto rounded-lg' }}>
-      <h2 className="text-lg font-bold mb-4">Edit Job Details</h2>
+    <Modal open={openModal} onClose={closeModal} center classNames={{ modal: 'w-full max-w-5xl mx-auto rounded-lg p-6' }}>
+      <h2 className="text-xl font-bold mb-6 text-center">Edit Job Details</h2>
       {formData ? (
-        <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div>
-              <strong>Title:</strong>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2"><Pencil size={16} /> Title</label>
               <input name="title" value={formData.title || ''} onChange={handleInputChange} className="w-full border p-2 rounded" />
             </div>
-            <div>
-              <strong>Location:</strong>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2"><MapPin size={16} /> Location</label>
               <input name="location" value={formData.location || ''} onChange={handleInputChange} className="w-full border p-2 rounded" />
             </div>
-            <div className="lg:col-span-2">
-              <strong>Description:</strong>
+
+            <div className="lg:col-span-2 space-y-2">
+              <label className="flex items-center gap-2"><Layers size={16} /> Description</label>
               <textarea name="description" value={formData.description || ''} onChange={handleInputChange} className="w-full border p-2 rounded" rows={4} />
             </div>
-            <div>
-              <strong>Experience:</strong>
+
+            <div className="space-y-2">
+              <label>Experience</label>
               <input name="experience" value={formData.experience || ''} onChange={handleInputChange} className="w-full border p-2 rounded" />
             </div>
-            <div>
-              <strong>Education:</strong>
+
+            <div className="space-y-2">
+              <label>Education</label>
               <Select options={educationOptions} value={educationOptions.find(opt => opt.value === formData.education)} onChange={(opt) => handleSelectChange(opt, 'education')} />
             </div>
-            <div>
-              <strong>Department:</strong>
+
+            <div className="space-y-2">
+              <label>Department</label>
               <Select options={departmentOptions} value={departmentOptions.find(opt => opt.value === formData.department)} onChange={(opt) => handleSelectChange(opt, 'department')} />
             </div>
-            <div>
-              <strong>Employment Type:</strong>
+
+            <div className="space-y-2">
+              <label>Employment Type</label>
               <Select options={employmentOptions} value={employmentOptions.find(opt => opt.value === formData.employmentType)} onChange={(opt) => handleSelectChange(opt, 'employmentType')} />
             </div>
-            <div>
-              <strong>Skills:</strong>
-              <textarea name="skills" value={(formData.skills || []).join("\n")} onChange={(e) => setFormData({ ...formData, skills: e.target.value.split("\n").map(s => s.trim()).filter(Boolean) })} className="w-full border p-2 rounded" rows={3} />
-            </div>
-            <div>
-              <strong>Requirements:</strong>
-              <textarea name="requirements" value={(formData.requirements || []).join("\n")} onChange={(e) => setFormData({ ...formData, requirements: e.target.value.split("\n").map(s => s.trim()).filter(Boolean) })} className="w-full border p-2 rounded" rows={3} />
-            </div>
-            {/* <div className="lg:col-span-2">
-              <strong>Languages:</strong>
-              <Select isMulti options={languageOptions} value={languageOptions.filter(opt => formData.languages?.includes(opt.value))} onChange={(opts) => handleSelectChange(opts, 'languages')} />
-            </div> */}
-            <div>
-              <strong>Status:</strong>
-              <Select options={statusOptions} value={statusOptions.find(opt => opt.value === formData.status)} onChange={(opt) => handleSelectChange(opt, 'status')} />
-            </div>
-            <div className="lg:col-span-2">
-              <strong>Responsibilities:</strong>
-              <textarea name="responsibilities" value={(formData.responsibilities || []).join("\n")} onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value.split("\n").map(s => s.trim()).filter(Boolean) })} className="w-full border p-2 rounded" rows={3} />
-            </div>
-            <div>
-              <strong>Certifications:</strong>
-              <textarea name="certifications" value={(formData.certifications || []).join("\n")} onChange={(e) => setFormData({ ...formData, certifications: e.target.value.split("\n").map(s => s.trim()).filter(Boolean) })} className="w-full border p-2 rounded" rows={2} />
-            </div>
-            <div>
-              <strong>Soft Skills:</strong>
-              <textarea name="softSkills" value={(formData.softSkills || []).join("\n")} onChange={(e) => setFormData({ ...formData, softSkills: e.target.value.split("\n").map(s => s.trim()).filter(Boolean) })} className="w-full border p-2 rounded" rows={2} />
-            </div>
+
+            {/* Skills */}
             <div className="lg:col-span-2 space-y-2">
-              <strong>Other Options:</strong>
-              <div className="flex flex-wrap gap-4">
-                {['isRemote', 'isHybrid', 'internalJobBoard', 'externalJobBoards', 'socialMedia'].map(flag => (
-                  <label key={flag} className="flex items-center gap-2">
-                    <input type="checkbox" checked={!!formData[flag]} onChange={(e) => setFormData({ ...formData, [flag]: e.target.checked })} />
-                    {flag}
-                  </label>
-                ))}
-              </div>
-              <div>
-                <strong>Application Form Fields:</strong>
-                {Object.entries(formData.applicationFormFields || {}).map(([key, val], idx) => (
-                  <div key={idx} className="flex gap-2 mb-2">
-                    <input value={key} readOnly className="p-2 border rounded bg-gray-100 w-1/3" />
-                    <input value={val} onChange={(e) => {
-                      const updated = { ...formData.applicationFormFields }
-                      updated[key] = e.target.value
-                      setFormData({ ...formData, applicationFormFields: updated })
-                    }} className="p-2 border rounded w-2/3" />
-                  </div>
-                ))}
-                <Button
-                  onClick={() => {
-                    const key = `field_${Date.now()}`
-                    setFormData({ ...formData, applicationFormFields: { ...formData.applicationFormFields, [key]: "" } })
-                  }}
-                  variant="outline"
-                >
-                  Add Field
+              <label className="flex items-center gap-2"><Brain size={16} /> Skills</label>
+              <div className="flex gap-2">
+                <input
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  placeholder="Add skill..."
+                  className="border p-2 rounded w-full"
+                />
+                <Button type="button" variant="default" onClick={addSkill}>
+                  <PlusCircle size={16} className="mr-1" /> Add
                 </Button>
               </div>
+
+              <div className="flex flex-wrap gap-2 mt-2 items-center">
+                {formData.skills?.map((skill: string, idx: number) => {
+                  const hue = Math.floor(Math.random() * 360);
+                  const bgColor = `hsl(${hue}, 90%, 85%)`;
+                  const textColor = `hsl(${hue}, 90%, 30%)`;
+
+                  return (
+                    <span
+                      key={idx}
+                      className="px-2 py-0.5 rounded-full text-xs font-normal flex items-center gap-1"
+                      style={{ backgroundColor: bgColor, color: textColor }}
+                    >
+                      {skill}
+                      <button type="button" onClick={() => removeItem("skills", idx)}>
+                        <IoCloseOutline size={14} color={textColor} />
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-          <div className="flex justify-center mt-8">
-            <Button type="submit" variant="default">Save Changes</Button>
+
+            {/* Soft Skills */}
+            <div className="lg:col-span-2">
+              <label className="flex items-center gap-2"><Brain size={16} /> Soft Skills</label>
+              <div className="flex gap-2">
+                <input
+                  value={newSoftSkill}
+                  onChange={(e) => setNewSoftSkill(e.target.value)}
+                  placeholder="Add soft skill..."
+                  className="border p-2 rounded w-full"
+                />
+                <Button type="button" variant="default" onClick={addSoftSkill}>
+                  <PlusCircle size={16} className="mr-1" /> Add
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap gap-2 mt-2 items-center">
+                {formData.softSkills?.map((softSkill: string, idx: number) => {
+                  const hue = Math.floor(Math.random() * 360);
+                  const bgColor = `hsl(${hue}, 90%, 85%)`;
+                  const textColor = `hsl(${hue}, 90%, 30%)`;
+
+                  return (
+                    <span
+                      key={idx}
+                      className="px-2 py-0.5 rounded-full text-xs font-normal flex items-center gap-1"
+                      style={{ backgroundColor: bgColor, color: textColor }}
+                    >
+                      {softSkill}
+                      <button type="button" onClick={() => removeItem("softSkills", idx)}>
+                        <IoCloseOutline size={14} color={textColor}/>
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+
+
+            {/* Additional Fields */}
+            <div className="lg:col-span-2 mt-6">
+              <Button type="submit" variant="default">Save Changes</Button>
+            </div>
           </div>
         </form>
       ) : (

@@ -42,12 +42,12 @@ export function InterviewFilters({
   onClearFilters,
 }: InterviewFiltersProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Filters</CardTitle>
-      </CardHeader>
+    <Card className="border-0 shadow-none">
+      {/* <CardHeader>
+        <CardTitle className="text-lg"> Quick Filters</CardTitle>
+      </CardHeader> */}
       <CardContent>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 ">
           {/* Search */}
           <div className="flex-1 min-w-[200px]">
             <div className="relative">

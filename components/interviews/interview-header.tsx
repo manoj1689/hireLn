@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus } from "lucide-react"
+import { Eye } from "lucide-react"
 import { useState } from "react"
 
 interface InterviewHeaderProps {
@@ -20,16 +20,16 @@ export function InterviewHeader({ onScheduleInterview }: InterviewHeaderProps) {
   const [showScheduleDialog, setShowScheduleDialog] = useState(false)
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col sm:flex-row bg-primary-gradient  space-y-4 justify-between p-4 shadow-lg rounded-lg">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Interviews</h1>
-        <p className="text-muted-foreground">Manage and track all your interviews</p>
+        <h1 className="text-3xl text-white font-bold tracking-tight">Interviews</h1>
+        <p className="text-white">Manage and track all your interviews</p>
       </div>
       <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
         <DialogTrigger asChild>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Schedule Interview
+          <Button variant="secondary">
+            <Eye className="mr-2 h-4 w-4" />
+            View Results
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">

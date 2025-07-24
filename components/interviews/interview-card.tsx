@@ -40,6 +40,7 @@ import {
   XCircle,
   RotateCcw,
   MoreVertical,
+  LocateIcon,
   ExternalLink,
   Timer,
   Star,
@@ -79,6 +80,13 @@ export function InterviewCard({
 }: InterviewCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
+
+  const hue = Math.floor(Math.random() * 360);
+  const avatarBgColor = `hsl(${hue}, 90%, 85%)`;
+  const avatarTextColor = `hsl(${hue}, 40%, 40%)`;
+  const borderColor = `hsl(${hue}, 90%, 85%)`;
+
+
   const statusConfig = useMemo(() => {
     const configs = {
       SCHEDULED: {
@@ -113,36 +121,37 @@ export function InterviewCard({
   const typeConfig = useMemo(() => {
     const configs = {
       VIDEO: {
-        color: "bg-gradient-to-r from-blue-500 to-blue-600",
-        icon: <Video className="h-4 w-4" />,
+        color: "text-sky-400",
+        icon: <Video className="h-8 w-8" />,
         label: "Video",
       },
       PHONE: {
-        color: "bg-gradient-to-r from-green-500 to-green-600",
+        color: "text-green-400",
         icon: <Phone className="h-4 w-4" />,
         label: "Phone",
       },
       IN_PERSON: {
-        color: "bg-gradient-to-r from-purple-500 to-purple-600",
+        color: "text-purple-400",
         icon: <MapPin className="h-4 w-4" />,
         label: "In Person",
       },
       PANEL: {
-        color: "bg-gradient-to-r from-orange-500 to-orange-600",
+        color: "text-orange-400",
         icon: <Users className="h-4 w-4" />,
         label: "Panel",
       },
       TECHNICAL: {
-        color: "bg-gradient-to-r from-indigo-500 to-indigo-600",
+        color: "text-indigo-400",
         icon: <Brain className="h-4 w-4" />,
         label: "Technical",
       },
       BEHAVIORAL: {
-        color: "bg-gradient-to-r from-pink-500 to-pink-600",
+        color: "text-pink-400",
         icon: <Heart className="h-4 w-4" />,
         label: "Behavioral",
       },
-    }
+    };
+
     return configs[interview.interviewType as keyof typeof configs] || configs.VIDEO
   }, [interview.interviewType])
 
@@ -194,14 +203,22 @@ export function InterviewCard({
 
   return (
     <TooltipProvider>
-      <Card className="group hover:shadow-lg transition-all duration-200 border-l-4 border-l-blue-500 cursor-pointer">
-        <CardContent className="p-5">
+      <Card className="flex w-full group hover:shadow-lg transition-all duration-200 border-l-4 cursor-pointer" style={{ borderLeftColor: borderColor }}>
+        <CardContent className="p-4 w-11/12">
+             <div className=" flex justify-end items-center gap-2 flex-shrink-0  sm:hidden">
+                    <Badge className={cn("text-xs font-medium", statusConfig.color, statusConfig.pulse && "animate-pulse")}>
+                      {statusConfig.icon}
+                      <span className="ml-1">{interview.status.replace("_", " ")}</span>
+                    </Badge>
+
+
+                  </div>
           {/* Header */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3 flex-1" onClick={() => onViewDetails(interview)}>
-              <div className="relative">
-                <Avatar className="h-12 w-12 ring-2 ring-white shadow-sm">
-                  <AvatarFallback className={cn("text-white font-semibold", typeConfig.color)}>
+          <div className="flex flex-col sm:flex-row items-start justify-between py-2 gap-4">
+            <div className="flex items-center gap-3 w-full lg:w-2/3 mb-4 sm:mb-0 " onClick={() => onViewDetails(interview)}>
+              <div className="relative ">
+                <Avatar className="h-12 sm:h-16 w-12 sm:w-16 ring-2 ring-white shadow-sm">
+                  <AvatarFallback className={cn("text-white font-semibold")} style={{ backgroundColor: avatarBgColor, color: avatarTextColor }}>
                     {getInitials(interview.candidateName)}
                   </AvatarFallback>
                 </Avatar>
@@ -215,6 +232,14 @@ export function InterviewCard({
                   <h3 className="font-semibold text-lg text-gray-900 group-hover:text-blue-600 transition-colors truncate">
                     {interview.candidateName}
                   </h3>
+                  <div className=" justify-end items-center gap-2 flex-shrink-0 hidden sm:block">
+                    <Badge className={cn("text-xs font-medium", statusConfig.color, statusConfig.pulse && "animate-pulse")}>
+                      {statusConfig.icon}
+                      <span className="ml-1">{interview.status.replace("_", " ")}</span>
+                    </Badge>
+
+
+                  </div>
                   {interview.feedback?.rating && interview.feedback.rating >= 4 && (
                     <Tooltip>
                       <TooltipTrigger>
@@ -228,146 +253,152 @@ export function InterviewCard({
                 </div>
                 <p className="text-sm text-gray-600 truncate">{interview.jobTitle}</p>
               </div>
+
+            </div>
+            {/* Interview Info */}
+            <div className="grid sm:grid-cols-2 gap-4 mb-4 sm:mb-0 w-full lg:w-1/3">
+              <div className="flex flex-col items-start ">
+                <div className={cn(" rounded-full text-white", typeConfig.color)}>{typeConfig.icon}</div>
+                <span className="text-sm font-medium text-gray-700">{typeConfig.label}</span>
+              </div>
+              <div className="flex flex-row sm:flex-col items-center gap-2">
+
+                <div className="flex  items-center gap-2">
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  <span className={cn("text-sm font-medium", timeInfo.color)}>{timeInfo.label}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-700">{timeInfo.time}</span>
+                </div>
+              </div>
+
+
             </div>
 
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge className={cn("text-xs font-medium", statusConfig.color, statusConfig.pulse && "animate-pulse")}>
-                {statusConfig.icon}
-                <span className="ml-1">{interview.status.replace("_", " ")}</span>
-              </Badge>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-
-                  <DropdownMenuItem onClick={() => onViewDetails(interview)}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Details
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                      <Target className="mr-2 h-4 w-4" />
-                      Update Status
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent>
-                      {interview.status === "SCHEDULED" && (
-                        <>
-                          <DropdownMenuItem onClick={() => onStatusUpdate(interview.id, "COMPLETED")}>
-                            <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                            Mark Complete
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onStatusUpdate(interview.id, "NO_SHOW")}>
-                            <AlertCircle className="mr-2 h-4 w-4 text-orange-600" />
-                            Mark No Show
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onStatusUpdate(interview.id, "CANCELLED")}>
-                            <XCircle className="mr-2 h-4 w-4 text-red-600" />
-                            Cancel
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuSubContent>
-                  </DropdownMenuSub>
-
-                  {interview.status === "SCHEDULED" && (
-                    <DropdownMenuItem onClick={() => onReschedule(interview)}>
-                      <RotateCcw className="mr-2 h-4 w-4 text-blue-600" />
-                      Reschedule
-                    </DropdownMenuItem>
-                  )}
-
-                  {interview.status === "COMPLETED" && !interview.feedback && (
-                    <DropdownMenuItem onClick={() => onAddFeedback(interview)}>
-                      <MessageSquare className="mr-2 h-4 w-4 text-purple-600" />
-                      Add Feedback
-                    </DropdownMenuItem>
-                  )}
-
-                  <DropdownMenuSeparator />
-
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Share
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent>
-                      <DropdownMenuItem onClick={() => copyToClipboard(interview.candidateEmail)}>
-                        <Mail className="mr-2 h-4 w-4" />
-                        Copy Email
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => copyToClipboard(interview.meetingLink || "")}>
-                        <Copy className="mr-2 h-4 w-4" />
-                        Copy Meeting Link
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Download className="mr-2 h-4 w-4" />
-                        Export
-                      </DropdownMenuItem>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuSub>
-
-                  <DropdownMenuItem onClick={() => onReschedule(interview)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-
-                  <DropdownMenuSeparator />
-
-                  <DropdownMenuItem
-                    onClick={() => setShowDeleteDialog(true)}
-                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
           </div>
 
-          {/* Interview Info */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="flex items-center gap-2">
-              <div className={cn("p-1.5 rounded-full text-white", typeConfig.color)}>{typeConfig.icon}</div>
-              <span className="text-sm font-medium text-gray-700">{typeConfig.label}</span>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-gray-500" />
-              <span className={cn("text-sm font-medium", timeInfo.color)}>{timeInfo.label}</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-700">{timeInfo.time}</span>
-            </div>
-          </div>
 
           {/* Quick Info */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <Timer className="h-4 w-4" />
-                <span>{interview.duration}min</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                <span>
-                  {interview.interviewers.length} interviewer{interview.interviewers.length !== 1 ? "s" : ""}
-                </span>
-              </div>
+
+          <div className="grid grid-cols-2 sm:flex sm:items-start  text-xs sm:text-sm text-gray-600 gap-2 sm:gap-4">
+            <div className="flex items-center gap-1">
+              <LocateIcon className="h-4 w-4" />
+              <span className="text-primary">{interview.location}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Timer className="h-4 w-4" />
+              <span className="text-primary">{interview.duration}min</span>
+            </div>
+            <div className="flex items-center gap-1 col-span-2 sm:col-auto">
+              <Users className="h-4 w-4" />
+              <span className="text-primary">
+                {interview.interviewers.length} interviewer{interview.interviewers.length !== 1 ? "s" : ""}
+              </span>
             </div>
 
-        
+
+
           </div>
         </CardContent>
+        <div className="flex w-1/12 justify-center items-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100 ">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem onClick={() => onViewDetails(interview)}>
+                <Eye className="mr-2 h-4 w-4" />
+                View Details
+              </DropdownMenuItem>
+
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Target className="mr-2 h-4 w-4" />
+                  Update Status
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {interview.status === "SCHEDULED" && (
+                    <>
+                      <DropdownMenuItem onClick={() => onStatusUpdate(interview.id, "COMPLETED")}>
+                        <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                        Mark Complete
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onStatusUpdate(interview.id, "NO_SHOW")}>
+                        <AlertCircle className="mr-2 h-4 w-4 text-orange-600" />
+                        Mark No Show
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onStatusUpdate(interview.id, "CANCELLED")}>
+                        <XCircle className="mr-2 h-4 w-4 text-red-600" />
+                        Cancel
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+
+              {interview.status === "SCHEDULED" && (
+                <DropdownMenuItem onClick={() => onReschedule(interview)}>
+                  <RotateCcw className="mr-2 h-4 w-4 text-blue-600" />
+                  Reschedule
+                </DropdownMenuItem>
+              )}
+
+              {interview.status === "COMPLETED" && !interview.feedback && (
+                <DropdownMenuItem onClick={() => onAddFeedback(interview)}>
+                  <MessageSquare className="mr-2 h-4 w-4 text-purple-600" />
+                  Add Feedback
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem onClick={() => copyToClipboard(interview.candidateEmail)}>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Copy Email
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => copyToClipboard(interview.meetingLink || "")}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy Meeting Link
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Download className="mr-2 h-4 w-4" />
+                    Export
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+
+              <DropdownMenuItem onClick={() => onReschedule(interview)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
       </Card>
 
       {/* Delete Dialog */}
@@ -394,6 +425,6 @@ export function InterviewCard({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </TooltipProvider>
+    </TooltipProvider >
   )
 }

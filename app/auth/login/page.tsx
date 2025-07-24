@@ -5,6 +5,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useDispatch, useSelector } from 'react-redux';
 import { login } from "@/lib/slices/login-slice" // path to your login thunk
+import { MdOutlineEmail, MdLockOutline} from "react-icons/md";
+import { SlEnvolope } from "react-icons/sl";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,6 +18,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { AppDispatch } from "@/lib/store"
+import AuthNavbar from "@/components/auth-navbar/page"
+import { FaArrowLeft } from "react-icons/fa";
 
 export default function LoginPage() {
   const router = useRouter()
@@ -42,83 +46,108 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div className="flex justify-center">
-          <Link href="/" className="flex items-center gap-2">
-            <Logo />
-            <span className="text-2xl font-bold text-primary">HireIn</span>
-          </Link>
+    <>
+      <div>
+        <AuthNavbar />
+      </div>
+      <div className="flex flex-col  min-h-screen items-center  bg-gradient-to-r from-[#63A7D4] to-[#F295BE] px-4 ">
+       <div className="flex container  pt-24 py-12  w-full">
+              <button
+              onClick={() => router.push("/")}
+              className="flex items-center gap-2 text-white text-sm font-medium hover:underline"
+            >
+              <FaArrowLeft /> back to home
+            </button>
         </div>
+        
+        <div className="flex flex-col md:flex-row w-full container lg:max-w-5xl 2xl:max-w-6xl border-8  bg-white shadow-lg rounded-3xl overflow-hidden">
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center text-2xl">Sign in to your account</CardTitle>
-            <CardDescription className="text-center">
-              Enter your email and password to access your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
-                    Forgot password?
+          {/* Left Side Image */}
+          <div className="hidden md:flex w-1/2  ">
+            <img
+              src="../images/auth/hiring.webp"
+              alt="Hiring By AI"
+              className="object-contain h-auto "
+            />
+          </div>
+
+          {/* Right Side Form */}
+          <div className="flex w-full md:w-1/2 h-auto ">
+            <div className="shadow-none border-none  m-auto  ">
+              <CardHeader>
+                <CardTitle className="text-center text-2xl lg:text-3xl">Welcome Back</CardTitle>
+                <CardDescription className="font-medium lg:text-md mt-4 text-center">
+                  Enter your email and password to access your account
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4  lg:space-y-8">
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="font-normal">Email</Label>
+                    <div className="relative">
+                      <MdOutlineEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="pl-10" // Padding-left for the icon
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password" className="font-normal">Password</Label>
+                      <Link href="/auth/forgot-password" className="text-sm font-light text-primary hover:underline">
+                        Forgot password?
+                      </Link>
+                    </div>
+                    <div className="relative">
+                      <MdLockOutline className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="pl-10" // Padding-left for the icon
+                      />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="text-sm text-red-600">
+                      {error}
+                    </div>
+                  )}
+
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Signing In..." : "Sign In"}
+                  </Button>
+                </form>
+
+                <div className="mt-4 lg:mt-8 text-center font-light text-sm lg:text-md">
+                  Don&apos;t have an account?{" "}
+                  <Link href="/auth/register" className="text-primary hover:underline">
+                    Sign Up
                   </Link>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              {error && (
-                <div className="text-sm text-red-600">
-                  {error}
-                </div>
-              )}
-
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Signing in..." : "Sign in"}
-              </Button>
-            </form>
-
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link href="/auth/register" className="text-primary hover:underline">
-                Sign up
-              </Link>
+              </CardContent>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+
       </div>
-    </div>
+    </>
+
   )
 }
 
-function Logo() {
-  return (
-    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="4" y="4" width="8" height="8" rx="2" fill="#FF5A5A" />
-      <rect x="4" y="14" width="8" height="8" rx="2" fill="#5A9CFF" />
-      <rect x="4" y="24" width="8" height="8" rx="2" fill="#FFB800" />
-      <rect x="14" y="4" width="18" height="28" rx="2" fill="#0CC5B9" />
-    </svg>
-  )
-}
+
