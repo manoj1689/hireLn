@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import CameraFeed from "@/components/interview/CameraFeed";
+
 import {
   HiMiniVideoCamera,
   HiMiniVideoCameraSlash,
@@ -18,6 +18,12 @@ import {
   FiCheckCircle,
   FiCamera,
 } from "react-icons/fi";
+import dynamic from 'next/dynamic';
+
+const CameraFeed = dynamic(() => import('@/components/interview/CameraFeed'), {
+  ssr: false,
+});
+
 
 export default function VideoInterfacePage({
   permissions,

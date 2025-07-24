@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import * as faceapi from 'face-api.js';
+import * as faceapi from '@vladmandic/face-api';
 import { toast, ToastContainer } from 'react-toastify';
 import Webcam from 'react-webcam';
 

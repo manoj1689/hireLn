@@ -1,7 +1,7 @@
 "use client"
 
 import React, { JSX, useEffect, useState } from "react"
-import { parse } from "bowser"
+import Bowser from "bowser" // ✅ Correct import
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Camera, Mic, Lock } from "lucide-react"
 
@@ -9,8 +9,9 @@ const BrowserInstructions = () => {
   const [browserName, setBrowserName] = useState("default")
 
   useEffect(() => {
-    const browser = parse(window.navigator.userAgent)
-    setBrowserName(browser.browser.name || "default")
+    const parser = Bowser.getParser(window.navigator.userAgent) // ✅ Updated usage
+    const name = parser.getBrowserName()
+    setBrowserName(name || "default")
   }, [])
 
   const InstructionCard = ({
