@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
-import { FaCheck } from 'react-icons/fa';
+
 import { postApplication } from '@/lib/slices/applicant/application-slice';
-import { AppDispatch, RootState } from '@/lib/store'; // Ensure you import the AppDispatch type
+import { AppDispatch, RootState } from '@/lib/store';
+import { Calendar, Clock, Video,MapPinned  } from 'lucide-react';
 
 interface JobData {
   id: string;
@@ -18,9 +19,14 @@ interface JobData {
   status: string;
   isRemote: boolean;
   isHybrid: boolean;
+  education?: string;
+  experience?: number;
 }
 
 interface CandidateData {
+  skills: string[] | string;
+  phone: string;
+  education: string;
   id: string;
   name: string;
   experience: number;
@@ -37,12 +43,16 @@ interface ApplicationModalProps {
   candidateData: CandidateData;
 }
 
-const ApplicationModal: React.FC<ApplicationModalProps> = ({ open, onClose, jobData, candidateData }) => {
-  const dispatch = useDispatch<AppDispatch>(); // Use the correct type for dispatch
+const ApplicationModal: React.FC<ApplicationModalProps> = ({
+  open,
+  onClose,
+  jobData,
+  candidateData,
+}) => {
+  const dispatch = useDispatch<AppDispatch>();
   const [loading, setLoading] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [responseData, setResponseData] = useState<any>(null); // State to store the response data
   const userId = useSelector((state: RootState) => state.auth);
 
   const handleSubmit = async () => {
@@ -50,15 +60,20 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ open, onClose, jobD
       try {
         const applicationData = {
           jobId: jobData.id,
-          candidateId: candidateData.id, // Corrected here
+          candidateId: candidateData.id,
           coverLetter,
-          userId: userId.user?.id || '', // Assuming `userId` exists in candidateData
+          userId: userId.user?.id || '',
           appliedAt: new Date().toISOString(),
         };
         setLoading(true);
-        const result = await dispatch(postApplication(applicationData)); // Dispatch and get result
-        setResponseData(result.payload); // Store the response data in state
+        await dispatch(postApplication(applicationData));
         setSubmitted(true);
+
+        setTimeout(() => {
+          setCoverLetter('');
+          setSubmitted(false);
+          onClose();
+        }, 1500);
       } catch (error) {
         console.error('Error submitting application:', error);
       } finally {
@@ -68,126 +83,192 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ open, onClose, jobD
   };
 
   return (
-    <Modal open={open} onClose={onClose} center classNames={{ modal: 'max-w-md rounded-lg' }}>
-      <div className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Hire for Job</h2>
+    <Modal open={open} onClose={onClose} center classNames={{ modal: 'max-w-3xl rounded-2xl' }}>
+      <div className="p-4">
+        <h2 className="text-xl font-semibold text-center mb-4">Invite Candidate</h2>
 
         {loading ? (
-          <p>Loading...</p>
+          <p className="text-center">Submitting...</p>
         ) : (
           <>
-            {/* Candidate Info */}
-            <div className="text-center sm:text-left w-full sm:w-auto mb-6">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{candidateData.name || 'N/A'}</h1>
-              <p className="text-base sm:text-lg text-gray-600 mt-1">
-                {candidateData.experience ? `${candidateData.experience} years experience` : 'Experience not specified'}
-              </p>
-              <div className="flex flex-col sm:flex-row sm:items-center mt-2 text-sm text-gray-500 space-y-1 sm:space-y-0">
-                <div className="flex items-center justify-center sm:justify-start">
-                  <i className="fas fa-map-marker-alt mr-2"></i>
-                  <span>{candidateData.location || 'Location not specified'}</span>
+            {/* Candidate Header */}
+            <div className="flex items-center justify-between bg-white rounded-t-xl px-6 pt-6 pb-4">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-semibold text-stone-600">
+                  {candidateData.name
+                    .split(' ')
+                    .map((n: string) => n[0])
+                    .join('')
+                    .toUpperCase()}
                 </div>
-                {candidateData.email && (
-                  <>
-                    <span className="hidden sm:inline mx-3">•</span>
-                    <div className="flex items-center justify-center sm:justify-start">
-                      <i className="fas fa-envelope mr-2"></i>
-                      <span className="truncate max-w-xs">{candidateData.email}</span>
-                    </div>
-                  </>
-                )}
+                <div>
+                  <h1 className="text-lg font-bold text-gray-900">{candidateData.name}</h1>
+                  <p className="text-sm text-gray-500">
+                    {candidateData.education || 'Degree info not available'}
+                  </p>
+                  <p className="text-xs text-gray-400">{candidateData.location}</p>
+                </div>
               </div>
-              {candidateData.salaryExpectation && (
-                <div className="flex items-center justify-center sm:justify-start mt-2 text-sm text-gray-500">
-                  <i className="fas fa-dollar-sign mr-2"></i>
-                  <span>Expected: ${candidateData.salaryExpectation.toLocaleString()}</span>
-                </div>
-              )}
+              <div className="flex flex-col items-end">
+                <span className="text-xl font-bold text-gray-900">
+                  ₹{candidateData.salaryExpectation}
+                </span>
+                <span className="text-xs text-gray-500">Salary Expectation /yr</span>
+              </div>
+            </div>
+
+            {/* Skills */}
+            <div className="mt-2 flex flex-wrap gap-2">
+              {(Array.isArray(candidateData.skills)
+                ? candidateData.skills
+                : String(candidateData.skills).split(',')
+              ).map((skill: string, idx: number) => {
+                const hue = 180 + (idx * 40) % 360;
+                return (
+                  <span
+                    key={idx}
+                    className="px-3 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      background: `hsl(${hue}, 80%, 85%)`,
+                      color: `hsl(${hue}, 60%, 35%)`,
+                      border: `1px solid hsl(${hue}, 60%, 70%)`,
+                    }}
+                  >
+                    {skill.trim()}
+                  </span>
+                );
+              })}
             </div>
 
             {/* Job Info */}
-            {jobData && (
-              <div className="bg-[#e0f8f5] shadow-sm rounded-lg p-6 mb-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Job Details</h2>
-                <div className="space-y-4">
+            <h2 className="text-lg font-medium text-gray-900 mt-6 mb-4">Job Details</h2>
+            <div className='flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50 p-4 rounded-lg shadow-sm'>
+              <div className="flex flex-col">
+                <h3 className="text-neutral-700 font-bold text-2xl">{jobData.title}</h3>
+                <p className="text-sm text-sky-400 italic">{jobData.education}</p>
+                <p className="text-lg text-gray-500">{jobData.department}</p>
+              </div>
+
+              <div className="mt-2 space-y-1 text-sm text-end">
+                {jobData.status && (
                   <div>
-                    <h3 className="text-md font-medium text-gray-900">{jobData.title}</h3>
-                    <p className="text-sm text-gray-600">{jobData.department}</p>
+                    <span className="font-medium bg-rose-400 px-2 py-1 rounded-full text-white text-sm">
+                      {jobData.status}
+                    </span>
+                  </div>
+                )}
+                {jobData.salaryMin && jobData.salaryMax && (
+                  <p>
+                    <span className="font-semibold text-sky-500 text-lg">
+                      ₹{jobData.salaryMin}–₹{jobData.salaryMax}
+                    </span>
+                    {jobData.salaryPeriod && ` / ${jobData.salaryPeriod}`}
+                  </p>
+                )}
+              </div>
+            </div>
+
+
+            {/* Info Cards Without .map */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
+              {/* Type */}
+              <div className="bg-red-100 rounded-xl py-4">
+
+                <div className="px-4 flex flex-col   items-center text-center">
+                  <Video className="w-10 h-10 text-red-400 mb-2" />
+                  <div>
+                    <p className="text-xs text-stone-400">Work Mode</p>
+                    <p className="text-sm font-semibold text-stone-500 capitalize">
+                      {jobData.isRemote
+                        ? 'Remote'
+                        : jobData.isHybrid
+                          ? 'Hybrid'
+                          : 'On-site'}
+                    </p>
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-center text-sm">
-                      <i className="fas fa-map-marker-alt mr-3 text-gray-400 flex-shrink-0"></i>
-                      <span className="text-gray-700">{jobData.location}</span>
-                    </div>
-
-                    <div className="flex items-center text-sm">
-                      <i className="fas fa-briefcase mr-3 text-gray-400 flex-shrink-0"></i>
-                      <span className="text-gray-700">{jobData.employmentType?.replace('_', ' ')}</span>
-                    </div>
-
-                    {jobData.salaryMin && jobData.salaryMax && (
-                      <div className="flex items-center text-sm">
-                        <i className="fas fa-dollar-sign mr-3 text-gray-400 flex-shrink-0"></i>
-                        <span className="text-gray-700">
-                          ${jobData.salaryMin.toLocaleString()} - ${jobData.salaryMax.toLocaleString()}
-                          {jobData.salaryPeriod && ` ${jobData.salaryPeriod}`}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center text-sm">
-                      <i className="fas fa-calendar-alt mr-3 text-gray-400 flex-shrink-0"></i>
-                      <span className="text-gray-700">Status: {jobData.status}</span>
-                    </div>
-
-                    {(jobData.isRemote || jobData.isHybrid) && (
-                      <div className="flex items-center text-sm">
-                        <i className="fas fa-home mr-3 text-gray-400 flex-shrink-0"></i>
-                        <span className="text-gray-700">
-                          {jobData.isHybrid ? 'Hybrid' : jobData.isRemote ? 'Remote' : 'On-site'}
-                        </span>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
-            )}
 
-            {/* Cover Letter Section */}
-            <div className="bg-[#f8f9fa] p-6 rounded-lg shadow-sm">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Cover Letter</h2>
+              {/* Info */}
+              <div className="bg-green-100 rounded-xl py-4">
+
+                <div className="px-4 flex flex-col   items-center text-center">
+
+                  <Calendar className="w-10 h-10 text-green-400 mb-2" />
+                  <div >
+                    <p className="text-xs text-stone-400">Status</p>
+                    <p className="text-sm font-semibold text-stone-500 capitalize">
+                      {jobData.status || 'N/A'}
+                    </p>
+
+                  </div>
+
+
+                </div>
+              </div>
+
+              {/* Time */}
+              <div className="bg-blue-100 rounded-xl py-4">
+
+                <div className="px-4 flex flex-col  items-center text-center">
+
+                  <Clock className="w-10 h-10 text-blue-400 mb-2" />
+                  <div >
+                    <p className="text-xs text-stone-400">Duration</p>
+                    <p className="text-sm font-semibold text-stone-500 capitalize">
+                      {jobData.employmentType === 'FULL_TIME'
+                        ? 'Full Time'
+                        : 'Part Time'}
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className='bg-orange-100 rounded-xl py-4'>
+
+                <div className="px-4 flex flex-col   items-center text-center">
+                  <MapPinned className="w-10 h-10 text-orange-400 mb-2" />
+                  <div>
+                    <p className="text-xs text-stone-400">City</p>
+                    <p className="text-sm font-semibold text-stone-500">
+                      {jobData.location || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            {/* Cover Letter */}
+            <div className='space-y-4 mt-4'>
+              <h2 className="text-lg font-medium text-neutral-700 ">Cover Letter</h2>
               <textarea
                 id="coverLetter"
                 value={coverLetter}
                 onChange={(e) => setCoverLetter(e.target.value)}
-                className="mt-1 p-2 w-full border rounded-md"
+                className="mt-1 p-2 w-full border-2 border-dashed border-sky-200 bg-stone-100 rounded-md outline-none"
                 rows={4}
                 placeholder="Write your cover letter here"
               />
             </div>
 
             {/* Submit Button */}
-            {!submitted ? (
+            <div className='flex justify-center '>
               <button
                 onClick={handleSubmit}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 mt-6"
+                disabled={loading}
+                className="inline-flex items-center px-4 py-2  border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-gradient mt-6"
               >
                 {loading ? 'Submitting...' : 'Submit Application'}
               </button>
-            ) : (
-              // Displaying the response data after successful submission
-              <div className="text-green-600 mt-4">
-                <FaCheck className="mr-2" />
-                <span>Application Submitted Successfully</span>
-                <div className="mt-4 text-sm text-gray-700">
-                  <p><strong>Application ID:</strong> {responseData?.id}</p>
-                  <p><strong>Status:</strong> {responseData?.status}</p>
-                  <p><strong>Match Score:</strong> {responseData?.matchScore || 'N/A'}</p>
-                  <p><strong>Notes:</strong> {responseData?.notes || 'No notes available'}</p>
-                </div>
-              </div>
-            )}
+            </div>
+
           </>
         )}
       </div>

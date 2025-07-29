@@ -85,18 +85,19 @@ export default function MatchedCandidateModal({ jobId, openModal, closeModal }: 
                   <div className="flex flex-wrap gap-1 max-w-96">
                     {(Array.isArray(candidate.skills) ? candidate.skills : String(candidate.skills).split(",")).map(
                       (skill: string, index: number) => {
-                        const hue = Math.floor(Math.random() * 360);
-                        const bgColor = `hsl(${hue}, 90%, 90%)`;
-                        const textColor = `hsl(${hue}, 90%, 30%)`;
-                        return (
-                          <span
-                            key={index}
-                            className="px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
-                            style={{ backgroundColor: bgColor, color: textColor }}
-                          >
-                            {skill.trim()}
-                          </span>
-                        );
+                         const hue = Math.floor(Math.random() * 360);
+                              const bgColor = `hsl(${hue}, 90%, 85%)`;
+                              const textColor = `hsl(${hue},90%, 30%)`;
+
+                              return (
+                                <span
+                                  key={index}
+                                  className="px-2 py-0.5 rounded-full text-xs font-normal"
+                                  style={{ backgroundColor: bgColor, color: textColor }}
+                                >
+                                  {skill.trim()}
+                                </span>
+                              );
                       }
                     )}
                   </div>

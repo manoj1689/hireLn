@@ -229,7 +229,7 @@ export function InterviewCard({
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-lg text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                  <h3 className="font-semibold text-lg text-neutral-700 group-hover:text-blue-600 transition-colors truncate">
                     {interview.candidateName}
                   </h3>
                   <div className=" justify-end items-center gap-2 flex-shrink-0 hidden sm:block">

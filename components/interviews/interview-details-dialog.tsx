@@ -30,6 +30,8 @@ import {
   Heart,
   Target,
   TrendingUp,
+  Sparkles,
+  BarChart,
 } from "lucide-react"
 import { format, formatDistanceToNow } from "date-fns"
 import { useMemo } from "react"
@@ -135,16 +137,17 @@ export function InterviewDetailsDialog({ open, onOpenChange, interview }: Interv
   }
 
   if (!interview) return null
-
+  console.log("view interview details", interview)
   return (
     <Dialog open={open} onOpenChange={onOpenChange} >
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="max-w-4xl max-h-screen overflow-y-auto p-0">
+
 
 
         <div className="space-y-6">
 
           {/* Header Section */}
-          <div className=" bg-primary-gradient  ">
+          <div className=" bg-primary-gradient">
 
             <DialogHeader>
               <DialogTitle className="text-xl font-medium text-white text-center py-4">Interview Details</DialogTitle>
@@ -152,15 +155,15 @@ export function InterviewDetailsDialog({ open, onOpenChange, interview }: Interv
 
 
             <div className="flex justify-between p-4 ">
-              <div className="flex gap-4">
-                <Avatar className="h-20 w-20  shadow-xl">
-                  <AvatarFallback className={cn("text-white font-bold text-2xl")} style={{ backgroundColor: avatarBgColor, color: avatarTextColor }}>
+              <div className="flex gap-2 items-center ">
+                <Avatar className="h-16 w-16  shadow-xl">
+                  <AvatarFallback className={cn("text-white font-bold text-xl")} style={{ backgroundColor: avatarBgColor, color: avatarTextColor }}>
                     {getInitials(interview.candidateName)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="gap-4 ">
-                  <div className="flex  items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-bold text-white">{interview.candidateName}</h2>
+                <div className=" space-y-1 ">
+                  <div className="flex  items-center ">
+                    <h2 className="text-xl font-bold text-white">{interview.candidateName}</h2>
                     {interview.feedback?.rating && interview.feedback.rating >= 4 && (
                       <Award className="h-6 w-6 text-yellow-500" />
                     )}
@@ -168,7 +171,7 @@ export function InterviewDetailsDialog({ open, onOpenChange, interview }: Interv
                   <p className="text-white mb-2">{interview.candidateEmail}</p>
                   <div className="flex items-center gap-2">
                     <Building className="h-5 w-5 text-white" />
-                    <span className="font-semibold" style={{  color: avatarTextColor }}>{interview.jobTitle}</span>
+                    <span className="font-semibold" style={{ color: avatarTextColor }}>{interview.jobTitle}</span>
                   </div>
                 </div>
 
@@ -190,140 +193,138 @@ export function InterviewDetailsDialog({ open, onOpenChange, interview }: Interv
           </div>
 
           {/* Interview Type & Schedule */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Interview Information</h3>
+          <div className="space-y-2 px-4">
+            <h3 className="text-lg font-semibold text-neutral-700">Interview Information</h3>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className={cn("p-2 rounded-full text-white", typeConfig.color)}>{typeConfig.icon}</div>
-                  <div>
-                    <p className="font-medium text-gray-900">{typeConfig.label}</p>
-                    <p className="text-sm text-gray-600">Interview Type</p>
-                  </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Interview Type */}
+              <div className="bg-red-50 rounded-xl py-4">
+                <div className="flex justify-start">
+                  <span className="text-sm font-semibold bg-red-400 text-white px-2 py-1 rounded-r-lg mb-2">Type</span>
                 </div>
-
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {format(new Date(interview.scheduledAt), "EEEE, MMMM dd, yyyy")}
-                    </p>
-                    <p className="text-sm text-gray-600">Interview Date</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Clock className="h-5 w-5 text-purple-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {format(new Date(interview.scheduledAt), "HH:mm")} -{" "}
-                      {format(
-                        new Date(new Date(interview.scheduledAt).getTime() + interview.duration * 60000),
-                        "HH:mm",
-                      )}
-                    </p>
-                    <p className="text-sm text-gray-600">{interview.duration} minutes duration</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Timer className="h-5 w-5 text-orange-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">{interview.timezone || "UTC"}</p>
-                    <p className="text-sm text-gray-600">Timezone</p>
-                  </div>
+                <div className="px-4 flex flex-col items-center justify-center text-center">
+                  <Video className="w-16 h-16 text-red-400 mb-2" />
+                  <p className="text-sm text-stone-400 capitalize">
+                    {interview.interviewType === "VIDEO" ? "Live" : "Offline"}
+                  </p>
+                  <p className="text-lg font-semibold text-stone-400 capitalize">
+                    {interview.interviewType.replace("_", " ").toLowerCase().includes("video") ? "Video Call" : interview.interviewType}
+                  </p>
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Match Analysis</h3>
-
-              <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-medium text-green-800">Candidate Match Score</span>
-                  <span className="text-2xl font-bold text-green-600">{Math.round(matchScore)}%</span>
+              {/* Interview Date */}
+              <div className="bg-green-50 rounded-xl py-4">
+                <div className="flex justify-start">
+                  <span className="text-sm font-semibold bg-green-400 text-white px-2 py-1 rounded-r-lg mb-2">Date</span>
                 </div>
-                <Progress value={matchScore} className="h-3 mb-2" />
-                <p className="text-sm text-green-700">
-                  {matchScore >= 80
-                    ? "Excellent match for this position"
-                    : matchScore >= 60
-                      ? "Good match with potential"
-                      : "Moderate match, requires evaluation"}
-                </p>
+                <div className="px-4 flex flex-col items-center justify-center text-center">
+                  <Calendar className="w-16 h-16 text-green-400 mb-2" />
+                  <p className="text-sm text-stone-400">
+                    {format(new Date(interview.scheduledAt), "EEEE")}
+                  </p>
+                  <p className="text-lg font-semibold text-stone-400">
+                    {format(new Date(interview.scheduledAt), "MMMM dd, yyyy")}
+                  </p>
+                </div>
               </div>
 
-              {interview.feedback && (
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Target className="h-5 w-5 text-blue-600" />
-                    <span className="font-medium text-blue-800">Interview Completed</span>
-                  </div>
-                  <div className="flex items-center gap-1 mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={cn(
-                          "h-4 w-4",
-                          i < interview.feedback.rating ? "text-yellow-400 fill-current" : "text-gray-300",
-                        )}
-                      />
-                    ))}
-                    <span className="ml-2 font-bold text-blue-800">{interview.feedback.rating}/5</span>
-                  </div>
-                  <Badge className="bg-blue-100 text-blue-800">{interview.feedback.overallRecommendation}</Badge>
+              {/* Interview Time */}
+              <div className="bg-blue-50 rounded-xl py-4">
+                <div className="flex justify-start">
+                  <span className="text-sm font-semibold bg-blue-400 text-white px-2 py-1 rounded-r-lg mb-2">Time</span>
                 </div>
-              )}
+                <div className="px-4 flex flex-col items-center justify-center text-center">
+                  <Clock className="w-16 h-16 text-blue-400 mb-2" />
+                  <p className="text-sm text-stone-400">{interview.duration} Mins</p>
+                  <p className="text-lg font-semibold text-stone-400">
+                    {format(new Date(interview.scheduledAt), "HH:mm")} -{" "}
+                    {format(
+                      new Date(new Date(interview.scheduledAt).getTime() + interview.duration * 60000),
+                      "HH:mm"
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* Interview Location */}
+              <div className="bg-yellow-50 rounded-xl py-4">
+                <div className="flex justify-start">
+                  <span className="text-sm font-semibold bg-yellow-400 text-white px-2 py-1 rounded-r-lg mb-2">Location</span>
+                </div>
+                <div className="px-4 flex flex-col items-center justify-center text-center">
+                  <MapPin className="w-16 h-16 text-yellow-400 mb-2" />
+                  <p className="text-sm text-stone-400">{interview.location || "Not provided"}</p>
+                  <p className="text-lg font-semibold text-stone-400">{interview.timezone || "Asia/Kolkata"}</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <Separator />
+
+
+
+
+
+         
 
           {/* Interview Panel */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-gray-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Interview Panel</h3>
-              <Badge variant="secondary">
-                {interview.interviewers.length} interviewer{interview.interviewers.length !== 1 ? "s" : ""}
-              </Badge>
-            </div>
+          <div className="space-y-2 px-4">
+            <h3 className="text-lg font-semibold text-neutral-700">Interviewer Panel</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {interview.interviewers.map((interviewer, index) => (
-                <div key={index} className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-gradient-to-br from-gray-400 to-gray-600 text-white font-semibold">
+            {interview.interviewers.map((interviewer, index) => (
+              <div key={index} className="rounded-xl bg-gray-50 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                {/* Left: Avatar + Info */}
+                <div className="flex items-center gap-4">
+                  {interviewer.avatar ? (
+                    <img
+                      src={interviewer.avatar}
+                      alt={interviewer.name}
+                      className="w-14 h-14 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 text-white font-semibold flex items-center justify-center">
                       {getInitials(interviewer.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">{interviewer.name}</p>
-                    <p className="text-sm text-gray-600">{interviewer.role}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Mail className="h-3 w-3 text-gray-400" />
-                      <span className="text-xs text-gray-500">{interviewer.email}</span>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 w-6 p-0"
-                        onClick={() => copyToClipboard(interviewer.email)}
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
+                    </div>
+                  )}
+
+                  <div>
+                    <p className="font-semibold text-gray-900 capitalize">{interviewer.name}</p>
+                    <p className="text-sm text-gray-500">{interviewer.role || "🎓 AI Interviewer"}</p>
+
+                    {/* Tags — optional static skills (or make dynamic if needed) */}
+                    <div className="flex gap-2 mt-2 flex-wrap">
+                      <span className="text-xs px-2 py-1 rounded-full bg-red-200 text-red-700 font-medium">Communication</span>
+                      <span className="text-xs px-2 py-1 rounded-full bg-blue-200 text-blue-700 font-medium">Problem Solving</span>
+                      <span className="text-xs px-2 py-1 rounded-full bg-purple-200 text-purple-700 font-medium">Technical Skills</span>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Right: Features */}
+                <div className="flex flex-col gap-1 sm:gap-2 text-sm text-zinc-700 font-light">
+                  <div className="flex items-center gap-1">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Automated Q&A</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <BarChart className="w-4 h-4" />
+                    <span>Tailored based on job profile</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <FileText className="w-4 h-4" />
+                    <span>Real-time evaluation</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <Separator />
+
+      
 
           {/* Meeting Details */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4 px-4">
             <h3 className="text-lg font-semibold text-gray-900">Meeting Details</h3>
 
             {interview.meetingLink && (
@@ -358,10 +359,10 @@ export function InterviewDetailsDialog({ open, onOpenChange, interview }: Interv
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* Feedback Section */}
-          {interview.feedback && (
+          {/* {interview.feedback && (
             <>
               <Separator />
               <div className="space-y-4">
@@ -417,18 +418,18 @@ export function InterviewDetailsDialog({ open, onOpenChange, interview }: Interv
                 )}
               </div>
             </>
-          )}
+          )} */}
 
           {/* Notes */}
           {interview.notes && (
             <>
-              <Separator />
-              <div className="space-y-4">
+       
+              <div className="space-y-2 px-4">
                 <div className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-amber-600" />
-                  <h3 className="text-lg font-semibold text-gray-900">Notes</h3>
+                  <h3 className="text-lg font-semibold text-neutral-700">Notes</h3>
                 </div>
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="p-4 bg-amber-50 border-dashed border-2 border-amber-200 rounded-lg">
                   <p className="text-amber-800 whitespace-pre-wrap">{interview.notes}</p>
                 </div>
               </div>
@@ -436,20 +437,20 @@ export function InterviewDetailsDialog({ open, onOpenChange, interview }: Interv
           )}
 
           {/* Timeline */}
-          <Separator />
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Timeline</h3>
-            <div className="space-y-3">
+       
+      
+          <Separator/>
+            <div className="flex justify-between px-4 py-2">
               <div className="flex items-center gap-3 text-sm">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                 <span className="text-gray-600">Created</span>
-                <span className="font-medium">{format(new Date(interview.createdAt), "MMM dd, yyyy 'at' HH:mm")}</span>
+                <span className="font-medium text-gray-400">{format(new Date(interview.createdAt), "MMM dd, yyyy 'at' HH:mm")}</span>
               </div>
               {interview.updatedAt !== interview.createdAt && (
                 <div className="flex items-center gap-3 text-sm">
                   <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                   <span className="text-gray-600">Last updated</span>
-                  <span className="font-medium">
+                  <span className="font-medium text-gray-400">
                     {formatDistanceToNow(new Date(interview.updatedAt), { addSuffix: true })}
                   </span>
                 </div>
@@ -457,7 +458,7 @@ export function InterviewDetailsDialog({ open, onOpenChange, interview }: Interv
               {interview.feedback && (
                 <div className="flex items-center gap-3 text-sm">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-gray-600">Feedback submitted</span>
+                  <span className="text-gray-400">Feedback submitted</span>
                   <span className="font-medium">
                     {format(new Date(interview.feedback.submittedAt), "MMM dd, yyyy 'at' HH:mm")}
                   </span>
@@ -465,8 +466,7 @@ export function InterviewDetailsDialog({ open, onOpenChange, interview }: Interv
               )}
             </div>
           </div>
-        </div>
-      </DialogContent>
+           </DialogContent>
     </Dialog>
   )
 }
