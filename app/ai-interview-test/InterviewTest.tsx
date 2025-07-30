@@ -25,6 +25,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "@/lib/store"
 import dayjs from "dayjs"
 import VideoInterfacePage from "@/components/interview/videoInterface"
+import InterviewCard from "./interviewDetails"
 import { startInterview } from "@/lib/slices/join_interview/interview-join-slice"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
@@ -217,13 +218,13 @@ export default function InterviewConfirmation() {
                     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between items-center h-16">
                             <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                                    <Brain className="w-5 h-5 text-white" />
-                                </div>
-                                <div>
-                                    <h1 className="text-lg font-semibold text-gray-900">HireLn</h1>
-                                    <p className="text-xs text-gray-500">Smart Interview Platform</p>
-                                </div>
+
+                                <img
+                                    src="/images/logo/company-logo.png"
+                                    alt="Company Logo"
+                                    className="w-28"
+                                />
+
                             </div>
                             <div className="flex items-center space-x-3">
                                 <Button
@@ -239,14 +240,14 @@ export default function InterviewConfirmation() {
                         </div>
                     </div>
                 </header>
-                    <main className="container mx-auto py-4 px-4 space-y-4 bg-gray-100 mt-4 rounded-lg">
+                    <main className="max-w-fit mx-auto py-4 px-4 space-y-4 bg-gray-100 mt-4 rounded-lg">
                         <section>
                             <Card className="bg-gradient-to-r from-sky-400 to-pink-400 rounded-xl shadow-md">
                                 <div className="flex justify-between items-center px-6 py-4 text-white text-sm sm:text-base font-medium">
                                     {/* Left Side: Job Title & Date */}
                                     <div>
                                         <p>
-                                            <span className="font-bold">Interview Setup:</span>{" "}
+                                         
                                             {interview.jobTitle}
                                         </p>
                                         <p className="text-sm sm:text-base">
@@ -274,39 +275,12 @@ export default function InterviewConfirmation() {
                         </section>
 
                         <section className="flex flex-col lg:flex-row gap-4">
-                            <div className="flex-1 w-full h-auto lg:w-3/4 xl:w-3/5 space-y-4 justify-center items-center ">
+                            <div className="flex-1 w-full h-auto lg:w-3/4 xl:w-2/3 space-y-4 justify-center items-center ">
                                 <VideoInterfacePage permissions={permissions} setPermissions={setPermissions} faceDetectionResults={faceDetectionResults} setFaceDetectionResults={setFaceDetectionResults} examStatus={false} />
                             </div>
-                            <div className="w-full lg:w-1/4 xl:w-2/5 space-y-4">
-
-                                <Card className="bg-blue-50 shadow-md rounded-xl text-center  py-4 space-y-4">
-                                    <div className="flex justify-center">
-                                        <Avatar className="h-16 w-16">
-                                            <AvatarFallback className="bg-blue-200 text-white text-3xl">
-                                                {interview.candidateName.split(" ").map(word => word[0]).join("").toUpperCase()}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </div>
-
-                                    <CardTitle className="text-blue-700 text-sm font-semibold">
-                                        Candidate Information
-                                    </CardTitle>
-
-                                    <CardContent className="flex flex-col space-y-1 justify-center text-sm">
-                                        <p>
-                                            <span className="text-gray-500">Name:</span>{" "}
-                                            <span className="text-gray-800 font-medium">{interview.candidateName}</span>
-                                        </p>
-                                        <p>
-                                            <span className="text-gray-500">Email:</span>{" "}
-                                            <span className="text-gray-800 font-medium">{interview.candidateEmail}</span>
-                                        </p>
-                                        <p>
-                                            <span className="text-gray-500">Meeting:</span>{" "}
-                                            <span className="text-gray-800 font-medium">{interview.location}</span>
-                                        </p>
-                                    </CardContent>
-                                </Card>
+                            <div className="w-full lg:w-1/4 xl:w-1/3 space-y-4">
+                              <InterviewCard interview={interview}/>
+                              
 
 
                                 <div className="max-md:hidden">
@@ -314,9 +288,9 @@ export default function InterviewConfirmation() {
                                         permissions={permissions}
                                     />
                                 </div>
-                                <div >
+                                {/* <div >
                                     <InstructionPage />
-                                </div>
+                                </div> */}
 
                             </div>
 

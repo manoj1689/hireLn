@@ -22,10 +22,9 @@ import {
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { Calendar, Clock, Mail, MapPin, Video } from "lucide-react"
-import { FaMailBulk, FaMapMarkerAlt, FaSms, FaVoicemail } from "react-icons/fa"
+import {  FaMapMarkerAlt } from "react-icons/fa"
 import AuthNavbar from "@/components/auth-navbar/page"
-import { MdEmail } from "react-icons/md"
-import { FaMessage } from "react-icons/fa6"
+
 dayjs.extend(duration)
 dayjs.extend(utc)
 
@@ -413,11 +412,7 @@ const InterviewInfoPage = () => {
             </div>
           )}
 
-
-
-
           <div className="my-4">
-
             <div className="flex flex-col text-center pb-4">
               <div className="flex justify-center items-center gap-2 text-cyan-600 font-bold text-lg">
                 <Clock className="w-4 h-4 text-sky-500" />

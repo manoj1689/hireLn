@@ -24,8 +24,7 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import SpeakingAvatar from "@/components/interview/SpeakingAvatar"
 import { IoMdEye, IoMdEyeOff } from "react-icons/io"
-import { Divide } from "lucide-react"
-import { MdFullscreenExit } from "react-icons/md"
+
 import PreventBackForward from "@/components/BlockBackForward"
 import { RotatingLines } from "react-loader-spinner"
 
