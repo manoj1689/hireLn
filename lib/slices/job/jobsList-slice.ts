@@ -28,7 +28,7 @@ export const fetchJobs = createAsyncThunk<JobListData[], { skip: number; limit: 
       if (search) queryParams.search = search;  // Include 'search' only if it's not empty
 
       // Make GET request using axiosApi
-      const response = await axiosApi.get('/api/jobs', { params: queryParams });
+      const response = await axiosApi.get('/api/jobs/', { params: queryParams });
 
       // Return data from the response
       return response.data;
