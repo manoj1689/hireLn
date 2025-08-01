@@ -19,6 +19,8 @@ import Checklist from "@/components/interview/Checklist"
 import {
     FiCamera,
 } from "react-icons/fi"
+import utc from "dayjs/plugin/utc"
+dayjs.extend(utc)
 
 import { useRouter, useSearchParams } from "next/navigation"
 import { useDispatch, useSelector } from "react-redux"
@@ -31,6 +33,7 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import PreventBackForward from "@/components/BlockBackForward"
 import { DNA } from "react-loader-spinner"
+import { PiBuildingOffice } from "react-icons/pi"
 const tips = [
     {
         icon: Lightbulb,
@@ -240,33 +243,49 @@ export default function InterviewConfirmation() {
                         </div>
                     </div>
                 </header>
-                    <main className="max-w-fit mx-auto py-4 px-4 space-y-4 bg-gray-100 mt-4 rounded-lg">
+                    <main className="container mx-auto py-4 px-4 space-y-4  mt-4 rounded-lg">
                         <section>
                             <Card className="bg-gradient-to-r from-sky-400 to-pink-400 rounded-xl shadow-md">
                                 <div className="flex justify-between items-center px-6 py-4 text-white text-sm sm:text-base font-medium">
                                     {/* Left Side: Job Title & Date */}
-                                    <div>
-                                        <p>
-                                         
-                                            {interview.jobTitle}
-                                        </p>
-                                        <p className="text-sm sm:text-base">
-                                            {dayjs(interview.scheduledAt).format("D MMM YYYY, h:mm a")}
-                                        </p>
+                                    <div >
+                                        <div className="flex gap-4">
+                                            <div>
+                                                <PiBuildingOffice  size={40} />
+
+                                            </div>
+                                            <div>
+                                                <p>
+
+                                                    {interview.jobTitle}
+                                                </p>
+                                                <p>
+
+                                                    {interview.jobEducation}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Skills */}
+                                        <div className="flex flex-wrap mt-2 gap-2">
+                                            {interview.jobSkills.map((skill) => (
+                                                <span
+                                                    key={skill}
+                                                    className="bg-sky-300 shadow-md rounded-full px-2 py-1  text-xs font-medium text-white"
+                                                >
+                                                    {skill}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
 
                                     {/* Right Side: Duration, Type, Status */}
-                                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 text-right">
+                                    <div className="flex flex-col  items-center">
                                         <p>
-                                            <span className="font-light">Duration:</span>{" "}
-                                            {interview.duration} minutes
+                                            Status
                                         </p>
                                         <p>
-                                            <span className="font-light">Type:</span>{" "}
-                                            {interview.interviewType}
-                                        </p>
-                                        <p>
-                                            <span className="font-light">Status:</span>{" "}
+                                         
                                             <span className="font-bold text-yellow-300">{interview.status}</span>
                                         </p>
                                     </div>
@@ -274,24 +293,35 @@ export default function InterviewConfirmation() {
                             </Card>
                         </section>
 
-                        <section className="flex flex-col lg:flex-row gap-4">
-                            <div className="flex-1 w-full h-auto lg:w-3/4 xl:w-2/3 space-y-4 justify-center items-center ">
+                        <section className="flex flex-col lg:flex-row gap-4 h-auto   ">
+                            <div className="flex flex-col  lg:w-3/5  space-y-4 justify-between items-center  lg:border-l-2 lg:border-r-2 px-4 ">
                                 <VideoInterfacePage permissions={permissions} setPermissions={setPermissions} faceDetectionResults={faceDetectionResults} setFaceDetectionResults={setFaceDetectionResults} examStatus={false} />
+                                <Card className="w-full px-4 ">
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Shield className="w-5 h-5 text-red-600" /> Privacy & Consent
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="flex items-start space-x-3 ">
+                                            <Checkbox id="consent" checked={consentChecked} onCheckedChange={setConsentChecked} className="mt-1" />
+                                            <label htmlFor="consent" className="text-sm text-gray-700 cursor-pointer">
+                                                I understand and agree to the recording of this interview session for evaluation purposes.
+                                            </label>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+
                             </div>
-                            <div className="w-full lg:w-1/4 xl:w-1/3 space-y-4">
-                              <InterviewCard interview={interview}/>
-                              
-
-
+                            <div className="w-full lg:w-2/5  space-y-4">
+                                <InterviewCard interview={interview} />
+                                <InstructionPage />
                                 <div className="max-md:hidden">
                                     <Checklist
                                         permissions={permissions}
                                     />
                                 </div>
-                                {/* <div >
-                                    <InstructionPage />
-                                </div> */}
-
                             </div>
 
 
@@ -299,24 +329,10 @@ export default function InterviewConfirmation() {
 
 
 
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Shield className="w-5 h-5 text-red-600" /> Privacy & Consent
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-start space-x-3">
-                                    <Checkbox id="consent" checked={consentChecked} onCheckedChange={setConsentChecked} className="mt-1" />
-                                    <label htmlFor="consent" className="text-sm text-gray-700 cursor-pointer">
-                                        I understand and agree to the recording of this interview session for evaluation purposes.
-                                    </label>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <div className="flex w-full justify-center items-center">
+
+                        <div className="flex w-full justify-center items-center ">
                             <Button onClick={handleStartInterview} disabled={!consentChecked}
-                                className=" bg-blue-600 hover:bg-blue-700 text-white py-3 text-base font-medium">
+                                className=" bg-primary-gradient hover:bg-scale-105 text-white py-3 px-12 text-base font-medium mt-4">
                                 <Play className="w-5 h-5 mr-2" /> Join Interview
                             </Button>
 

@@ -1,108 +1,132 @@
 "use client"
 
 import React, { JSX, useEffect, useState } from "react"
-import Bowser from "bowser" // ✅ Correct import
+import Bowser from "bowser"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Camera, Mic, Lock } from "lucide-react"
+import { Camera, Lock } from "lucide-react"
+import { FiSettings, FiToggleRight, FiRefreshCw } from "react-icons/fi"
 
+const stepIcons = [<FiSettings size={20} />, <FiToggleRight size={20} />, <FiRefreshCw size={20} />]
+
+type InstructionCardProps = {
+  image: string
+  title: string
+  steps: string[]
+}
+
+const InstructionCard = ({ image, title, steps }: InstructionCardProps) => (
+  <Card className="bg-sky-100 border shadow-sm p-4">
+
+        <CardTitle className="flex items-center gap-4 text-lg ">
+          <img
+            src={image}
+            alt={`${title} instruction`}
+            className="w-12  rounded"
+          />
+          {title}
+        </CardTitle>
+    
+  
+    <CardContent className="flex justify-around items-start pt-4  text-sm text-gray-700 leading-relaxed">
+      {steps.map((step, index) => (
+        <div
+          key={index}
+          className="relative flex w-full justify-center items-start gap-3"
+        >
+          <div className="flex flex-col items-center">
+            {/* Step Icon */}
+            <div className="bg-white shadow rounded-full p-2 text-blue-600 z-10">
+              {stepIcons[index]}
+            </div>
+
+          
+            {/* Step Label */}
+            <div className="mt-1 w-auto text-center text-blue-400  px-4">{step}</div>
+          </div>
+
+          {/* Horizontal Line (only if not last step) */}
+          {index !== steps.length - 1 && (
+            <div className="absolute top-5 left-1/2 w-full h-0.5 bg-blue-400 z-0"></div>
+          )}
+        </div>
+      ))}
+    </CardContent>
+
+  </Card>
+)
 const BrowserInstructions = () => {
-  const [browserName, setBrowserName] = useState("default")
+  const [browserName, setBrowserName] = useState<string>("default")
 
   useEffect(() => {
-    const parser = Bowser.getParser(window.navigator.userAgent) // ✅ Updated usage
+    const parser = Bowser.getParser(window.navigator.userAgent)
     const name = parser.getBrowserName()
     setBrowserName(name || "default")
   }, [])
 
-  const InstructionCard = ({
-    title,
-    steps,
-  }: {
-    title: string
-    steps: string[]
-  }) => (
-    <Card className="bg-white border shadow-sm">
-      <CardHeader>
-        <CardTitle className="flex gap-2 text-lg items-center text-blue-600">
-          <Lock size={30} />
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2 text-sm text-gray-700 leading-relaxed">
-        {steps.map((step, index) => (
-          <div key={index} className="flex items-start gap-2">
-            <span className="text-blue-500 font-medium">{index + 1}.</span>
-            <span>{step}</span>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  )
+const instructions: Record<string, JSX.Element> = {
+  Chrome: (
+    <InstructionCard
+      image="./images/instructions/chrome.png"
+      title="Chrome - Enable Camera & Mic"
+      steps={[
+        "Click the lock icon.",
+        "Allow Camera & Mic.",
+        "Reload page.",
+      ]}
+    />
+  ),
+  Firefox: (
+    <InstructionCard
+      image="./images/instructions/firefox.png"
+      title="Firefox - Enable Camera & Mic"
+      steps={[
+        "Click lock icon.",
+        "Allow in Permissions.",
+        "Reload page.",
+      ]}
+    />
+  ),
+  Safari: (
+    <InstructionCard
+      image="./images/instructions/safari.png"
+      title="Safari - Enable Camera & Mic"
+      steps={[
+        "Safari > Website Settings.",
+        "Allow Camera & Mic.",
+        "Reload page.",
+      ]}
+    />
+  ),
+  "Microsoft Edge": (
+    <InstructionCard
+      image="./images/instructions/edge.png"
+      title="Edge - Enable Camera & Mic"
+      steps={[
+        "Click lock icon.",
+        "Allow Camera & Mic.",
+        "Reload page.",
+      ]}
+    />
+  ),
+  default: (
+    <InstructionCard
+      image="./images/instructions/default.png"
+      title="Enable Camera & Mic"
+      steps={[
+        "Click lock icon.",
+        "Allow Camera & Mic.",
+        "Reload page.",
+      ]}
+    />
+  ),
+}
 
-  const instructions: Record<string, JSX.Element> = {
-    Chrome: (
-      <InstructionCard
-        title="Chrome - Allow Camera & Mic"
-        steps={[
-          "Click the lock icon next to the URL bar.",
-          "Choose 'Site Settings'.",
-          "Set Camera and Microphone to 'Allow'.",
-          "Reload the page.",
-        ]}
-      />
-    ),
-    Firefox: (
-      <InstructionCard
-        title="Firefox - Enable Permissions"
-        steps={[
-          "Click the lock icon near the URL.",
-          "Click 'More Information' > 'Permissions'.",
-          "Set Camera and Microphone to 'Allow'.",
-          "Reload the page.",
-        ]}
-      />
-    ),
-    Safari: (
-      <InstructionCard
-        title="Safari - Allow Camera & Mic"
-        steps={[
-          "Click Safari in the menu bar > 'Settings for This Website'.",
-          "Choose 'Allow' for Camera and Microphone.",
-          "Reload the page.",
-        ]}
-      />
-    ),
-    "Microsoft Edge": (
-      <InstructionCard
-        title="Edge - Enable Permissions"
-        steps={[
-          "Click the lock icon next to the URL.",
-          "Click 'Permissions for this site'.",
-          "Allow Camera and Microphone.",
-          "Reload the page.",
-        ]}
-      />
-    ),
-    default: (
-      <InstructionCard
-        title="General Instructions"
-        steps={[
-          "Locate the lock icon in the address bar.",
-          "Open site settings or permissions.",
-          "Allow Camera and Microphone access.",
-          "Reload the page after allowing.",
-        ]}
-      />
-    ),
-  }
+
+  const current = instructions[browserName] || instructions.default
 
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-bold text-gray-900 flex gap-2 items-center">
-        <Camera className="w-5 h-5 text-blue-600" />
-        Camera & Mic Setup Guide
-      </h2>
-      {instructions[browserName] || instructions.default}
+      {current}
     </section>
   )
 }

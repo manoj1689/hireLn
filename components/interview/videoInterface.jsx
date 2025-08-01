@@ -54,7 +54,7 @@ export default function VideoInterfacePage({
 
 
   return (
-    <div className="relative h-auto overflow-hidden">
+    <div className="relative w-full  overflow-hidden px-4">
       {permissions.camera ? (
         <>
           <CameraFeed
@@ -63,7 +63,7 @@ export default function VideoInterfacePage({
             examStatus={examStatus}
           />
 
-          <div className="absolute top-2 left-2 bg-white/90 rounded-md px-3 py-1 text-sm shadow text-gray-800 space-y-1">
+          <div className="absolute top-2 left-2 lg:left-8 bg-white/90 rounded-md px-3 py-1 text-sm shadow text-gray-800 space-y-1">
             {faceDetectionResults.multiplePeopleDetected && (
               <div className="flex items-center text-red-600 gap-1">
                 <FiAlertTriangle className="w-4 h-4" />
@@ -91,7 +91,7 @@ export default function VideoInterfacePage({
           </div>
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center h-full bg-gray-100 rounded-lg shadow-inner">
+        <div className="flex flex-col items-center justify-center h-96 lg:min-h-[500px] bg-gray-100 rounded-lg shadow-inner">
           <FiCamera className="w-12 h-12 text-gray-400 mb-2" />
           <p className="text-sm text-gray-500">Camera is disabled</p>
         </div>

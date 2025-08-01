@@ -230,6 +230,7 @@ const InterviewInfoPage = () => {
                     <img src="/images/candidate/download.png" alt="Download" className="w-12" />
                   </a>
                 )}
+                
               </div>
             </div>
 

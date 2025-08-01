@@ -12,7 +12,7 @@ import {
   generateInterviewQuestions,
 } from "@/lib/slices/aitools/generate-interview-questions"
 import { bulkUploadQuestions } from "@/lib/slices/questions/upload-bulk-questions"
-
+import { Button } from "@/components/ui/button"
 import { ShowTimer } from "@/components/interview/ShowTimer"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -27,6 +27,9 @@ import { IoMdEye, IoMdEyeOff } from "react-icons/io"
 
 import PreventBackForward from "@/components/BlockBackForward"
 import { RotatingLines } from "react-loader-spinner"
+
+import { Lightbulb } from "lucide-react"
+import { PiBuildingOffice } from "react-icons/pi"
 
 const InterviewScreenPage = () => {
   const dispatch = useDispatch<AppDispatch>()
@@ -178,7 +181,7 @@ const InterviewScreenPage = () => {
   if (examStatus === "COMPLETED") {
     return <p className="p-6 text-blue-600">Exam Ending...</p>
   }
- 
+
 
 
   if (interviewLoading) return <p className="p-6">Loading interview...</p>
@@ -212,46 +215,96 @@ const InterviewScreenPage = () => {
     return <p className="p-6 text-red-500">Error: {questionError || uploadError}</p>
   }
 
-  return (
-    <div className="flex h-screen ">
-      <PreventBackForward />
-      <div className="flex-1 h-auto  container mx-auto px-4">
-        <ToastContainer />
+  function setShowTipsModal(arg0: boolean): void {
+    throw new Error("Function not implemented.")
+  }
 
-        <header className="flex w-full lg:h-1/6 items-center">
-          <Card className="bg-gradient-to-r from-sky-400 to-pink-400 rounded-xl shadow-md w-full">
+  return (
+    <div className="">
+      {/* <PreventBackForward /> */}
+      <ToastContainer />
+      <header className="flex  rounded-lg bg-cyan-50 border-b border-gray-200 sticky top-0 z-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+
+              <img
+                src="/images/logo/company-logo.png"
+                alt="Company Logo"
+                className="w-28"
+              />
+
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTipsModal(true)}
+                className="text-blue-600 border-blue-200 hover:bg-blue-50"
+              >
+                <Lightbulb className="w-4 h-4 mr-2" />
+                Quick Tips
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+      <main className="container mx-auto py-4 px-4 space-y-4  mt-4 rounded-lg">
+        <section>
+          <Card className="bg-gradient-to-r from-sky-400 to-pink-400 rounded-xl shadow-md">
             <div className="flex justify-between items-center px-6 py-4 text-white text-sm sm:text-base font-medium">
-              <div className="flex justify-center space-x-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarFallback className="bg-blue-200 text-white text-2xl">
-                    {interview.candidateName.split(" ").map(word => word[0]).join("").toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p>{interview.jobTitle}</p>
-                  <p className="text-gr-white font-medium">{interview.candidateName}</p>
+              {/* Left Side: Job Title & Date */}
+              <div >
+                <div className="flex gap-4">
+                  <div>
+                    <PiBuildingOffice size={40} />
+
+                  </div>
+                  <div>
+                    <p>
+
+                      {interview.jobTitle}
+                    </p>
+                    <p>
+
+                      {interview.jobEducation}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Skills */}
+                <div className="flex flex-wrap mt-2 gap-2">
+                  {interview.jobSkills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="bg-sky-300 shadow-md rounded-full px-2 py-1  text-xs font-medium text-white"
+                    >
+                      {skill}
+                    </span>
+                  ))}
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 text-right">
-                <span className="text-center">
-                  <span className="font-light">Time Left</span>{" "}
-                  <ShowTimer duration={interview.duration} />
-                </span>
-                <p className="flex flex-col text-center">
-                  <span className="font-light">Status</span>{" "}
+
+              {/* Right Side: Duration, Type, Status */}
+              <div className="flex flex-col  items-center">
+                <p>
+                  Status
+                </p>
+                <p>
+
                   <span className="font-bold text-yellow-300">{interview.status}</span>
                 </p>
               </div>
             </div>
           </Card>
-        </header>
+        </section>
 
         {/* <p className="mt-4 text-gray-700">
         Questions uploaded and fetched successfully. Total: {questions.length}
       </p> */}
 
-        <div className="flex flex-col lg:flex-row  lg:h-5/6    ">
-          <div className="flex flex-col lg:w-7/12   justify-around   ">
+        <section className="flex flex-col lg:flex-row gap-4 h-auto   ">
+          <div className="flex flex-col  lg:w-3/5  space-y-4 justify-around items-center  lg:border-l-2 lg:border-r-2 px-4 ">
             <div className="flex w-full justify-center mt-4 ">
               <VideoInterfacePage
                 permissions={permissions}
@@ -262,79 +315,97 @@ const InterviewScreenPage = () => {
               />
             </div>
 
-            {showTranscript && (
-              <div className="max-sm:hidden flex w-full justify-center  ">
+
+
+
+
+            <div className="flex flex-col lg:flex-row w-full bg-gray-200 rounded-lg min-h-32 shadow-lg mx-auto relative p-2">
+              {/* Toggle Button */}
+              <button
+                className="absolute top-2 right-2 p-2 md:p-3 z-10"
+                onClick={() => setShowTranscript(!showTranscript)}
+              >
+                {!showTranscript ? (
+                  <IoMdEye className="text-gray-600" size={24} />
+                ) : (
+                  <IoMdEyeOff className="text-gray-600" size={24} />
+                )}
+              </button>
+
+              {/* Avatar Section */}
+              <div className={`flex w-full lg:w-1/4 lg:border-r-2  border-gray-300 justify-center items-center transition-all duration-300 ${showTranscript ? 'opacity-100' : 'opacity-0'} max-sm:hidden`}>
                 <SpeakingAvatar
                   text={transcript}
-                  imgSrc="/public/images/Avatar/femaleUsAi.jpeg"
+                  imgSrc="/images/Avatar/femaleUsAi.jpeg"
+                  candidateName={interview.candidateName}
                 />
               </div>
-            )}
 
-
-
-            <div className="flex flex-col w-full bg-gray-200 rounded-lg shadow-lg lg:w-5/6 mx-auto   ">
-
-              <div className="flex gap-2 justify-center items-center">
-                {showTranscript && <>
-                  <div className="w-full px-4">
+              {/* Transcript Section with scroll */}
+              <div className={`flex w-full lg:w-3/4 justify-start items-start px-4 py-4 transition-all duration-300 ${showTranscript ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="w-full max-h-64 overflow-y-auto pr-2">
+                  <p className="text-sm sm:text-base text-gray-800 whitespace-pre-wrap">
                     {transcript}
-                  </div>
-                </>}
-                <button className="p-2 md:p-4" onClick={() => setShowTranscript(!showTranscript)}>
-                  {!showTranscript ? (
-                    <IoMdEye className="text-gray-400" />
-                  ) : (
-                    <IoMdEyeOff className="text-gray-400" />
-                  )}
-                </button>
-
+                  </p>
+                </div>
               </div>
             </div>
+
           </div>
 
           <div className="w-full lg:w-5/12 space-y-4  px-4">
-            <div className="flex justify-center gap-2">
-              <button
-                onClick={() => setActiveTab("chat")}
-                className={`px-4 py-2 rounded-t-md text-sm font-medium border-b-2 ${activeTab === "chat" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-blue-500"}`}
-              >
-                AI Chat
-              </button>
-              <button
-                onClick={() => setActiveTab("performance")}
-                className={`px-4 py-2 rounded-t-md text-sm font-medium border-b-2 ${activeTab === "performance" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-blue-500"}`}
-              >
-                Performance
-              </button>
-            </div>
-
-            <div className="bg-white  rounded-b-md shadow">
-              <div className="w-full space-y-4">
-                <div className={activeTab === "chat" ? "block w-full" : "hidden"}>
-                  <AIChat
-                    interviewId={interviewId}
-                    questionList={questions}
-                    handleExamEnd={handleExamEnd}
-                    token={token}
-                    examID={interview.id}
-                    onTranscriptChange={handleTranscriptChange}
-                    selectedAvatar=""
-                  />
-                </div>
-                <div className={activeTab === "performance" ? "block" : "hidden"}>
-                  <QuestionPerformance />
-                </div>
+            <div className="flex flex-col w-full bg-sky-50 rounded-xl p-4 justify-center">
+              {/* Toggle Tabs */}
+              <div className="flex w-fit mx-auto bg-[#e4e9f2] rounded-full p-1">
+                <button
+                  onClick={() => setActiveTab("chat")}
+                  className={`px-5 py-1.5 rounded-full text-sm font-medium transition ${activeTab === "chat"
+                    ? "bg-sky-500 text-white shadow"
+                    : "text-gray-500"
+                    }`}
+                >
+                  Live Chat
+                </button>
+                <button
+                  onClick={() => setActiveTab("performance")}
+                  className={`px-5 py-1.5 rounded-full text-sm font-medium transition ${activeTab === "performance"
+                    ? "bg-sky-500 text-white shadow"
+                    : "text-gray-500"
+                    }`}
+                >
+                  Performance
+                </button>
+              </div>
+              <div className={activeTab === "chat" ? "block w-full" : "hidden"}>
+                <AIChat
+                  interviewId={interviewId}
+                  questionList={questions}
+                  handleExamEnd={handleExamEnd}
+                  token={token}
+                  examID={interview.id}
+                  onTranscriptChange={handleTranscriptChange}
+                  selectedAvatar=""
+                />
+              </div>
+              <div className={activeTab === "performance" ? "block" : "hidden"}>
+                <QuestionPerformance />
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="max-md:hidden">
-          <Checklist permissions={permissions} />
-        </div>
-      </div>
+
+
+          <div className="max-md:hidden">
+            <Checklist permissions={permissions} />
+          </div>
+
+
+        </section>
+
+      </main>
+
     </div>
+
 
   )
 }

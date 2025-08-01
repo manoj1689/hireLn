@@ -127,6 +127,7 @@ export default function RegisterPage() {
         if (registerStep2.fulfilled.match(result)) setStep(3)
       } else if (step === 3) {
         const result = await dispatch(registerStep3({ ...step3.formValues, sessionId: step1.sessionId }) as any)
+        console.log("result after 3 dispatch",result)
         if (registerStep3.fulfilled.match(result)) router.push("/auth/registration-success")
       }
     } catch (error) {

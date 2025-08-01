@@ -40,7 +40,7 @@ export const registerStep2 = createAsyncThunk<
 >(
   'register/step2',
   async ({ sessionId, ...formValues }, { rejectWithValue }) => {
-    console.log("form value step-2",formValues)
+  //  console.log("form value step-2",formValues)
     try {
       const response = await axios.post(
         `${baseURL}/api/auth/register/step2?session_id=${sessionId}`,

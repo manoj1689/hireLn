@@ -22,3 +22,9 @@ export interface ApplicationResponse {
   appliedAt: string;
   updatedAt: string;
 }
+
+export interface UpdateApplicationRequest {
+  status: ApplicationStatus
+  notes: string
+  matchScore: number
+}

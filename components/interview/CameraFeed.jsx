@@ -82,7 +82,7 @@ const CameraFeed = ({ onFacesDetected, enableAudio, examStatus }) => {
     }, [modelsLoaded, handleVideoPlay, examStatus]);
 
     return (
-        <div className='flex w-auto h-auto '>
+        <div className='flex w-full justify-center '>
             <ToastContainer />
             {webcamActive && (
                 <Webcam
@@ -91,7 +91,7 @@ const CameraFeed = ({ onFacesDetected, enableAudio, examStatus }) => {
                     muted
                     autoPlay
                     mirrored={true}
-                    style={{ width: '100%', borderRadius: '1%'}}
+                    style={{ borderRadius: '2%'}}
                 />
             )}
         </div>

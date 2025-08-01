@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosApi from '@/services/api';
-import { ApplicationRequest, ApplicationResponse } from '@/interface/application';
+import { ApplicationRequest, ApplicationResponse, UpdateApplicationRequest } from '@/interface/application';
 
 
 
@@ -32,6 +32,19 @@ export const postApplication = createAsyncThunk(
   }
 );
 
+// Add async thunk
+export const updateApplication = createAsyncThunk(
+  'applications/updateApplication',
+  async ({ applicationId, updateData }: { applicationId: string; updateData: UpdateApplicationRequest }, { rejectWithValue }) => {
+    try {
+      const response = await axiosApi.put(`/api/candidates/applications/${applicationId}`, updateData);
+      return response.data as ApplicationResponse;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Error updating application');
+    }
+  }
+)
+
 // Slice
 const applicationSlice = createSlice({
   name: 'application',
@@ -50,7 +63,20 @@ const applicationSlice = createSlice({
       .addCase(postApplication.rejected, (state, action: PayloadAction<any>) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+      // Add updateApplication cases
+    .addCase(updateApplication.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(updateApplication.fulfilled, (state, action: PayloadAction<ApplicationResponse>) => {
+      state.loading = false;
+      state.application = action.payload;
+    })
+    .addCase(updateApplication.rejected, (state, action: PayloadAction<any>) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
   },
 });
 

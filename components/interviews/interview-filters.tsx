@@ -42,7 +42,7 @@ export function InterviewFilters({
   onClearFilters,
 }: InterviewFiltersProps) {
   return (
-    <Card className="border-0 shadow-none">
+    <Card className="border-0 bg-transparent shadow-none">
       {/* <CardHeader>
         <CardTitle className="text-lg"> Quick Filters</CardTitle>
       </CardHeader> */}

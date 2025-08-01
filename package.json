@@ -80,6 +80,7 @@
     "react-toastify": "^11.0.5",
     "react-webcam": "^7.2.0",
     "redux": "latest",
+    "redux-persist": "^6.0.0",
     "sonner": "latest",
     "speak-tts": "^2.0.8",
     "tailwind-merge": "^2.5.5",

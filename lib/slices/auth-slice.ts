@@ -18,7 +18,6 @@ interface User {
 }
 
 interface AuthState {
-  token: string | null
   access_token: string
   token_type: string
   user: User | null
@@ -29,8 +28,7 @@ const initialState: AuthState = {
   access_token: "",
   token_type: "",
   user: null,
-  isAuthenticated: false,
-  token: null
+  isAuthenticated: false
 }
 
 const authSlice = createSlice({

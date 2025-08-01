@@ -133,8 +133,8 @@ export const EvaluationTabs = ({ evaluations }: { evaluations: any[] }) => {
           </CardHeader>
           <CardContent>
             <ul className="space-y-4">
-              <li className="text-sm">All evaluations scored 1 out of 10 due to unanswered questions.</li>
-              <Progress value={10} className="h-2" />
+              <li className="text-sm">All evaluations scored 1 out of 5 due to unanswered questions.</li>
+              <Progress value={5} className="h-2" />
             </ul>
           </CardContent>
         </Card>

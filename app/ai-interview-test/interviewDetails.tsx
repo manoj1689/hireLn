@@ -1,8 +1,9 @@
 import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Mail, Phone, MapPin, Clock, Video, Globe } from "lucide-react"
+import { Mail, Phone, MapPin, Clock, Video, Globe, Calendar } from "lucide-react"
 import { InterviewResponse } from "@/interface/interview"
 import { InterviewJoinData } from "@/interface/join-interview"
+import dayjs from "dayjs"
 
 type InterviewCardProps = {
     interview: InterviewJoinData
@@ -40,7 +41,7 @@ export default function InterviewCard({ interview }: InterviewCardProps) {
 
                     <div className="flex   gap-2">
                         <MapPin className="w-4 h-4 text-orange-500" />
-                        <span>{interview.location}</span>
+                        <span>{interview.candidateLocation}</span>
                     </div>
                 </CardContent>
 
@@ -79,22 +80,23 @@ export default function InterviewCard({ interview }: InterviewCardProps) {
                 {/* Time */}
                 <div className="bg-green-100 rounded-xl px-4 py-3 relative shadow-sm">
                     <span className="absolute top-0 left-10 bg-green-400 text-white text-md px-2 py-[2px] rounded-b-lg font-medium">
-                        Time
+                        Date
                     </span>
                     <div className="flex items-center gap-2 mt-4">
-                        <Clock className="text-green-400 w-12 h-12" />
-                        <span className="text-gray-600 text-lg">{interview.duration}</span>
+                        <Calendar className="text-green-400 w-12 h-12" />
+                        <span className="text-gray-600 text-lg">{dayjs(interview.scheduledAt).format("D MMM YYYY, h:mm a")}</span>
+                       
                     </div>
                 </div>
 
                 {/* Zone */}
                 <div className="bg-blue-100 rounded-xl px-4 py-3 relative shadow-sm">
                     <span className="absolute top-0 left-10 bg-blue-400 text-white text-md px-2 py-[2px] rounded-b-lg font-medium">
-                        Zone
+                        Time
                     </span>
                     <div className="flex items-center gap-2 mt-4">
-                        <Globe className="text-blue-400 w-12 h-12" />
-                        <span className="text-gray-600 text-lg">{interview.timezone}</span>
+                        <Clock className="text-blue-400 w-12 h-12" />
+                        <span className="text-gray-600 text-lg">{interview.duration} min.</span>
                     </div>
                 </div>
 
@@ -105,7 +107,7 @@ export default function InterviewCard({ interview }: InterviewCardProps) {
                     </span>
                     <div className="flex items-center gap-2 mt-4">
                         <MapPin className="text-orange-400 w-12 h-12" />
-                        <span className="text-gray-600 text-lg">{interview.location}</span>
+                        <span className="text-gray-600 text-lg">{interview.candidateLocation}</span>
                     </div>
                 </div>
             </div>

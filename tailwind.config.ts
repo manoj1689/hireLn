@@ -83,11 +83,18 @@ const config: Config = {
           '0%': { transform: 'scale(1)', opacity: '1' },
           '100%': { transform: 'scale(var(--pulse-scale))', opacity: '0' },
         },
+		 'pulse-color': {
+          '0%, 100%': { backgroundColor: '#0ea5e9' }, // sky-500
+          '50%': { backgroundColor: '#38bdf8' }, // sky-400
+          '75%': { backgroundColor: '#7dd3fc' }, // sky-300
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'pulse-ring': 'pulse-ring 3s ease-out infinite',
+        'pulse-color': 'pulse-color 1.5s ease-in-out infinite',
+		'bounce': 'bounce 1.2s ease-in-out infinite',
       },
     
   	}

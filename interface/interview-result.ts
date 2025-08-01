@@ -34,6 +34,7 @@ export interface InterviewData {
 export interface InterviewResultResponse {
   recommendations: string
   id: string
+  applicationId:string
   interviewId: string
   candidateId: string
   jobId: string

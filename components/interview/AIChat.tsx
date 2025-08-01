@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, ReactNode } from "react";
 import bowser from "bowser";
 import SpeechRecognition, {
   useSpeechRecognition,
@@ -45,6 +45,7 @@ interface AIChatProps {
 type MessageRole = "system" | "user" | "assistant";
 
 interface Message {
+  time: ReactNode;
   role: MessageRole;
   content: string;
 }
@@ -86,6 +87,7 @@ const avatars = [
     },
   },
 ];
+
 
 const AIChat: React.FC<AIChatProps> = ({
   interviewId,
@@ -196,6 +198,7 @@ const AIChat: React.FC<AIChatProps> = ({
       role: "assistant",
       content:
         "Welcome to HireLane. Introduce yourself, and then provide an overview of your professional journey and expertise.",
+      time: getCurrentTime()
     };
 
     setChatHistory((prev) => [...prev, initialMessage]);
@@ -241,7 +244,8 @@ const AIChat: React.FC<AIChatProps> = ({
             SpeechRecognition.stopListening();
             const userNotAvailableMessage: Message = {
               role: "assistant",
-              content: "Thank you for participating. It appears you are not available during the exam. Your score will be updated shortly. For further assistance, please contact us."
+              content: "Thank you for participating. It appears you are not available during the exam. Your score will be updated shortly. For further assistance, please contact us.",
+              time: getCurrentTime()
             };
             setChatHistory(prev => [...prev, userNotAvailableMessage]);
             ExamEndMessage(userNotAvailableMessage.content, continueListening);
@@ -299,12 +303,13 @@ const AIChat: React.FC<AIChatProps> = ({
     setAudioTranscript("");
     const examCompleteMessage: Message = {
       role: "assistant",
-      content: "Thank you for participating. We will connect you shortly."
+      content: "Thank you for participating. We will connect you shortly.",
+      time: getCurrentTime()
     };
     setChatHistory(prev => [...prev, examCompleteMessage]);
     ExamEndMessage(examCompleteMessage.content, continueListening);
-     setTimeout(() => {
-     
+    setTimeout(() => {
+
       handleExamEnd(); // Call the function to handle exam end
     }, 2000); // 5 seconds
   };
@@ -347,6 +352,10 @@ const AIChat: React.FC<AIChatProps> = ({
       });
   };
 
+  const getCurrentTime = () => {
+    const now = new Date();
+    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   const handleSubmitAnswer = async (
     interviewId: string,
@@ -388,7 +397,7 @@ const AIChat: React.FC<AIChatProps> = ({
       if (!audioTranscript || audioTranscript.trim() === "") return;
 
       // Save user's message to chat history
-      setChatHistory(prev => [...prev, { role: "user", content: audioTranscript }]);
+      setChatHistory(prev => [...prev, { role: "user", content: audioTranscript, time: getCurrentTime(), }]);
       setLoading(true);
 
       try {
@@ -402,7 +411,8 @@ const AIChat: React.FC<AIChatProps> = ({
           case "Introduce":
             assistantMessage = {
               role: "assistant",
-              content: "Hey, nice to meet you! We've assembled a set of questions to understand your strengths better. Would you like to continue or proceed?"
+              content: "Hey, nice to meet you! We've assembled a set of questions to understand your strengths better. Would you like to continue or proceed?",
+              time: getCurrentTime()
 
             };
             break;
@@ -416,11 +426,13 @@ const AIChat: React.FC<AIChatProps> = ({
               assistantMessage = {
                 role: "assistant",
                 content: questionList[currentQuestionIndexRef.current].questionText,
+                time: getCurrentTime(),
               };
             } else {
               assistantMessage = {
                 role: "assistant",
                 content: "No previous message to repeat.",
+                time: getCurrentTime(),
               };
             }
             break;
@@ -434,6 +446,7 @@ const AIChat: React.FC<AIChatProps> = ({
               assistantMessage = {
                 role: "assistant",
                 content: questionList[0].questionText,
+                time: getCurrentTime(),
               };
             } else {
               await handleSubmitAnswer(interviewId, audioTranscript, token, questionId);
@@ -446,6 +459,7 @@ const AIChat: React.FC<AIChatProps> = ({
                 assistantMessage = {
                   role: "assistant",
                   content: questionList[nextIndex].questionText,
+                  time: getCurrentTime(),
                 };
               } else {
                 handleExamLeave();
@@ -465,6 +479,7 @@ const AIChat: React.FC<AIChatProps> = ({
               assistantMessage = {
                 role: "assistant",
                 content: questionList[moveNextIndex].questionText,
+                time: getCurrentTime(),
               };
             } else {
               handleExamLeave();
@@ -477,6 +492,7 @@ const AIChat: React.FC<AIChatProps> = ({
               role: "assistant",
               content:
                 "It seems I didn't quite catch that. Would you like to ask a different question or would you prefer to end the exam?",
+              time: getCurrentTime(),
             };
             break;
 
@@ -485,6 +501,7 @@ const AIChat: React.FC<AIChatProps> = ({
               role: "assistant",
               content:
                 "It looks like you're not available at the moment. Please tell me whether you’d like to repeat the current question, move on to the next one, or leave the exam.",
+              time: getCurrentTime(),
             };
             break;
 
@@ -501,9 +518,9 @@ const AIChat: React.FC<AIChatProps> = ({
                     content: `Could you rephrase this in a simpler way to make it easier to understand: "${lastAssistant.content}"?`,
                   },
                 ]);
-                assistantMessage = { role: "assistant", content: explanation ?? "Sorry, I couldn't simplify that." };
+                assistantMessage = { role: "assistant", content: explanation ?? "Sorry, I couldn't simplify that.", time: getCurrentTime(), };
               } else {
-                assistantMessage = { role: "assistant", content: "Nothing to explain." };
+                assistantMessage = { role: "assistant", content: "Nothing to explain.", time: getCurrentTime(), };
               }
             }
             break;
@@ -539,74 +556,88 @@ const AIChat: React.FC<AIChatProps> = ({
 
 
   return (
-    <div>
-      <div className="p-2 h-full flex flex-col rounded-md">
-        <div className="flex flex-col h-[70vh] overflow-y-scroll p-2 sm:p-4"
-        >
-          <div className="flex flex-col space-y-4">
-            {chatHistory.map((message, index) => (
-              <div
-                key={index}
-                className={`flex w-full gap-2 ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                {/* Avatar */}
-                {message.role !== "user" && (
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-sky-300 text-white flex items-center justify-center font-bold">
-                      AI
-                    </div>
-                  </div>
-                )}
 
-                {/* Message Bubble */}
-                <div
-                  className={`p-4 rounded-xl max-w-[75%] ${message.role === "user"
-                    ? "bg-red-200 text-left"
-                    : "bg-sky-200 text-left"
-                    }`}
-                >
-                  <div className="text-slate-800 font-bold text-sm sm:text-md">
-                    {message.role === "user" ? "User Response" : "Assistant AI"}
-                  </div>
-                  <div className="text-slate-600 text-md">
-                    {message.content}
-                  </div>
-                </div>
+    <div className="p-2 h-full flex flex-col rounded-md">
+      {/* Chat Container with Scroll */}
+      <div className="flex flex-col h-[60vh] overflow-y-auto p-2 sm:p-4 space-y-4 scroll-smooth">
+        {chatHistory.map((message, index) => {
+          const isUser = message.role === "user";
+          const bubbleColor = isUser ? "bg-white" : "bg-red-400";
+          const textColor = isUser ? "text-gray-800" : "text-white";
+          const timeColor = "text-red-700";
+          const alignment = isUser ? "justify-end" : "justify-start";
+          const roundedClass = isUser
+            ? "rounded-2xl rounded-br-none"
+            : "rounded-2xl rounded-bl-none";
+          const avatarSrc = isUser
+            ? "/images/Avatar/maleFormal.png"
+            : "./images/Avatar/AiAgent.jpeg";
+          const prefix = isUser ? "A." : "Q.";
 
-                {/* User Avatar */}
-                {message.role === "user" && (
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-red-500 text-white flex items-center justify-center font-bold">
-                      U
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-
-            {loading && (
-              <div className="p-2 my-2 rounded-md bg-white self-end">
-                <DNA
-                  visible={true}
-                  height="80"
-                  width="80"
-                  ariaLabel="dna-loading"
-                  wrapperStyle={{}}
-                  wrapperClass="dna-wrapper"
+          return (
+            <div
+              key={index}
+              className={`flex w-full gap-2 items-end ${alignment}`}
+            >
+              {/* Left Avatar (Assistant) */}
+              {!isUser && (
+                <img
+                  src={avatarSrc}
+                  className="w-10 h-10 border-2 border-white rounded-full"
+                  alt="AI Avatar"
                 />
+              )}
+
+              {/* Message Bubble */}
+              <div className={`max-w-[75%] px-4 py-3 shadow ${bubbleColor} ${roundedClass}`}>
+                <div className={`text-sm sm:text-sm whitespace-pre-wrap font-normal ${textColor}`}>
+                  <span className="font-semibold mr-1">{prefix}</span>
+                  {message.content}
+                </div>
+                <div className={`text-xs text-right mt-1 ${timeColor}`}>
+                  {message.time}
+                </div>
               </div>
-            )}
 
-            <div ref={messagesEndRef}></div>
+              {/* Right Avatar (User) */}
+              {isUser && (
+                <img
+                  src={avatarSrc}
+                  className="w-10 h-10 rounded-full"
+                  alt="User Avatar"
+                />
+              )}
+            </div>
+          );
+        })}
+
+        {/* Loading Indicator */}
+        {loading && (
+          <div className="flex w-full items-center gap-1 self-end p-2 my-2 rounded-md bg-transparent">
+            <span
+              className="w-3 h-3 rounded-full  animate-pulse-color"
+              style={{ animationDelay: "0s, 0s" }}
+            ></span>
+            <span
+              className="w-3 h-3 rounded-full animate-pulse-color"
+              style={{ animationDelay: "0.2s, 0.2s" }}
+            ></span>
+            <span
+              className="w-3 h-3 rounded-full animate-pulse-color"
+              style={{ animationDelay: "0.4s, 0.4s" }}
+            ></span>
+
           </div>
-        </div>
 
+
+        )}
+
+        {/* Scroll to bottom reference */}
+        <div ref={messagesEndRef}></div>
       </div>
 
-
-
     </div>
+
   );
 };
 

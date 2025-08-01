@@ -1,5 +1,15 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
-
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from "redux-persist";
+import storage from 'redux-persist/lib/storage'
 // All your reducers...
 import registerStep1Reducer from "@/lib/slices/register/register-step-1";
 import registerStep2Reducer from "@/lib/slices/register/register-step-2";
@@ -24,6 +34,7 @@ import autoEvaluateAnswerReducer from "@/lib/slices/questions/auto-evaluate-answ
 import fetchInterviewReducer from "@/lib/slices/interviews/fetch-interview-slice";
 import finalInterviewEvaluationReducer from "@/lib/slices/final_evaluation/final-evaluate-interview-slice";
 import interviewResultReducer from "@/lib/slices/interview_result/interview-result-slice";
+import finalMailReducer from "@/lib/slices/interview/sendInterviewResultSlice"
 import companyProfileReducer from "@/lib/slices/company/company-profile";
 import companyLocationReducer from "@/lib/slices/company/company-location";
 import settingReducer from "@/lib/slices/settings/settings-slice";
@@ -52,14 +63,32 @@ const rootReducer = combineReducers({
   fetchInterview: fetchInterviewReducer,
   finalInterviewEvaluation: finalInterviewEvaluationReducer,
   interviewResult: interviewResultReducer,
+  finalMail:finalMailReducer,
   companyProfile: companyProfileReducer,
   companyLocation: companyLocationReducer,
   setting: settingReducer,
 });
 
-export const store = configureStore({
-  reducer: rootReducer,
-});
+const persistConfig = {
+  key: "root",
+  storage,
+  whitelist: ["auth"], // ✅ Only persist `auth`, you can add more
+};
 
+
+const persistedReducer = persistReducer(persistConfig, rootReducer)
+
+
+export const store = configureStore({
+    reducer: persistedReducer,
+    middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+       serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
+
+});
+export const persistor = persistStore(store);
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

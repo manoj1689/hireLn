@@ -11,22 +11,12 @@ import { FaArrowLeft, FaArrowRight } from "react-icons/fa"
 import AuthNavbar from "@/components/auth-navbar/page"
 import { useSelector } from "react-redux"
 import { RootState } from "@/lib/store"
-import { useEffect } from "react"
+ 
 
 export default function RegistrationSuccessPage() {
   const router = useRouter()
-  const { loading, error, successMessage } = useSelector((state:RootState) => state.registerStep3)
-
-  useEffect(() => {
-  if (successMessage) {
-    const timer = setTimeout(() => {
-      router.push('/dashboard')
-    }, 2000) // 2 seconds
-
-    return () => clearTimeout(timer) // cleanup
-  }
-}, [successMessage, router])
-
+  const step3 = useSelector((state: RootState) => state.registerStep3)
+  console.log("step3 data",step3)
   return (<>
     <div>
       <AuthNavbar />
@@ -107,12 +97,12 @@ export default function RegistrationSuccessPage() {
 
               </div>
             </div>
-            {/* <div className="flex w-full justify-center">
+            <div className="flex w-full justify-center">
               <Button onClick={() => router.push("/dashboard")} className="flex items-center gap-2">
                 Get Started
                 <FaArrowRight className="w-4 h-4" />
               </Button>
-            </div> */}
+            </div>
 
 
             <div className="text-center text-sm font-light text-gray-500">

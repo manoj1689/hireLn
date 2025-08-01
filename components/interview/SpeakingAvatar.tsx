@@ -2,19 +2,22 @@
 
 import React, { useEffect, useState } from "react";
 
-const SpeakingAvatar = ({ text, imgSrc }: { text: string; imgSrc: string }) => {
+const SpeakingAvatar = ({
+  text,
+  imgSrc,
+  candidateName,
+}: {
+  text: string;
+  imgSrc: string;
+  candidateName: string;
+}) => {
   const [pulseKey, setPulseKey] = useState(0);
   const [showRings, setShowRings] = useState(false);
 
-  // Get last 5 words
   const words = text.trim().split(/\s+/);
   const lastWords = words.slice(-5);
   const lastWordCount = lastWords.length;
 
-  //console.log("Last words:", lastWords.join(" "));
-  //console.log("Last word count:", lastWordCount);
-
-  // Adjust pulse size based on last word count
   const pulseScale = lastWordCount <= 2 ? 1.2 : lastWordCount <= 4 ? 1.5 : 2;
   const ringCount = 6;
 
@@ -23,9 +26,7 @@ const SpeakingAvatar = ({ text, imgSrc }: { text: string; imgSrc: string }) => {
       setPulseKey((prev) => prev + 1);
       setShowRings(true);
 
-      // Estimate duration: 400ms per word
       const estimatedDuration = lastWordCount * 400;
-
       const timeout = setTimeout(() => {
         setShowRings(false);
       }, estimatedDuration + 500);
@@ -34,8 +35,18 @@ const SpeakingAvatar = ({ text, imgSrc }: { text: string; imgSrc: string }) => {
     }
   }, [text]);
 
+  // 🔠 Get initials from name
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(/\s+/);
+    const first = parts[0]?.charAt(0) || "";
+    const last = parts[parts.length - 1]?.charAt(0) || "";
+    return (first + last).toUpperCase();
+  };
+
+  const initials = getInitials(candidateName || "");
+
   return (
-    <div className="relative flex flex-col items-center justify-center ">
+    <div className="relative flex flex-col items-center justify-center">
       {/* Pulse Rings */}
       {showRings &&
         Array.from({ length: ringCount }).map((_, index) => (
@@ -49,13 +60,15 @@ const SpeakingAvatar = ({ text, imgSrc }: { text: string; imgSrc: string }) => {
               } as React.CSSProperties
             }
           />
-          
         ))}
-      <img src="./images/Avatar/femaleUsAi.jpeg" className="w-20 rounded-full"/>
+
+      {/* Initials Circle */}
+      <div className="w-20 h-20 rounded-full bg-cyan-500 text-white flex border-4 border-white items-center shadow-lg justify-center text-2xl font-bold">
+        {initials}
+      </div>
     </div>
   );
 };
 
 export default SpeakingAvatar;
-
 

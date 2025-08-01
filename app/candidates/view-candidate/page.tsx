@@ -22,10 +22,14 @@ const App: React.FC = () => {
   const [candidateData, setCandidateData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false); // State to control modal visibility
+ 
   const [isHandleInterviewModal, setIsHandleInterviewModal] = useState(false);
-
+ const [refreshTrigger, setRefreshTrigger] = useState(false);
   const handleOpenModal = () => setIsHandleInterviewModal(true);
-  const handleCloseModal = () => setIsHandleInterviewModal(false);
+ const handleCloseModal = () => {
+  setIsHandleInterviewModal(false);
+  setRefreshTrigger(prev => !prev); // 👈 Trigger re-fetch
+};
 
   const jobId = searchParams.get("job_id")
   const candidateId = searchParams.get("candidate_id")
@@ -54,8 +58,9 @@ const App: React.FC = () => {
     }
 
     fetchData()
-  }, [jobId, candidateId, modalOpen, dispatch])
+  }, [jobId, candidateId, modalOpen, refreshTrigger,dispatch])
 
+console.log("candidate data",candidateData)
 
   const renderStars = (rating = 0) => {
     const stars = []
@@ -158,10 +163,9 @@ const App: React.FC = () => {
           <p className="text-white">We're excited to move forward with your application!</p>
         </div>
       </div>
-      <section className="flex flex-col lg:flex-row gap-4  ">
-
+      <section className="flex flex-col lg:flex-row gap-4 ">
         {/* Profile Header */}
-        <div className=" w-full lg:w-1/3 xl:w-1/4  ">
+        <div className=" w-full lg:w-1/3 xl:w-1/4">
           <div className="shadow-sm rounded-lg mb-4 sm:mb-6 bg-white ">
 
             <div className="flex flex-col w-full bg-primary-gradient  rounded-t-lg  py-4 justify-center items-center">
@@ -198,14 +202,10 @@ const App: React.FC = () => {
                     .toUpperCase()}
                 </div>
                 <h1 className="text-xl sm:text-2xl font-bold text-white">{candidateData.name || "N/A"}</h1>
-
-
                 <p className="text-center text-sm text-white mt-2">
                   {candidateData.education || "Degree info not available"}
                 </p>
               </div>
-
-
             </div>
 
 
@@ -218,7 +218,7 @@ const App: React.FC = () => {
                   className="cursor-pointer block max-w-full"
                 >
                   <div className="flex  items-center gap-2 text-gray-800 break-all">
-                    <Mail className="text-sky-500 w-4 h-4" />
+                    <Mail className="text-sky-500 w-4 h-4"/>
                     <span className="break-all text-sm">{candidateData.email}</span>
                   </div>
                 </a>
@@ -257,13 +257,13 @@ const App: React.FC = () => {
                   (skill: string, index: number) => {
                     const hue = Math.floor(Math.random() * 360);
                     const bgColor = `hsl(${hue}, 70%, 70%)`;
-                    const textColor = `hsl(${hue},90%, 50%)`;
+                    
 
                     return (
                       <span
                         key={index}
                         className="px-4 py-0.5 rounded-lg text-white text-xs font-medium"
-                        style={{ backgroundColor: bgColor, }}
+                        style={{ backgroundColor: bgColor }}
                       >
                         {skill.trim()}
                       </span>
@@ -286,7 +286,7 @@ const App: React.FC = () => {
                   if (candidateData.interviewStatus === null && candidateData.applicationStatus === 'APPLIED') {
                     handleOpenModal(); // Schedule Interview
                   } else if (!candidateData.applicationStatus) {
-                    openModal(); // Invite
+                    openModal(); // Invite 
                   }
                 }}
                 disabled={
@@ -294,7 +294,7 @@ const App: React.FC = () => {
                   (candidateData.applicationStatus && candidateData.applicationStatus !== 'APPLIED')
                 }
                 className={`  mx-auto gap-4 inline-flex items-center justify-center px-4 py-2 rounded-md shadow-sm text-sm font-medium text-white
-    ${candidateData.interviewStatus
+                 ${candidateData.interviewStatus
                     ? interviewStatusColorMap[candidateData.interviewStatus] || 'bg-gray-400'
                     : !candidateData.applicationStatus
                       ? 'bg-primary-gradient hover:scale-105'
@@ -302,9 +302,9 @@ const App: React.FC = () => {
                         ? 'bg-teal-600 hover:bg-teal-700'
                         : 'bg-gray-400 cursor-not-allowed'
                   }
-    focus:outline-none focus:ring-2 focus:ring-offset-2
-    ${candidateData.applicationStatus === 'APPLIED' ? 'focus:ring-teal-500' : ''}
-  `}
+                  focus:outline-none focus:ring-2 focus:ring-offset-2
+                  ${candidateData.applicationStatus === 'APPLIED' ? 'focus:ring-teal-500' : ''}
+                `}
               >
                 <Calendar />
                 {candidateData.interviewStatus
@@ -315,8 +315,6 @@ const App: React.FC = () => {
                       ? 'Already Applied'
                       : 'Invite'}
               </button>
-
-
             </div>
 
 
@@ -345,7 +343,7 @@ const App: React.FC = () => {
                   rel="noopener noreferrer"
                   className="cursor-pointer"
                 >
-                  <img
+                   <img
                     src="/images/candidate/whatsapp.png"
                     alt="WhatsApp"
                     className="w-12"
@@ -385,8 +383,6 @@ const App: React.FC = () => {
                 </a>
               )}
             </div>
-
-
           </div>
 
         </div>
