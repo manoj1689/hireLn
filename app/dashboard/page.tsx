@@ -7,7 +7,7 @@ import type { RootState, AppDispatch } from "@/lib/store"
 import { MainLayout } from "@/components/layout/main-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart3, Download, FileText, Plus, Users, Clock } from "lucide-react"
+import { BarChart3, Download, FileText, Plus, Users, Clock, MessageCircle } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MetricCard } from "@/components/metric-card"
 import { RecruitmentChart } from "@/components/recruitment-chart"
@@ -20,13 +20,15 @@ import {
   fetchDashboardMetrics,
   fetchPipelineStages,
   fetchRecruitmentTrends,
+  fetchDepartmentStats
 } from "@/lib/slices/dashboard/dashboard-slice"
+import { activityTypeIconMap } from "@/components/activity-Icons"
 
 export default function DashboardPage() {
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.auth)
-  const { metrics, activities, pipelineStages } = useSelector((state: RootState) => state.dashboard)
+  const { metrics, activities, pipelineStages, recruitmentTrends, departmentStats } = useSelector((state: RootState) => state.dashboard)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -35,99 +37,119 @@ export default function DashboardPage() {
     dispatch(fetchActivities())
     dispatch(fetchPipelineStages())
     dispatch(fetchRecruitmentTrends())
+    dispatch(fetchDepartmentStats())
   }, [dispatch])
 
   if (!mounted || !metrics) return null
 
   return (
     <MainLayout>
-      <div className="flex items-center justify-between">
+      <div className="flex w-full flex-col lg:flex-row bg-primary-gradient space-y-4 justify-between px-4 py-4 shadow-lg rounded-lg">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Recruitment Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-white">Recruitment Dashboard</h1>
+          <p className=" text-white">
             Welcome back, {user?.name || "Jack"}! Here's your recruitment overview.
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
+          {/* <Button variant="outline" size="sm" className="flex items-center gap-2">
             <Download className="h-4 w-4" />
             Download Report
-          </Button>
-          <Button size="sm" className="flex items-center gap-2">
+          </Button> */}
+          <Button size="sm" className="flex items-center gap-2" onClick={() => router.push("/jobs/create")} >
             <Plus className="h-4 w-4" />
             Create New Job
           </Button>
         </div>
       </div>
+      <div className="bg-white rounded-xl p-4 shadow-md flex flex-col border-2 lg:flex-row justify-between  mt-4 ">
+        <div className="flex w-full lg:w-2/3 items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-purple-100 text-purple-600">
+              <BarChart3 className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="text-lg font-medium">AI Interviews Completed</div>
+              <div className="text-sm font-light text-gray-400">Here’s your overall report</div>
+            </div>
+          </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
-        <MetricCard
-          icon={FileText}
-          title="Total Job Postings"
-          value={metrics.totalJobs.toString()}
-          trend="+12% vs last month"
-          trendUp={true}
-          iconColor="bg-emerald-100 text-emerald-600"
-        />
-        <MetricCard
-          icon={Users}
-          title="Active Candidates"
-          value={metrics.activeCandidates.toString()}
-          trend="+8% vs last month"
-          trendUp={true}
-          iconColor="bg-indigo-100 text-indigo-600"
-        />
-        <MetricCard
-          icon={BarChart3}
-          title="Hiring Success Rate"
-          value={`${metrics.hiringSuccessRate}%`}
-          trend="+15% vs last month"
-          trendUp={true}
-          iconColor="bg-green-100 text-green-600"
-        />
-        <MetricCard
-          icon={Clock}
-          title="Avg. Time to Hire"
-          value={`${metrics.avgTimeToHire} days`}
-          trend="-2 days vs last month"
-          trendUp={false}
-          iconColor="bg-orange-100 text-orange-600"
-        />
-        <MetricCard
-          icon={BarChart3}
-          title="AI Interviews Completed"
-          value={metrics.aiInterviewsCompleted.toString()}
-          trend="+25% vs last month"
-          trendUp={true}
-          iconColor="bg-purple-100 text-purple-600"
-          action={
+        </div>
+        <div className="flex flex-row w-full lg:w-1/3 justify-around">
+          <div className="flex flex-col justify-center items-center">
+            <div className="text-2xl font-semibold text-gray-800">{metrics.aiInterviewsCompleted.value}</div>
+            <div className={`text-sm ${true ? 'text-green-600' : 'text-red-600'}`}>
+              {metrics.aiInterviewsCompleted.change} % vs last month
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+
             <Button
               size="sm"
               variant="secondary"
-              className="mt-2 w-full"
-              onClick={() => router.push("/result/interview-results")}
+              className="mt-2 w-full border-none bg-transparent text-md hover:bg-transparent hover:scale-105  text-sky-500 underline "
+              onClick={() => router.push("/dashboard/result/interview-results")}
             >
               View Results
             </Button>
-          }
+          </div>
+        </div>
+
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          backgroundColour="bg-red-50"
+          icon={FileText}
+          title="Total Job Postings"
+          value={metrics.totalJobs.value.toString()}
+          trend={`${metrics.totalJobs.change >= 0 ? '+' : ''}${metrics.totalJobs.change}% vs last month`}
+          trendUp={metrics.totalJobs.change >= 0}
+          iconColor="bg-red-200 text-red-400"
         />
+
+        <MetricCard
+          backgroundColour="bg-indigo-50"
+          icon={Users}
+          title="Active Candidates"
+          value={metrics.activeCandidates.value.toString()}
+          trend={`${metrics.activeCandidates.change >= 0 ? '+' : ''}${metrics.activeCandidates.change}% vs last month`}
+          trendUp={metrics.activeCandidates.change >= 0}
+          iconColor="bg-indigo-200 text-indigo-400"
+        />
+
+        <MetricCard
+          backgroundColour="bg-green-50"
+          icon={BarChart3}
+          title="Hiring Success Rate"
+          value={`${metrics.hiringSuccessRate.value}%`}
+          trend={`${metrics.hiringSuccessRate.change >= 0 ? '+' : ''}${metrics.hiringSuccessRate.change}% vs last month`}
+          trendUp={metrics.hiringSuccessRate.change >= 0}
+          iconColor="bg-green-200 text-green-400"
+        />
+
+        <MetricCard
+          backgroundColour="bg-orange-50"
+          icon={Clock}
+          title="Avg. Time to Hire"
+          value={`${metrics.avgTimeToHire.value} days`}
+          trend={`${metrics.avgTimeToHire.change >= 0 ? '-' : '+'}${Math.abs(metrics.avgTimeToHire.change)}% vs last month`}
+          trendUp={metrics.avgTimeToHire.change < 0} // lower time is better
+          iconColor="bg-orange-200 text-orange-400"
+        />
+
+
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-base font-medium">Recruitment Trends</CardTitle>
-            <Tabs defaultValue="monthly">
-              <TabsList className="grid w-[240px] grid-cols-3">
-                <TabsTrigger value="weekly">Weekly</TabsTrigger>
-                <TabsTrigger value="monthly">Monthly</TabsTrigger>
-                <TabsTrigger value="yearly">Yearly</TabsTrigger>
-              </TabsList>
-            </Tabs>
+
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
-              <RecruitmentChart />
+              <RecruitmentChart recruitmentTrends={recruitmentTrends} />
             </div>
           </CardContent>
         </Card>
@@ -160,11 +182,12 @@ export default function DashboardPage() {
             </Link>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {activities.map((activity) => (
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {[...activities].reverse().map((activity) => (
                 <ActivityItem
                   key={activity.id}
-                  icon={activity.icon}
+                  type={activity.type}
+                  icon={activityTypeIconMap[activity.type] ?? <MessageCircle className="text-gray-400" />}
                   title={activity.title}
                   description={activity.description}
                   time={activity.time}
@@ -180,7 +203,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
-              <DepartmentChart />
+              <DepartmentChart departmentStats={departmentStats} />
             </div>
           </CardContent>
         </Card>

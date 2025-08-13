@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Select from "react-select"
 import { ToastContainer, toast } from 'react-toastify';
 import AuthNavbar from "@/components/auth-navbar/page"
+import Link from "next/link"
 import { FaArrowLeft } from "react-icons/fa"
 import { Mail, Lock, User } from "lucide-react";
 import { FiBriefcase, FiGrid, FiUsers, FiTrendingUp, FiClipboard } from "react-icons/fi";
@@ -540,7 +541,14 @@ export default function RegisterPage() {
               </form>
             </CardContent>
           </Card>
+          
         </div>
+         <div className="flex gap-2 mt-4 lg:mt-8 text-center font-light text-sm lg:text-md items-center">
+                  Already! have an account?{" "}
+                  <Link href="/auth/login" className="text-white text-md lg:text-lg hover:underline">
+                    Sign In
+                  </Link>
+                </div>
       </div>
 
     </>

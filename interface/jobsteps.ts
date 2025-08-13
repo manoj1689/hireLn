@@ -63,6 +63,7 @@ export interface JobRequirementsRequest {
   requiredSkills: string[]
   educationLevel: string
   certifications: string[]
+  requirements:string[]
   languages: LanguageRequirement[]
   softSkills: string[]
 }

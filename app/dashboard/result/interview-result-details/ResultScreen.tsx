@@ -140,7 +140,7 @@ const CandidateResultPage: React.FC = () => {
   console.log("result data", result)
   return (
     <MainLayout>
-      <main className="flex-1 p-6 overflow-auto">
+      <main className="flex-1 overflow-auto">
         <ToastContainer position="top-right" autoClose={3000} />
         <div className="container mx-auto space-y-4 ">
           {/* Page Header with Breadcrumbs */}
@@ -148,7 +148,7 @@ const CandidateResultPage: React.FC = () => {
             <div>
               <Button
                 variant="ghost"
-                className="mb-2 p-0 h-auto text-muted-foreground hover:text-foreground"
+                className=" p-0 h-auto text-muted-foreground hover:text-foreground"
                 onClick={() => window.history.back()}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -190,12 +190,33 @@ const CandidateResultPage: React.FC = () => {
                         <Badge variant={getStatusBadgeVariant(result?.passStatus || "")}>{result?.passStatus}</Badge>
                       </div>
                       {/* Education */}
-                      {candidateData?.education && (
-                        <div className="flex  space-y-1 flex-col">
+                      <div>
+                        {candidateData?.education.map((edu, index) => (
+                          <div
+                            key={index}
+                            className="flex flex-col  items-start lg:items-center gap-4 "
+                          >
+                            {/* Left: Degree + Institution + Location */}
+                            <div className="flex flex-col mt-4">
+                              <p className="text-base font-semibold text-gray-700">{edu.degree}</p>
+                              <p className="text-base font-medium text-gray-600">{edu.institution}</p>
+                              {edu.location && (
+                                <p className="text-sm text-gray-600">{edu.location}</p>
+                              )}
+                            </div>
 
-                          <span className="text-sm text-stone-600">{candidateData.education}</span>
-                        </div>
-                      )}
+                            {/* Right: Dates & Grade */}
+                            <div className="flex flex-col items-start lg:items-end text-sm text-gray-600">
+                              {(edu.start_date || edu.end_date) && (
+                                <span>
+                                  {edu.start_date} - {edu.end_date || "Present"}
+                                </span>
+                              )}
+
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                     <Card className="mt-4 md:mt-0">
                       <CardContent className="p-6 text-center bg-cyan-400 rounded-lg">
@@ -235,11 +256,11 @@ const CandidateResultPage: React.FC = () => {
                         </div>
 
                         {/* Skills */}
-                        {candidateData?.skills?.length > 0 && (
+                        {candidateData?.technicalSkills?.length > 0 && (
                           <div className="space-y-2">
                             <span className="font-semibold text-sky-600">Skills</span>
                             <div className="flex flex-wrap gap-2">
-                              {candidateData.skills.map((skill: string, index: number) => (
+                              {candidateData.technicalSkills.map((skill: string, index: number) => (
                                 <span
                                   key={index}
                                   className="px-4 py-1 rounded-full text-white text-xs font-medium bg-orange-400"
@@ -251,25 +272,67 @@ const CandidateResultPage: React.FC = () => {
                           </div>
                         )}
 
-                        {/* Experience */}
-                        {candidateData?.experience && (
-                          <div className="flex  space-y-1 flex-col">
-                            <span className="font-semibold text-sky-600">Experience</span>
-                            <span className="text-sm text-stone-600">{candidateData.experience}</span>
-                          </div>
-                        )}
 
 
 
-                        {/* Salary Expectation */}
-                        {candidateData?.salaryExpectation && (
-                          <div className="flex  space-y-1 flex-col">
-                            <span className="font-semibold text-sky-600">Expected Salary</span>
-                            <span className="text-sm text-stone-600">
-                              ₹{candidateData.salaryExpectation.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                        )}
+
+                        {/* Experinence */}
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-sky-600">Experience</span>
+                          {candidateData?.experience?.map((exp: any, index: any) => (
+                            <div
+                              key={index}
+                              className="flex flex-col items-start gap-4"
+                            >
+                              {/* Left: Title + Company + Location */}
+                              <div className="flex flex-col ">
+                                <p className="text-base font-semibold text-gray-700">{exp.title}</p>
+                                <p className="text-base font-medium text-gray-600">{exp.company}</p>
+                                {exp.location && (
+                                  <p className="text-sm text-gray-600">{exp.location}</p>
+                                )}
+                              </div>
+
+                              {/* Right: Dates */}
+                              <div className="flex flex-col items-start lg:items-end text-sm text-gray-600">
+                                {(exp.start_date || exp.end_date) && (
+                                  <span>
+                                    {exp.start_date} - {exp.end_date || "Present"}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Previous Jobs */}
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-sky-600">Previous Jobs</span>
+                          {candidateData?.previousJobs?.map((job: any, index: number) => (
+                            <div
+                              key={index}
+                              className="flex flex-col items-start gap-4"
+                            >
+                              {/* Left: Title + Company + Location */}
+                              <div className="flex flex-col">
+                                <p className="text-base font-semibold text-gray-700">{job.title}</p>
+                                <p className="text-base font-medium text-gray-600">{job.company}</p>
+                                {job.location && (
+                                  <p className="text-sm text-gray-600">{job.location}</p>
+                                )}
+                              </div>
+
+                              {/* Right: Dates */}
+                              <div className="flex flex-col items-start lg:items-end text-sm text-gray-600">
+                                {(job.start_date || job.end_date) && (
+                                  <span>
+                                    {job.start_date} - {job.end_date || "Present"}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
 
                         {/* Candidate Links */}
                         {(candidateData?.github || candidateData?.linkedin || candidateData?.resume || candidateData?.portfolio) && (

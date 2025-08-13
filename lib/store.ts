@@ -29,6 +29,7 @@ import joinInterviewReducer from "@/lib/slices/join_interview/interview-join-sli
 import generateInterviewQuestionsReducer from "@/lib/slices/aitools/generate-interview-questions";
 import bulkUploadQuestionsReducer from "@/lib/slices/questions/upload-bulk-questions";
 import interviewQuestionsReducer from '@/lib/slices/questions/interview-question-Slice';
+import resumeParcingReducer from "@/lib/slices/aitools/resume-parcing-slice"
 import submitAnswerReducer from "@/lib/slices/questions/submit-answer-slice";
 import autoEvaluateAnswerReducer from "@/lib/slices/questions/auto-evaluate-answer-slice";
 import fetchInterviewReducer from "@/lib/slices/interviews/fetch-interview-slice";
@@ -62,6 +63,7 @@ const rootReducer = combineReducers({
   autoEvaluateAnswer: autoEvaluateAnswerReducer,
   fetchInterview: fetchInterviewReducer,
   finalInterviewEvaluation: finalInterviewEvaluationReducer,
+  resumeParcing:resumeParcingReducer,
   interviewResult: interviewResultReducer,
   finalMail:finalMailReducer,
   companyProfile: companyProfileReducer,

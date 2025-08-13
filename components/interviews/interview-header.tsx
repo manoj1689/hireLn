@@ -27,7 +27,7 @@ export function InterviewHeader({ onScheduleInterview }: InterviewHeaderProps) {
       </div>
       <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
         <DialogTrigger asChild>
-          <Button variant="secondary">
+          <Button variant="default">
             <Eye className="mr-2 h-4 w-4" />
             View Results
           </Button>

@@ -4,7 +4,7 @@ import { PiSmileySadFill } from "react-icons/pi";
 
 function Solution() {
   return (
-    <div className='container relative mx-auto pt-12 pb-8 px-4 ' >
+    <div id='Solutions' className='container relative mx-auto pt-12 pb-8 px-4 ' >
     {/* Left Column */}
     <div className="absolute left-10 top-10 flex flex-col gap-4">
         <img src="/images/solution/image1.png" alt="Image 1" className="w-96" />

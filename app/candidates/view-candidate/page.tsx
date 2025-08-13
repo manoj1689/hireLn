@@ -13,8 +13,11 @@ import { fetchApplications } from "@/lib/slices/applicant/getapplications-slice"
 import { Calendar, Mail, MapPin, Phone, Wallet } from "lucide-react"
 import JobDetails from "./JobDetail"
 import JobStepper from "./jobStepper"
+import { useRouter } from "next/navigation"
+
 const App: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>()
+  const router=useRouter()
   const searchParams = useSearchParams()
 
   const [activeTab, setActiveTab] = useState("overview")
@@ -22,14 +25,14 @@ const App: React.FC = () => {
   const [candidateData, setCandidateData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false); // State to control modal visibility
- 
+
   const [isHandleInterviewModal, setIsHandleInterviewModal] = useState(false);
- const [refreshTrigger, setRefreshTrigger] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
   const handleOpenModal = () => setIsHandleInterviewModal(true);
- const handleCloseModal = () => {
-  setIsHandleInterviewModal(false);
-  setRefreshTrigger(prev => !prev); // 👈 Trigger re-fetch
-};
+  const handleCloseModal = () => {
+    setIsHandleInterviewModal(false);
+    setRefreshTrigger(prev => !prev); // 👈 Trigger re-fetch
+  };
 
   const jobId = searchParams.get("job_id")
   const candidateId = searchParams.get("candidate_id")
@@ -58,9 +61,9 @@ const App: React.FC = () => {
     }
 
     fetchData()
-  }, [jobId, candidateId, modalOpen, refreshTrigger,dispatch])
+  }, [jobId, candidateId, modalOpen, refreshTrigger, dispatch])
 
-console.log("candidate data",candidateData)
+  console.log("candidate data", candidateData)
 
   const renderStars = (rating = 0) => {
     const stars = []
@@ -148,13 +151,13 @@ console.log("candidate data",candidateData)
 
       {/* Breadcrumb */}
       <div className="flex items-center mb-4 sm:mb-6">
-        <a href="#" className="text-sm text-gray-500 hover:text-teal-600 cursor-pointer">
+        <span onClick={()=>router.push("/jobs")}  className="text-sm text-gray-500 hover:text-teal-600 cursor-pointer">
           <i className="fas fa-arrow-left mr-2"></i>
-          <span className="hidden sm:inline">Back to Candidates</span>
+          <span className="hidden sm:inline">Back to Jobs</span>
           <span className="sm:hidden">Back</span>
-        </a>
+        </span>
         <span className="mx-2 text-gray-400">/</span>
-        <span className="text-sm text-gray-700">Candidate Profile</span>
+        <span className="text-sm text-gray-700">Matched Candidate Profile</span>
       </div>
       {/*  Header */}
       <div className="flex flex-col sm:flex-row bg-primary-gradient  space-y-4 justify-between p-4 mb-4 shadow-lg rounded-lg">
@@ -202,15 +205,13 @@ console.log("candidate data",candidateData)
                     .toUpperCase()}
                 </div>
                 <h1 className="text-xl sm:text-2xl font-bold text-white">{candidateData.name || "N/A"}</h1>
-                <p className="text-center text-sm text-white mt-2">
-                  {candidateData.education || "Degree info not available"}
-                </p>
+
               </div>
             </div>
 
 
             {/* Contact Details */}
-            <div className="flex flex-col gap-4 w-full p-4">
+            <div className="flex flex-col w-full space-y-4 p-4">
               {/* Email */}
               {candidateData.email && (
                 <a
@@ -218,7 +219,7 @@ console.log("candidate data",candidateData)
                   className="cursor-pointer block max-w-full"
                 >
                   <div className="flex  items-center gap-2 text-gray-800 break-all">
-                    <Mail className="text-sky-500 w-4 h-4"/>
+                    <Mail className="text-sky-500 w-4 h-4" />
                     <span className="break-all text-sm">{candidateData.email}</span>
                   </div>
                 </a>
@@ -240,24 +241,56 @@ console.log("candidate data",candidateData)
               )}
 
               {/* Location */}
-              {candidateData.location && (
+              {candidateData.address && (
                 <div className="flex items-center gap-2 text-gray-800">
-                  <MapPin className="text-orange-500 w-4 h-4" />
-                  <span>{candidateData.location}</span>
+                  <MapPin className="text-orange-500 w-4 h-4 " />
+                  <span className="text-sm">{candidateData.address}</span>
                 </div>
               )}
+
+
+              {Array.isArray(candidateData.education) &&
+                candidateData.education.some((edu: { degree: string }) => edu.degree && edu.degree.trim() !== "") && (
+                  <div className="flex flex-col w-full  text-sm text-neutral-500">
+                    <div className="text-left font-semibold text-[#3B82F6]">
+                      Education
+                    </div>
+                    <div className="text-left">
+                      {candidateData.education.filter((edu: { degree: string }) => edu.degree && edu.degree.trim() !== "")
+                        .map((edu: any, index: any) => (
+                          <div key={index} className="mb-1">
+                            <span className="font-medium">{edu.degree}</span>
+                            {edu.institution && `, ${edu.institution}`}
+                            {edu.location && `, ${edu.location}`}
+                            {(edu.start_date || edu.end_date) && (
+                              <span>
+                                {" "}
+                                ({edu.start_date || "N/A"} - {edu.end_date || "Present"})
+                              </span>
+                            )}
+                            {edu.grade && (
+                              <span className="block text-xs text-neutral-400">
+                                Grade: {edu.grade}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
             </div>
 
 
             {/* Skills Section */}
-            <div className="space-y-4 px-4">
-              <span className=" font-semibold text-[#3B82F6]">Skills</span>
+            <div className=" px-4 space-y-4">
+              <span className=" text-sm font-semibold text-[#3B82F6]">Skills</span>
               <div className="flex flex-wrap gap-1 ">
-                {(Array.isArray(candidateData.skills) ? candidateData.skills : String(candidateData.skills).split(",")).map(
-                  (skill: string, index: number) => {
+                {(Array.isArray(candidateData.technicalSkills) ? candidateData.technicalSkills : String(candidateData.technicalSkills).split(",")).map(
+                  (technicalSkills: string, index: number) => {
                     const hue = Math.floor(Math.random() * 360);
                     const bgColor = `hsl(${hue}, 70%, 70%)`;
-                    
+
 
                     return (
                       <span
@@ -265,21 +298,102 @@ console.log("candidate data",candidateData)
                         className="px-4 py-0.5 rounded-lg text-white text-xs font-medium"
                         style={{ backgroundColor: bgColor }}
                       >
-                        {skill.trim()}
+                        {technicalSkills.trim()}
                       </span>
                     );
                   }
                 )}
               </div>
-            </div>
-            <div className="flex flex-col space-y-2 p-4">
-              <span className=" font-semibold text-[#3B82F6]">Experience</span>
-              <span className="text-sm font-normal text-neutral-600">{candidateData.experience}</span>
-            </div>
-            <div className="flex space-x-4 p-4 justify-center">
+              <div>
+                {Array.isArray(candidateData.experience) &&
+                  candidateData.experience.some((exp: { title: string }) => exp.title && exp.title.trim() !== "") && (
+                    <div className="flex flex-col w-full  text-sm text-neutral-500">
+                      <div className=" text-left font-semibold text-[#3B82F6]">
+                        Experience
+                      </div>
+                      <div className="text-left">
+                        {candidateData.experience
+                          .filter((exp: { title: string }) => exp.title && exp.title.trim() !== "")
+                          .map((exp: any, index: any) => (
+                            <div key={index} className="mb-1">
+                              <span className="font-medium">{exp.title}</span>
+                              {exp.company && `, ${exp.company}`}
+                              {exp.location && `, ${exp.location}`}
+                              {(exp.start_date || exp.end_date) && (
+                                <span>
+                                  {" "}
+                                  ({exp.start_date || "N/A"} - {exp.end_date || "Present"})
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+              </div>
 
-              <span className="text-2xl font-normal text-blue-600">₹{candidateData.salaryExpectation} <span className="text-red-500">*</span><span className="text-neutral-700">/yr</span></span>
+
+              <div>
+                {Array.isArray(candidateData.previousJobs) &&
+                  candidateData.previousJobs.some((job: { title: string }) => job.title && job.title.trim() !== "") && (
+                    <div className="flex flex-col  w-full text-sm text-neutral-500">
+                      <div className="text-left font-semibold text-[#3B82F6]">
+                        Previous Jobs
+                      </div>
+                      <div className="text-left">
+                        {candidateData.previousJobs
+                          .filter((job: { title: string }) => job.title && job.title.trim() !== "")
+                          .map((job: any, index: any) => (
+                            <div key={index} className="mb-2">
+                              <span className="font-medium">{job.title}</span>
+                              {job.company && `, ${job.company}`}
+                              {job.location && `, ${job.location}`}
+                              {(job.start_date || job.end_date) && (
+                                <span>
+                                  {" "}
+                                  ({job.start_date || "N/A"} - {job.end_date || "Present"})
+                                </span>
+                              )}
+                              {Array.isArray(job.description) && job.description.length > 0 && (
+                                <ul className=" list-inside mt-1 text-xs text-cyan-500">
+                                  {job.description.map((desc: any, i: any) => (
+                                    <li key={i}>{desc}</li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+              </div>
+              <span className="text-sm font-semibold text-[#3B82F6]">Languages</span>
+              <div className="flex flex-wrap gap-1">
+                {(Array.isArray(candidateData.languages)
+                  ? candidateData.languages
+                  : String(candidateData.languages).split(",")
+                ).map((language: any, index: number) => {
+                  // If it's an object like { name: "English", level: "Fluent" }
+                  const langName = typeof language === "string" ? language : language.name || "";
+                  const hue = Math.floor(Math.random() * 360);
+                  const bgColor = `hsl(${hue}, 70%, 70%)`;
+
+                  return (
+                    <span
+                      key={index}
+                      className="px-4 py-0.5 rounded-lg text-white text-xs font-medium"
+                      style={{ backgroundColor: bgColor }}
+                    >
+                      {langName.trim()}
+                    </span>
+                  );
+                })}
+              </div>
+
             </div>
+
+
             <div className="flex w-full my-4">
               <button
                 onClick={() => {
@@ -293,7 +407,7 @@ console.log("candidate data",candidateData)
                   (candidateData.interviewStatus !== null) ||
                   (candidateData.applicationStatus && candidateData.applicationStatus !== 'APPLIED')
                 }
-                className={`  mx-auto gap-4 inline-flex items-center justify-center px-4 py-2 rounded-md shadow-sm text-sm font-medium text-white
+                className={`  mx-auto gap-4 inline-flex items-center justify-center px-12 py-2 rounded-md shadow-sm text-sm font-medium text-white
                  ${candidateData.interviewStatus
                     ? interviewStatusColorMap[candidateData.interviewStatus] || 'bg-gray-400'
                     : !candidateData.applicationStatus
@@ -343,7 +457,7 @@ console.log("candidate data",candidateData)
                   rel="noopener noreferrer"
                   className="cursor-pointer"
                 >
-                   <img
+                  <img
                     src="/images/candidate/whatsapp.png"
                     alt="WhatsApp"
                     className="w-12"

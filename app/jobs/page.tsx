@@ -18,8 +18,21 @@ import ViewJobModal from "./ViewJobModal"
 import EditJobModal from "./EditJobModal"
 import MatchedCandidateModal from "./MatchedCandidateModal"
 
+const departmentOptions = [
+  { value: "engineering", label: "Engineering" },
+  { value: "product", label: "Product" },
+  { value: "design", label: "Design" },
+  { value: "marketing", label: "Marketing" },
+  { value: "sales", label: "Sales" },
+  { value: "hr", label: "Human Resources" },
+  { value: "finance", label: "Finance" },
+  { value: "operations", label: "Operations" },
+];
+
+
 export default function JobsPage() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedDepartment, setselectedDepartment] = useState("")
   const [statusFilter, setStatusFilter] = useState<'DRAFT' | 'ACTIVE' | 'PAUSED' | 'CLOSED' | 'all'>('all')
   const [openModal, setOpenModal] = useState(false)
   const [editOpenModal, setEditOpenModal] = useState(false)
@@ -29,13 +42,16 @@ export default function JobsPage() {
   const dispatch = useDispatch<AppDispatch>()
   const { jobs, loading, error } = useSelector((state: any) => state.jobsList)
 
-  useEffect(() => {
-    if (statusFilter !== 'all') {
-      dispatch(fetchJobs({ skip: 0, limit: 10, status: statusFilter, search: searchQuery }))
-    } else {
-      dispatch(fetchJobs({ skip: 0, limit: 10, search: searchQuery }))
-    }
-  }, [dispatch, searchQuery, statusFilter])
+useEffect(() => {
+  if (statusFilter !== 'all') {
+    dispatch(fetchJobs({ skip: 0, limit: 10, status: statusFilter, search: searchQuery }));
+  } else if (selectedDepartment !== 'all') {
+    dispatch(fetchJobs({ skip: 0, limit: 10, department: selectedDepartment, search: searchQuery }));
+  } else {
+    dispatch(fetchJobs({ skip: 0, limit: 10, search: searchQuery }));
+  }
+}, [dispatch, searchQuery, statusFilter, selectedDepartment]);
+
 
   const openJobModal = (jobId: string) => {
     setSelectedJobId(jobId)
@@ -81,10 +97,10 @@ export default function JobsPage() {
         return <Badge variant="secondary">{status}</Badge>
     }
   }
- console.log("job list",jobs)
+  console.log("job list", jobs)
   return (
     <MainLayout>
-      
+
       <div className="flex bg-primary-gradient items-center justify-between p-4 rounded-lg shadow-lg">
         <div>
           <h1 className="text-2xl font-bold text-white">Jobs</h1>
@@ -114,7 +130,24 @@ export default function JobsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            
             <div className="flex items-center gap-2">
+              <Select value={selectedDepartment} onValueChange={(value) => setselectedDepartment(value)}>
+              <SelectTrigger className="w-[180px]">
+                <div className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  <SelectValue placeholder="Department" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+               <SelectItem value="all">All Departments</SelectItem>
+                {departmentOptions.map((dept) => (
+                  <SelectItem key={dept.value} value={dept.value}>
+                    {dept.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
               <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
                 <SelectTrigger className="w-[180px]">
                   <div className="flex items-center gap-2">
@@ -156,7 +189,7 @@ export default function JobsPage() {
                     <TableCell colSpan={7} className="text-center text-red-600">{error}</TableCell>
                   </TableRow>
                 ) : (
-                  jobs.map((job) => (
+                  jobs.map((job:any) => (
                     <TableRow key={job.id}>
                       <TableCell className="font-medium">
                         <Link href={`/jobs/${job.id}`} className="flex items-center gap-4 hover:text-primary hover:underline">

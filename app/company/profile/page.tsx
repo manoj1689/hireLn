@@ -25,6 +25,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/lib/store";
 import { CompanyFormData } from "@/interface/company";
 import CompanyLocationsPage from "./CompanyLocations";
+import { MainLayout } from "@/components/layout/main-layout";
 
 export default function CompanyProfilePage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -99,6 +100,7 @@ export default function CompanyProfilePage() {
   };
 
   return (
+    <MainLayout>
     <div className="container mx-auto py-6">
       <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
@@ -353,5 +355,7 @@ export default function CompanyProfilePage() {
         </TabsContent>
       </Tabs>
     </div>
+    </MainLayout>
+
   );
 }

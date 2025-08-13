@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { MainLayout } from "@/components/layout/main-layout"
 
 export default function TeamMembersPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -145,7 +146,8 @@ export default function TeamMembersPage() {
   )
 
   return (
-    <div className="container mx-auto py-6">
+    <MainLayout>
+<div className="container mx-auto py-6">
       <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/dashboard" className="hover:text-foreground">
           Dashboard
@@ -325,5 +327,8 @@ export default function TeamMembersPage() {
         </CardContent>
       </Card>
     </div>
+
+    </MainLayout>
+    
   )
 }

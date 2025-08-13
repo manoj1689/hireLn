@@ -47,7 +47,7 @@ interface RequirementsStepProps {
   sessionId: string;
 }
 
-export default function RequirementsStep({ onSuccess, sessionId }: RequirementsStepProps) {
+export default function RequirementsStep({ onSuccess }: RequirementsStepProps) {
   const dispatch = useDispatch<AppDispatch>();
 
   const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
@@ -59,6 +59,10 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
   const [selectedLanguage, setSelectedLanguage] = useState(languageOptions[0]);
   const [selectedLevel, setSelectedLevel] = useState(levelOptions[0]);
   const [selectedSoftSkills, setSelectedSoftSkills] = useState<string[]>([]);
+
+  // ✅ NEW: Job Requirements
+  const [jobRequirements, setJobRequirements] = useState<string[]>([]);
+  const [jobRequirementInput, setJobRequirementInput] = useState("");
 
   const softSkills = [
     "Problem-solving",
@@ -78,6 +82,7 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
     if (certifications.length === 0) newErrors.certifications = "Add at least one certification";
     if (languages.length === 0) newErrors.languages = "Add at least one language";
     if (selectedSoftSkills.length === 0) newErrors.softSkills = "Select at least one soft skill";
+    if (jobRequirements.length === 0) newErrors.jobRequirements = "Add at least one job requirement";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -115,6 +120,20 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
     );
   };
 
+  // ✅ Job Requirements Add Handler
+  const handleAddJobRequirement = () => {
+    const trimmed = jobRequirementInput.trim();
+    if (!trimmed) return;
+    if (jobRequirements.includes(trimmed)) {
+      setErrors((prev) => ({ ...prev, jobRequirements: "Already added" }));
+      return;
+    }
+    const updated = [...jobRequirements, trimmed];
+    setJobRequirements(updated);
+    setJobRequirementInput("");
+    setErrors((prev) => ({ ...prev, jobRequirements: "" }));
+  };
+
   const handleSubmit = async () => {
     if (!validate()) return;
 
@@ -124,11 +143,15 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
       certifications,
       languages,
       softSkills: selectedSoftSkills,
+      requirements:jobRequirements, // ✅ send to API
     };
 
     try {
       const res = await dispatch(
-        submitJobRequirementsStep({ sessionId: JobStep2.response?.sessionId, details: payload })
+        submitJobRequirementsStep({
+          sessionId: JobStep2.response?.sessionId,
+          details: payload,
+        })
       ).unwrap();
       onSuccess();
     } catch (err) {
@@ -147,14 +170,16 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
     setSelectedLanguage(languageOptions[0]);
     setSelectedLevel(levelOptions[0]);
     setSelectedSoftSkills([]);
+    setJobRequirements([]);
+    setJobRequirementInput("");
     setErrors({});
   };
 
   return (
     <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-      <div className="flex flex-col lg:flex-row  gap-4">
+      <div className="flex flex-col lg:flex-row gap-4">
         {/* Required Skills */}
-        <div className="space-y-2  lg:w-1/2">
+        <div className="space-y-2 lg:w-1/2">
           <Label htmlFor="requiredSkills" className="flex items-center gap-1">
             <Wand2 className="h-4 w-4" />
             Required Skills
@@ -175,7 +200,7 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
         </div>
 
         {/* Education Level */}
-        <div className="space-y-2  lg:w-1/2">
+        <div className="space-y-2 lg:w-1/2">
           <Label className="flex items-center gap-1">
             <GraduationCap className="h-4 w-4" />
             Education Level
@@ -192,7 +217,6 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
         </div>
       </div>
 
-
       {/* Certifications */}
       <div className="space-y-2">
         <Label htmlFor="certifications" className="flex items-center gap-1">
@@ -206,11 +230,10 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
             value={certInput}
             onChange={(e) => setCertInput(e.target.value)}
           />
-          <Button type="button" variant="default"  size="sm" className="" onClick={handleAddCertification}>
+          <Button type="button" size="sm" onClick={handleAddCertification}>
             + Add
           </Button>
         </div>
-
         {errors.certifications && <p className="text-red-500 text-sm">{errors.certifications}</p>}
         <div className="flex flex-wrap gap-2 mt-2">
           {certifications.map((cert, idx) => (
@@ -240,7 +263,7 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
               onChange={(val) => setSelectedLevel(val!)}
             />
           </div>
-          <Button type="button" variant="default"  onClick={handleAddLanguage}>
+          <Button type="button" onClick={handleAddLanguage}>
             + Add
           </Button>
         </div>
@@ -253,7 +276,30 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
           ))}
         </div>
       </div>
-
+      {/* ✅ Job Requirements */}
+      <div className="space-y-2">
+        <Label htmlFor="jobRequirements" className="flex items-center gap-1">
+          <Wand2 className="h-4 w-4" />
+          Job Requirements
+        </Label>
+        <div className="flex gap-4 items-center">
+          <Input
+            id="jobRequirements"
+            placeholder="Add a job requirement"
+            value={jobRequirementInput}
+            onChange={(e) => setJobRequirementInput(e.target.value)}
+          />
+          <Button type="button" size="sm" onClick={handleAddJobRequirement}>
+            + Add
+          </Button>
+        </div>
+        {errors.jobRequirements && <p className="text-red-500 text-sm">{errors.jobRequirements}</p>}
+        <div className="flex flex-wrap gap-2 mt-2">
+          {jobRequirements.map((req, idx) => (
+            <span key={idx} className="bg-muted text-sm px-3 py-1 rounded-full">{req}</span>
+          ))}
+        </div>
+      </div>
       {/* Soft Skills */}
       <div className="space-y-2">
         <Label className="flex items-center gap-1">
@@ -277,23 +323,15 @@ export default function RequirementsStep({ onSuccess, sessionId }: RequirementsS
         {errors.softSkills && <p className="text-red-500 text-sm">{errors.softSkills}</p>}
       </div>
 
-      {/* Reset and Continue */}
+
+
+      {/* Buttons */}
       <div className="flex justify-between">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={resetForm}
-        
-        >
+        <Button type="button" variant="outline" onClick={resetForm}>
           <RotateCcw className="h-4 w-4" />
           Reset
         </Button>
-
-        <Button
-          type="submit"
-          variant="default" 
-          
-        >
+        <Button type="submit">
           Continue
           <ArrowRight className="h-4 w-4" />
         </Button>

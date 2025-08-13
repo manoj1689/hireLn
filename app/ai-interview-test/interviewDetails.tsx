@@ -1,6 +1,6 @@
 import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Mail, Phone, MapPin, Clock, Video, Globe, Calendar } from "lucide-react"
+import { Mail, Phone, MapPin, Clock, Video, Globe, Calendar, GraduationCap } from "lucide-react"
 import { InterviewResponse } from "@/interface/interview"
 import { InterviewJoinData } from "@/interface/join-interview"
 import dayjs from "dayjs"
@@ -26,22 +26,38 @@ export default function InterviewCard({ interview }: InterviewCardProps) {
                             {initials}
                         </AvatarFallback>
                     </Avatar>
-                    <div className="text-left">
+                    <div className="text-left ">
                         <h2 className="text-lg font-semibold text-gray-800">{interview.candidateName}</h2>
-                        <p className="text-xs text-gray-600">{interview.candidateEducation}</p>
+                        <div className="flex gap-2 items-center">
+                            <Mail className="w-4 h-4 text-sky-500" />
+                            <span>{interview.candidateEmail}</span>
+                        </div>
+
+                        <div className="flex gap-2 items-center">
+                            <MapPin className="w-4 h-4 text-orange-500" />
+                            <span>{interview.candidateLocation}</span>
+                        </div>
                     </div>
                 </div>
 
                 {/* Contact */}
-                <CardContent className="space-y-4 text-sm text-left text-gray-700">
-                    <div className="flex gap-2">
-                        <Mail className="w-4 h-4 text-sky-500" />
-                        <span>{interview.candidateEmail}</span>
-                    </div>
-
-                    <div className="flex   gap-2">
-                        <MapPin className="w-4 h-4 text-orange-500" />
-                        <span>{interview.candidateLocation}</span>
+                <CardContent className=" text-sm text-left text-gray-700">
+                    <div>
+                        {/* Education */}
+                        {Array.isArray(interview.candidateEducation) && interview.candidateEducation.length > 0 && (
+                            <div>
+                                {interview.candidateEducation.map((edu, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex gap-4"
+                                    >
+                                        {/* Left: Degree */}
+                                        <span><GraduationCap size={20} color="cyan"/></span><p className="text-base font-semibold text-gray-900">{edu.degree}</p>
+                                         
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </CardContent>
 
@@ -85,7 +101,7 @@ export default function InterviewCard({ interview }: InterviewCardProps) {
                     <div className="flex items-center gap-2 mt-4">
                         <Calendar className="text-green-400 w-12 h-12" />
                         <span className="text-gray-600 text-lg">{dayjs(interview.scheduledAt).format("D MMM YYYY, h:mm a")}</span>
-                       
+
                     </div>
                 </div>
 

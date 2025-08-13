@@ -6,6 +6,7 @@ import {
   PipelineStage,
   RecruitmentTrend,
   DashboardMetrics,
+  DepartmentStat
 } from '@/interface/dashboard';
 
 interface DashboardState {
@@ -15,6 +16,7 @@ interface DashboardState {
   pipelineStages: PipelineStage[];
   recruitmentTrends: RecruitmentTrend[];
   metrics: DashboardMetrics | null;
+  departmentStats: DepartmentStat[]
 }
 
 const initialState: DashboardState = {
@@ -23,6 +25,7 @@ const initialState: DashboardState = {
   activities: [],
   pipelineStages: [],
   recruitmentTrends: [],
+  departmentStats: [],
   metrics: null,
 };
 
@@ -75,6 +78,20 @@ export const fetchDashboardMetrics = createAsyncThunk<DashboardMetrics>(
   }
 );
 
+export const fetchDepartmentStats = createAsyncThunk<DepartmentStat[]>(
+  'dashboard/fetchDepartmentStats',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosApi.get('/api/dashboard/department-stats')
+      console.log(response)
+      return response.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.detail || 'Failed to load department stats')
+    }
+  }
+)
+
+
 // Slice
 const dashboardSlice = createSlice({
   name: 'dashboard',
@@ -86,6 +103,7 @@ const dashboardSlice = createSlice({
       state.activities = [];
       state.pipelineStages = [];
       state.recruitmentTrends = [];
+      state.departmentStats = []
       state.metrics = null;
     },
   },
@@ -141,7 +159,20 @@ const dashboardSlice = createSlice({
       .addCase(fetchDashboardMetrics.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-      });
+      })
+      // Department Stats
+      .addCase(fetchDepartmentStats.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchDepartmentStats.fulfilled, (state, action: PayloadAction<DepartmentStat[]>) => {
+        state.loading = false;
+        state.departmentStats = action.payload;
+      })
+      .addCase(fetchDepartmentStats.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
   },
 });
 

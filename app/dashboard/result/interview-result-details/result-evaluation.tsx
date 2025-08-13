@@ -82,7 +82,7 @@ export const EvaluationTabs = ({ evaluations }: { evaluations: any[] }) => {
                     Q{idx + 1}: <span className="text-primary">{e.questionText}</span>
                   </p>
                   <p className={`text-xs ${getColor(e.score === 1 ? "poor" : "good")}`}>
-                    Score: {e.score}/10
+                    Score: {e.score}/5
                   </p>
                 </div>
                 <Button

@@ -3,27 +3,22 @@
 import { useEffect, useState } from "react"
 import {
   Chart as ChartJS,
-  LineElement,
+  BarElement,
   CategoryScale,
   LinearScale,
-  PointElement,
   Tooltip,
-  Filler,
+  Legend,
 } from "chart.js"
-import { Line } from "react-chartjs-2"
+import { Bar } from "react-chartjs-2"
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler)
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
-const data = [
-  { month: "Jan", applications: 150 },
-  { month: "Feb", applications: 230 },
-  { month: "Mar", applications: 224 },
-  { month: "Apr", applications: 218 },
-  { month: "May", applications: 135 },
-  { month: "Jun", applications: 147 },
-]
+interface RecruitmentData {
+  month: string
+  applications: number
+}
 
-export function RecruitmentChart() {
+export function RecruitmentChart({ recruitmentTrends }: { recruitmentTrends: RecruitmentData[] }) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -39,23 +34,15 @@ export function RecruitmentChart() {
   }
 
   const chartData = {
-    labels: data.map((d) => d.month),
+    labels: recruitmentTrends.map((d) => d.month),
     datasets: [
       {
         label: "Applications",
-        data: data.map((d) => d.applications),
-        fill: true,
-        backgroundColor: (context: any) => {
-          const ctx = context.chart.ctx
-          const gradient = ctx.createLinearGradient(0, 0, 0, 300)
-          gradient.addColorStop(0, "rgba(12, 197, 185, 0.2)")
-          gradient.addColorStop(1, "rgba(12, 197, 185, 0)")
-          return gradient
-        },
+        data: recruitmentTrends.map((d) => d.applications),
+        backgroundColor: "rgba(12, 197, 185, 0.6)",
         borderColor: "#0CC5B9",
-        tension: 0.4,
-        pointBackgroundColor: "#0CC5B9",
-        pointBorderColor: "#0CC5B9",
+        borderWidth: 1,
+        borderRadius: 6,
       },
     ],
   }
@@ -98,7 +85,8 @@ export function RecruitmentChart() {
           font: {
             size: 12,
           },
-          stepSize: 20,
+          stepSize: 1,
+          beginAtZero: true,
         },
       },
     },
@@ -106,7 +94,7 @@ export function RecruitmentChart() {
 
   return (
     <div className="h-[300px] w-full">
-      <Line data={chartData} options={chartOptions} />
+      <Bar data={chartData} options={chartOptions} />
     </div>
   )
 }

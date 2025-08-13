@@ -6,3 +6,4 @@ export enum ApplicationStatus {
   HIRED = 'HIRED',
   REJECTED = 'REJECTED',
 }
+

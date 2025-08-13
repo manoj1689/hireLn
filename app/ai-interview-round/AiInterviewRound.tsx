@@ -22,7 +22,7 @@ import {
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { Calendar, Clock, Mail, MapPin, Video } from "lucide-react"
-import {  FaMapMarkerAlt } from "react-icons/fa"
+import { FaMapMarkerAlt } from "react-icons/fa"
 import AuthNavbar from "@/components/auth-navbar/page"
 
 dayjs.extend(duration)
@@ -157,11 +157,13 @@ const InterviewInfoPage = () => {
                   {interview.candidateName.split(" ").map((n) => n[0]).join("").toUpperCase()}
                 </div>
                 <h1 className="text-xl sm:text-2xl font-bold text-white">{interview.candidateName}</h1>
-                <p className="text-center text-sm text-white mt-2">
-                  {interview.candidateEducation || "Degree info not available"}
-                </p>
+
+
+
+
               </div>
             </div>
+
             <div className="p-4 space-y-4 ">
               {/* Contact Info */}
               <div className="flex flex-col gap-4 w-full ">
@@ -179,7 +181,40 @@ const InterviewInfoPage = () => {
                   </div>
                 )}
               </div>
+              <div>
+                {/* Education */}
+                {Array.isArray(interview.candidateEducation) && interview.candidateEducation.length > 0 && (
+                  <div className="bg-slate-100 p-4 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 className="text-blue-500 font-semibold ">Education</h3>
 
+                    {interview.candidateEducation.map((edu, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-col  items-start lg:items-center gap-4 "
+                      >
+                        {/* Left: Degree + Institution + Location */}
+                        <div className="flex flex-col">
+                          <p className="text-base font-semibold text-gray-900">{edu.degree}</p>
+                          <p className="text-base font-medium text-gray-500">{edu.institution}</p>
+                          {edu.location && (
+                            <p className="text-sm text-gray-500">{edu.location}</p>
+                          )}
+                        </div>
+
+                        {/* Right: Dates & Grade */}
+                        <div className="flex flex-col items-start lg:items-end text-sm text-gray-600">
+                          {(edu.start_date || edu.end_date) && (
+                            <span>
+                              {edu.start_date} - {edu.end_date || "Present"}
+                            </span>
+                          )}
+
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               {/* Skills */}
               <div className=" space-y-2">
                 <span className="font-semibold text-[#3B82F6]">Skills</span>
@@ -187,22 +222,69 @@ const InterviewInfoPage = () => {
                 {Array.isArray(interview.candidateSkills) && interview.candidateSkills.length > 0 && (
 
                   <div className="flex flex-wrap gap-2">
-                    {interview.candidateSkills.map((skill: string, index: number) => (
-                      <span
-                        key={index}
-                        className="px-4 py-0.5 rounded-full text-white text-xs font-medium bg-orange-300"
-                      >
-                        {skill.trim()}
-                      </span>
-                    ))}
+                    {interview.candidateSkills.map((skill: string, idx: number) => {
+                      const hue = 180 + (idx * 40) % 360;
+                      return (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 rounded-full text-xs font-medium"
+                          style={{
+                            background: `hsl(${hue}, 80%, 85%)`,
+                            color: `hsl(${hue}, 60%, 35%)`,
+                            border: `1px solid hsl(${hue}, 60%, 70%)`,
+                          }}
+                        >
+                          {skill.trim()}
+                        </span>
+                      );
+                    })}
                   </div>
+
                 )}
               </div>
 
+
               {/* Experience */}
               <div className="flex flex-col space-y-2">
-                <span className="font-semibold text-[#3B82F6]">Experience</span>
-                <span className="text-sm font-normal text-stone-500">{interview.candidateExperience}</span>
+
+
+                {Array.isArray(interview.candidateExperience) && interview.candidateExperience.length > 0 && (
+                  <div className="bg-slate-100 p-4 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 className="text-blue-500 font-semibold ">Experience</h3>
+
+                    {interview.candidateExperience.map((exp, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b last:border-b-0 pb-4 mb-4 last:pb-0 last:mb-0"
+                      >
+                        {/* Left: Job Title + Company + Location */}
+                        <div className="flex flex-col">
+                          <p className="text-base font-semibold text-gray-900">{exp.jobTitle}</p>
+                          <p className="text-base font-medium text-gray-500">{exp.company}</p>
+                          {exp.location && (
+                            <p className="text-sm text-gray-500">{exp.location}</p>
+                          )}
+                        </div>
+
+                        {/* Right: Dates & Description */}
+                        <div className="flex flex-col items-start lg:items-end text-sm text-gray-600">
+                          {(exp.start_date || exp.end_date) && (
+                            <span>
+                              {exp.start_date} - {exp.end_date || "Present"}
+                            </span>
+                          )}
+                          {exp.description && (
+                            <span className="mt-1 text-gray-600 max-w-xs text-sm">
+                              {exp.description}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* <span className="text-sm font-normal text-stone-500">{interview.candidateExperience}</span> */}
               </div>
               {/* Notes */}
               {interview.notes && (
@@ -230,7 +312,7 @@ const InterviewInfoPage = () => {
                     <img src="/images/candidate/download.png" alt="Download" className="w-12" />
                   </a>
                 )}
-                
+
               </div>
             </div>
 

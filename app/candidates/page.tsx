@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useRouter } from "next/navigation"
-import { Upload, UserPlus } from "lucide-react"
+import { Upload, UserPlus, MapPin, UserCheck, Filter, Delete } from "lucide-react"
 import Select from "react-select"
-
+import { Search, Globe, Briefcase, Settings2 } from "lucide-react";
 import { MainLayout } from "@/components/layout/main-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,60 +19,66 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import Multiselect from "multiselect-react-dropdown";
-import { candidateCategories } from "./candidate-cateories"
-import AddCandidateModal from "./add-candidate"
+
 import { CandidateCard } from "./candidate-list"
 import { AppDispatch, RootState } from "@/lib/store"
-import { fetchCandidates } from "@/lib/slices/candidate/candidate-slice"
+import { fetchCandidates, resetCandidateState } from "@/lib/slices/candidate/candidate-slice"
+import { CountryDropdown, RegionDropdown } from "react-country-region-selector"
+import { uploadResumes } from "@/lib/slices/aitools/resume-parcing-slice"
+import BulkResumeUploadDialog from "./BulkResumeUploadDialog"
+import { RxReload } from "react-icons/rx"
 
 export default function CandidatesPage() {
   const dispatch = useDispatch<AppDispatch>()
+  const router = useRouter()
   const { data: candidates, loading, error } = useSelector((state: RootState) => state.candidate)
 
   const [searchQuery, setSearchQuery] = useState("")
   const [page, setPage] = useState(1)
-  const [showAddCandidateDialog, setShowAddCandidateDialog] = useState(false)
+
   const [showScheduleDialog, setShowScheduleDialog] = useState(false)
   const [showBulkUploadDialog, setShowBulkUploadDialog] = useState(false)
-  const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null)
+  const [technicalSkills, setTechnicalSkills] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState<string>("");
 
-  const itemsPerPage = 10
+  const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if ((e.key === 'Enter' || e.key === ',') && skillInput.trim()) {
+      e.preventDefault();
+      setTechnicalSkills([...technicalSkills, skillInput.trim()]);
+      setSkillInput(""); // clear input
+    }
+  };
+
+  const removeSkill = (index: number) => {
+    setTechnicalSkills(technicalSkills.filter((_, i) => i !== index));
+  };
+
+  const itemsPerPage = 6
 
   useEffect(() => {
-    dispatch(fetchCandidates({ skip: (page - 1) * itemsPerPage, limit: itemsPerPage, search: searchQuery }))
-  }, [dispatch, searchQuery, page])
+    dispatch(fetchCandidates({
+      skip: (page - 1) * itemsPerPage,
+      limit: itemsPerPage,
+      search: searchQuery,
+      technicalSkills,
 
-  const handleNextPage = () => setPage(page + 1)
-  const handlePrevPage = () => page > 1 && setPage(page - 1)
+    }))
+  }, [dispatch, searchQuery, page, technicalSkills])
 
-  const handleScheduleInterview = (candidateId: string) => {
-    setSelectedCandidate(candidateId)
-    setShowScheduleDialog(true)
-  }
 
-  const positionOptions = [
-    { value: "all", label: "All Positions" },
-    { value: "frontend", label: "Frontend Developer" },
-    { value: "backend", label: "Backend Engineer" },
-    { value: "product", label: "Product Designer" },
-    { value: "marketing", label: "Marketing Manager" },
-    { value: "sales", label: "Sales Representative" },
-  ]
+  const handleUpload = (files: File[]) => {
+    dispatch(uploadResumes(files));
+  };
+
+  const handleNextPage = () => setPage((prev) => prev + 1)
+  const handlePrevPage = () => page > 1 && setPage((prev) => prev - 1)
 
   const experienceOptions = [
-    { value: "all", label: "All Levels" },
-    { value: "entry", label: "Entry Level (0–2 years)" },
-    { value: "mid", label: "Mid Level (3–5 years)" },
-    { value: "senior", label: "Senior (6+ years)" },
-  ]
-
-  const locationOptions = [
-    { value: "all", label: "All Locations" },
-    { value: "remote", label: "Remote" },
-    { value: "newyork", label: "New York" },
-    { value: "london", label: "London" },
-    { value: "singapore", label: "Singapore" },
+    { value: '0-1', label: '0–1 year' },
+    { value: '1-3', label: '1–3 years' },
+    { value: '3-5', label: '3–5 years' },
+    { value: '5-10', label: '5–10 years' },
+    { value: '10+', label: '10+ years' },
   ]
 
   const allowedStatuses = ["APPLIED", "SCREENING", "INTERVIEW", "OFFER", "HIRED", "REJECTED"] as const
@@ -98,34 +104,21 @@ export default function CandidatesPage() {
       ? (value as InterviewStatus)
       : "NOT SCHEDULED"
   }
-  const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<any>(null);
 
-  const handleCategorySelect = (selectedList: any[]) => {
-    const selected = selectedList[0];
-    setSelectedCategory(selected);
-    setSelectedSubcategory(null);
-  };
-
-  const handleSubcategorySelect = (selectedList: any[]) => {
-    const selected = selectedList[0];
-    setSelectedSubcategory(selected);
-  };
   return (
     <MainLayout>
       {/* Header */}
       <div className="flex flex-col sm:flex-row bg-primary-gradient  space-y-4 justify-between p-4 shadow-lg rounded-lg">
         <div>
           <h1 className="text-3xl text-white font-bold tracking-tight">Candidates Management</h1>
-          <p className="text-white">125 total candidates, 45 new this week</p>
-
+          <p className="text-white"><span>Total candidates </span> <span className="text-lg text-yellow-200">{candidates?.length}</span> </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowBulkUploadDialog(true)}>
             <Upload className="h-4 w-4 mr-1" />
             Bulk Upload
           </Button>
-          <Button variant="outline" onClick={() => setShowAddCandidateDialog(true)}>
+          <Button variant="outline" onClick={() => router.push("/candidates/create-candidate")}>
             <UserPlus className="h-4 w-4 mr-1" />
             Add Candidate
           </Button>
@@ -133,152 +126,115 @@ export default function CandidatesPage() {
       </div>
 
       {/* Filters */}
-      <div className="w-full mt-6 flex flex-col md:flex-row items-center gap-4">
-        <Input
-          type="search"
-          placeholder="Search Candidate..."
-          className="w-full md:w-1/3"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
 
-      </div>
-      <div className="flex flex-col lg:flex-row gap-4">
 
-        {/* Candidate List */}
-        <div className="mt-6 lg:w-3/4 order-2 lg:order-1">
-          {loading && <p>Loading...</p>}
-          {error && <p className="text-red-500">{error}</p>}
-          {!loading && !error && candidates && candidates.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 ">
-              {candidates.map((candidate) => (
-                <CandidateCard
-                  key={candidate.id}
-                  name={candidate.name}
-                  location={candidate.location}
-                  experience={candidate.experience}
-                  appliedAt={candidate.createdAt}
-                  aiMatch={Math.floor(Math.random() * 21) + 80}
-                  education={candidate.education}
-                  applicationStatus={toValidStatus(candidate.applicationStatus)}
-                  interviewStatus={toValidInterviewStatus(candidate.interviewStatus)}
-                  phone={candidate.phone}
-                  skills={candidate.skills}
+      <div className="flex flex-col md:flex-row gap-4 w-full my-4">
+        <div className="flex w-full justify-between gap-4">
+          {/* Skills input */}
+          <div className="flex flex-col w-full ">
+            <div className="relative w-full">
+              <div>
+                <UserCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+                <Input
+                  placeholder="Skills (comma or space separated)"
+
+                  className="w-full pl-10 bg-white focus:outline-none focus:ring-0"
+                  type="text"
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  onKeyDown={handleSkillKeyDown}
                 />
-              ))}
-            </div>
-          ) : !loading && !error ? (
-            <p className="text-muted-foreground">No candidates found.</p>
-          ) : null}
+              </div>
 
-          {/* Pagination */}
-          <div className="flex justify-between mt-6">
-            <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={page === 1}>
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextPage}
-              disabled={(candidates?.length ?? 0) < itemsPerPage}
-            >
-              Next
-            </Button>
+
+            </div>
+
+            {/* Skill badges */}
+            <div className="flex flex-wrap gap-1 mt-2 ">
+              {(Array.isArray(technicalSkills) ? technicalSkills : String(technicalSkills).split(",")).map((skill: string, index: number) => {
+                const hue = Math.floor(Math.random() * 360);
+                const bgColor = `hsl(${hue}, 90%, 85%)`;
+                const textColor = `hsl(${hue}, 30%, 40%)`;
+                return (
+                  <span
+                    key={index}
+                    className="flex px-2 py-0.5 rounded-full text-xs font-light gap-1 whitespace-nowrap items-center"
+                    style={{ backgroundColor: bgColor, color: textColor }}
+                  >
+                    <span> {skill.trim()}</span>
+                    <span><button onClick={() => removeSkill(index)} className=" text-red-500"><Delete size={16} /></button></span>
+                  </span>
+                );
+              })}
+            </div>
           </div>
 
         </div>
-        <div className="flex flex-col mt-6 lg:w-1/4 order-1 lg:order-2 gap-4">
-          <div className="bg-sky-50 p-4 rounded-lg shadow-lg">
-            <div className="text-lg font-semibold ">Quick filters</div>
-            <div className="space-y-6 max-w-md mx-auto">
-              {/* Always active filters */}
-              <div>
-                <Select
-                  options={experienceOptions}
-                  placeholder="Experience"
-                  isClearable
-                  onChange={(o) => console.log(o)}
-                />
-              </div>
-              <div className="w-full">
-                <Select
-                  options={locationOptions}
-                  placeholder="Location"
-                  isClearable
-                  onChange={(o) => console.log(o)}
-                />
-              </div>
-
-              {/* Conditional filters */}
-              <div>
-                <label className="font-medium text-sm">Select Job Category</label>
-                <Multiselect
-                  options={candidateCategories}
-                  singleSelect
-                  displayValue="label"
-                  onSelect={handleCategorySelect}
-                  onRemove={() => setSelectedCategory(null)}
-                  placeholder="Choose Category"
-                />
-              </div>
-
-              <div>
-                <label className="font-medium text-sm">Select Job Role</label>
-                <Multiselect
-                  options={selectedCategory?.subcategories || []}
-                  singleSelect
-                  displayValue="label"
-                  onSelect={handleSubcategorySelect}
-                  onRemove={() => setSelectedSubcategory(null)}
-                  placeholder="Choose Role"
-                  disable={!selectedCategory}
-                />
-              </div>
-
-              <div>
-                <label className="font-medium text-sm">Required Skills</label>
-                <Multiselect
-                  options={selectedSubcategory?.skills || []}
-                  isObject={false}
-                  placeholder="Select Required Skills"
-                  showCheckbox
-                  disable={!selectedSubcategory}
-                />
-              </div>
-            </div>
-
-            <div className="flex py-4 justify-center">
-              <Button >Find Candidate</Button>
-            </div>
-          </div>
-          <div className="bg-orange-50 rounded-lg shadow-lg p-4">
-            <div className="text-lg font-semibold ">Recent Activity</div>
-
-
-            <ul className="space-y-2">
-              <li className="text-sm text-gray-700">
-                ✅ <strong>Priya Sharma</strong> was added as a <em>React Developer</em>.
-              </li>
-              <li className="text-sm text-gray-700">
-                ✅ <strong>Amit Verma</strong> was added as a <em>Node.js Developer</em>.
-              </li>
-              <li className="text-sm text-gray-700">
-                ✅ <strong>Neha Patel</strong> was added as a <em>Sales Manager</em>.
-              </li>
-            </ul>
-          </div>
+        {/* Search input with icon */}
+        <div className="relative w-full md:w-1/4">
+          <Search className="absolute left-3 top-1/3 transform -translate-y-1/2 text-muted-foreground" size={18}  />
+          <Input
+            type="search"
+            placeholder="Search Candidate..."
+            className="w-full pl-10 focus:outline-none focus:ring-0"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
 
-
+        <div className="flex justify-end mb-2">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => {
+              setSearchQuery("")
+              setTechnicalSkills([])
+              setPage(1)
+              dispatch(resetCandidateState())
+            }}
+            className="text-sm "
+          >
+            <RxReload size={20} />
+          </Button>
+        </div>
       </div>
 
 
 
-      {/* Modals */}
-      <AddCandidateModal
-        showAddCandidateDialog={showAddCandidateDialog}
-        setShowAddCandidateDialog={setShowAddCandidateDialog}
-      />
+
+
+
+
+      {/* Candidate List */}
+      <div className="mt-6">
+        {loading && <p>Loading...</p>}
+        {error && <p className="text-red-500">{error}</p>}
+        {!loading && !error && candidates?.length ? (
+          <div className="flex flex-col space-y-4">
+            {candidates.map((candidate) => (
+              <CandidateCard key={candidate.id} candidate={candidate} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground mt-6">No candidates found.</p>
+        )}
+
+        {/* Pagination */}
+        <div className="flex justify-between mt-6">
+          <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={page === 1}>
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={(candidates?.length ?? 0) < itemsPerPage}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+
 
       <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
         <DialogContent className="sm:max-w-[500px]">
@@ -332,34 +288,12 @@ export default function CandidatesPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showBulkUploadDialog} onOpenChange={setShowBulkUploadDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Bulk Upload Candidates</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="rounded-lg border border-dashed p-10 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Upload className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="mt-4 text-lg font-medium">Drag and drop your CSV file here</h3>
-              <p className="mt-2 text-sm text-muted-foreground">or Browse</p>
-              <p className="mt-2 text-xs text-muted-foreground">Supported formats: CSV</p>
-            </div>
-            <div className="space-y-2">
-              <Label>CSV Template format</Label>
-              <div className="rounded-md bg-muted p-2 text-sm">Name, email, position, location, Experience</div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowBulkUploadDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => setShowBulkUploadDialog(false)}>Upload</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <BulkResumeUploadDialog
+        showBulkUploadDialog={showBulkUploadDialog}
+        setShowBulkUploadDialog={setShowBulkUploadDialog}
+      />
     </MainLayout>
   )
 }
+
 

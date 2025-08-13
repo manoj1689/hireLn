@@ -12,18 +12,21 @@ import ContactSection from './ContactUs'
 import Footer from "./Footer";
 function index() {
   return (
-    <div >
-       <LandingNavbar/>
-       <Header/>
-       <Stepper/>
-       <Feature/>
-       <Integration/>
-       <Solution/>
-       <Blog/>
-       <Customer/>
-        <FAQ/>
-        <ContactSection/>
-        <Footer/>
+    <div  >
+      <LandingNavbar />
+      <div>
+        <Header />
+        <Stepper />
+        <Feature />
+        <Integration />
+        <Solution />
+        <Blog />
+        <Customer />
+        <FAQ />
+        <ContactSection />
+        <Footer />
+      </div>
+
     </div>
   )
 }

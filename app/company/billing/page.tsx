@@ -6,10 +6,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
+import { MainLayout } from "@/components/layout/main-layout"
 
 export default function BillingPage() {
   return (
-    <div className="container mx-auto py-6">
+    <MainLayout>
+  <div className="container mx-auto ">
       <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/dashboard" className="hover:text-foreground">
           Dashboard
@@ -413,5 +415,8 @@ export default function BillingPage() {
         </div>
       </div>
     </div>
+
+    </MainLayout>
+  
   )
 }

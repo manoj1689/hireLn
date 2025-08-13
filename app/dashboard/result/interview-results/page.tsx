@@ -13,9 +13,10 @@ import { Badge } from "@/components/ui/badge"
 import { MainLayout } from "@/components/layout/main-layout"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AlertCircle, Calendar, CheckCircle, Clock, Eye, RotateCcw, Search, XCircle } from "lucide-react"
+import { AlertCircle, Calendar, CheckCircle, Clock, Eye, GraduationCap, RotateCcw, Search, XCircle } from "lucide-react"
 import { InterviewResultHeader } from "./result-header"
 import { cn } from "@/lib/utils"
+import { FaArrowLeft } from "react-icons/fa"
 
 const InterviewResultPage: React.FC = () => {
     const router = useRouter()
@@ -59,7 +60,7 @@ const InterviewResultPage: React.FC = () => {
     }, [interviews, searchQuery, positionFilter, sortBy])
 
     const handleViewDetails = (interviewId: string) => {
-        router.push(`/result/interview-result-details?interview_id=${interviewId}`)
+        router.push(`/dashboard/result/interview-result-details?interview_id=${interviewId}`)
     }
 
     if (loading) return <div className="text-center py-8">Loading interview results...</div>
@@ -68,6 +69,12 @@ const InterviewResultPage: React.FC = () => {
     return (
         <MainLayout>
             <div className="space-y-6">
+                <button
+                    onClick={() => router.push("/")}
+                    className="flex items-center gap-2 text-gray-500 text-sm font-medium hover:underline "
+                >
+                    <FaArrowLeft /> back to home
+                </button>
                 <InterviewResultHeader />
 
                 <Card>
@@ -190,7 +197,20 @@ const InterviewResultPage: React.FC = () => {
                                         </div>
 
 
-                                        <p className="text-sm text-sky-500 font-medium">{result.candidateEducation}</p>
+                                        {Array.isArray(result.candidateEducation) && result.candidateEducation.length > 0 && (
+                                            <div>
+                                                {result.candidateEducation.map((edu, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex gap-4"
+                                                    >
+                                                        {/* Left: Degree */}
+                                                        <p className="text-sm text-muted-foreground">{edu.degree}</p>
+
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                         <p className="text-sm text-muted-foreground">{result.candidateEmail}</p>
                                     </div>
                                 </div>

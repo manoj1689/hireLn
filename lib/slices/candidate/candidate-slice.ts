@@ -1,10 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosApi from '@/services/api';
 import { CandidateRequest, CandidateResponse } from '../../../interface/candidate';
-import { JSX } from 'react';
+
 
 interface CandidateState {
-  map(arg0: (c: any) => JSX.Element): import("react").ReactNode;
   loading: boolean;
   error: string | null;
   data: CandidateResponse[] | null; // List of candidates
@@ -23,6 +22,7 @@ export const addCandidate = createAsyncThunk<CandidateResponse, CandidateRequest
   'candidate/add',
   async (formData, { rejectWithValue }) => {
     try {
+      console.log("form data",formData)
       const response = await axiosApi.post<CandidateResponse>('/api/candidates/add', formData);
       console.log('Candidate response:', response.data);
       return response.data;
@@ -39,13 +39,11 @@ export const fetchCandidates = createAsyncThunk<
     skip: number;
     limit: number;
     search?: string;
-    skills?: string[];
-    location?: string;
-    experience?: string;
+    technicalSkills?: string[];
   }
 >(
   'candidate/fetch',
-  async ({ skip, limit, search, skills, location, experience }, { rejectWithValue }) => {
+  async ({ skip, limit, search, technicalSkills}, { rejectWithValue }) => {
     try {
       const params = new URLSearchParams();
 
@@ -53,10 +51,8 @@ export const fetchCandidates = createAsyncThunk<
       params.append('limit', limit.toString());
 
       if (search) params.append('search', search);
-      if (location) params.append('location', location);
-      if (experience) params.append('experience', experience);
-      if (skills && skills.length > 0) {
-        skills.forEach(skill => params.append('skills', skill));
+      if (technicalSkills && technicalSkills.length > 0) {
+        technicalSkills.forEach(technicalSkills=> params.append('technicalSkills', technicalSkills));
       }
 
       const response = await axiosApi.get<CandidateResponse[]>(`/api/candidates/?${params.toString()}`);

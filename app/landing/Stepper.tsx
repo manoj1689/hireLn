@@ -2,7 +2,7 @@ import React from 'react'
 
 function Stepper() {
     return (
-        <div className='container relative mx-auto pt-12 pb-8 px-4 ' >
+        <div id='HowItWorks' className='container relative mx-auto pt-12 pb-8 px-4 z-10' >
             {/* Left Column */}
             <div className="absolute right-2 top-10 flex flex-col gap-4">
                 <img src="/images/stepper/image1.png" alt="Image 1" className="w-28" />

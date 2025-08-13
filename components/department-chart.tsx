@@ -8,24 +8,23 @@ import {
   Legend,
 } from "chart.js"
 import { Doughnut } from "react-chartjs-2"
+import { DepartmentStat } from "@/interface/dashboard"
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
-const departmentData = [
-  { name: "Engineering", value: 45, color: "#0CC5B9" },
-  { name: "Sales", value: 20, color: "#6366F1" },
-  { name: "Marketing", value: 15, color: "#F59E0B" },
-  { name: "Design", value: 18, color: "#10B981" },
-]
+interface Props {
+  departmentStats: DepartmentStat[]
+}
 
-export function DepartmentChart() {
+export function DepartmentChart({ departmentStats }: Props) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  if (!mounted) {
+ 
+  if (!mounted || !departmentStats || departmentStats.length === 0) {
     return (
       <div className="flex h-[300px] w-full items-center justify-center">
         <div className="text-sm text-muted-foreground">Loading chart...</div>
@@ -34,11 +33,13 @@ export function DepartmentChart() {
   }
 
   const chartData = {
-    labels: departmentData.map((item) => item.name),
+    labels: departmentStats.map((item) => item.department),
     datasets: [
       {
-        data: departmentData.map((item) => item.value),
-        backgroundColor: departmentData.map((item) => item.color),
+        data: departmentStats.map((item) => item.jobCount),
+        backgroundColor: departmentStats.map(() =>
+          `hsl(${Math.floor(Math.random() * 360)}, 80%, 85%)`
+        ),
         borderWidth: 1,
       },
     ],
@@ -64,7 +65,7 @@ export function DepartmentChart() {
         },
       },
       legend: {
-        display: false, // You can enable it if you want
+        display: false,
       },
     },
   }

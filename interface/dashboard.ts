@@ -19,10 +19,23 @@ export interface RecruitmentTrend {
   applications: number;
 }
 
-export interface DashboardMetrics {
-  totalJobs: number;
-  activeCandidates: number;
-  hiringSuccessRate: number;
-  avgTimeToHire: number;
-  aiInterviewsCompleted: number;
+export interface MetricWithChange {
+  value: number;
+  change: number; // percentage change compared to last month
 }
+
+export interface DashboardMetrics {
+  totalJobs: MetricWithChange;
+  activeCandidates: MetricWithChange;
+  hiringSuccessRate: MetricWithChange;
+  avgTimeToHire: MetricWithChange;
+  aiInterviewsCompleted: MetricWithChange;
+}
+
+
+export interface DepartmentStat {
+  department: string
+  jobCount: number
+}
+
+

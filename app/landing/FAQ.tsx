@@ -38,7 +38,7 @@ const FAQPage = () => {
   };
 
   return (
-    <div className='container mx-auto pt-12 pb-8 px-4'>
+    <div id='FAQ' className='container mx-auto pt-12 pb-8 px-4'>
     {/* Header */}
     <div className='flex justify-center items-center mb-4'>
       <span className='text-md md:text-lg font-light px-8 py-1 rounded-full text-white bg-pink-300 '>

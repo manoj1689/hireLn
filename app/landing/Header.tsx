@@ -2,14 +2,14 @@ import React from 'react'
 import { FaRegPlayCircle } from "react-icons/fa";
 function Header() {
     return (
-        <div className='flex w-full  bg-gradient-to-r from-[#63A7D4] to-[#F295BE] '>
+        <div id='Home' className='flex w-full  bg-gradient-to-r from-[#63A7D4] to-[#F295BE]  '>
             <div className='flex max-lg:flex-col container w-full h-auto mx-auto pt-24 lg:pt-32  px-4 '>
-            <div
-  className="flex flex-col w-full lg:w-1/2 bg-contain bg-center bg-no-repeat"
-  style={{
-    backgroundImage: "url('/images/header/headerleftimage.png')"
-  }}
->
+                <div
+                    className="flex flex-col w-full lg:w-1/2 bg-contain bg-center bg-no-repeat"
+                    style={{
+                        backgroundImage: "url('/images/header/headerleftimage.png')"
+                    }}
+                >
 
                     <section>
                         <section>

@@ -21,6 +21,23 @@ export interface InterviewScheduleRequest {
   interviewers: InterviewerInfo[];
 }
 
+export interface Education {
+  degree?: string;
+  institution?: string;
+  location?: string;
+  start_date?: string;
+  end_date?: string;
+  grade?: string;
+}
+
+export interface Experience {
+  title?: string;
+  company?: string;
+  location?: string;
+  start_date?: string;
+  end_date?: string;
+  description?: string;
+}
 
 export interface InterviewResponse {
   id: string;
@@ -48,8 +65,8 @@ export interface InterviewResponse {
   updatedAt: string;
 
   // Candidate Info
-  candidateEducation: string;
-  candidateExperience: string;
+  candidateEducation: Education[];
+  candidateExperience: Experience[];
   candidateSkills: string[];
   candidateResume: string;
   candidatePortfolio: string;

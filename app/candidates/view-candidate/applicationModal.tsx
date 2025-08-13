@@ -5,7 +5,8 @@ import 'react-responsive-modal/styles.css';
 
 import { postApplication } from '@/lib/slices/applicant/application-slice';
 import { AppDispatch, RootState } from '@/lib/store';
-import { Calendar, Clock, Video,MapPinned  } from 'lucide-react';
+import { Calendar, Clock, Video, MapPinned } from 'lucide-react';
+import { CandidateResponse } from '@/interface/candidate';
 
 interface JobData {
   id: string;
@@ -23,24 +24,12 @@ interface JobData {
   experience?: number;
 }
 
-interface CandidateData {
-  skills: string[] | string;
-  phone: string;
-  education: string;
-  id: string;
-  name: string;
-  experience: number;
-  location: string;
-  email: string;
-  salaryExpectation: number;
-  userId: string;
-}
 
 interface ApplicationModalProps {
   open: boolean;
   onClose: () => void;
   jobData: JobData;
-  candidateData: CandidateData;
+  candidateData: CandidateResponse;
 }
 
 const ApplicationModal: React.FC<ApplicationModalProps> = ({
@@ -92,36 +81,42 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
         ) : (
           <>
             {/* Candidate Header */}
-            <div className="flex items-center justify-between bg-white rounded-t-xl px-6 pt-6 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-semibold text-stone-600">
+            <div className="flex items-center justify-between bg-sky-100 rounded-t-xl px-6 pt-6 pb-4 gap-4">
+              <div className="flex items-center gap-4 w-1/5">
+                <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-semibold text-stone-600 ">
                   {candidateData.name
                     .split(' ')
                     .map((n: string) => n[0])
                     .join('')
                     .toUpperCase()}
                 </div>
-                <div>
-                  <h1 className="text-lg font-bold text-gray-900">{candidateData.name}</h1>
-                  <p className="text-sm text-gray-500">
-                    {candidateData.education || 'Degree info not available'}
-                  </p>
-                  <p className="text-xs text-gray-400">{candidateData.location}</p>
-                </div>
+
               </div>
-              <div className="flex flex-col items-end">
-                <span className="text-xl font-bold text-gray-900">
-                  ₹{candidateData.salaryExpectation}
-                </span>
-                <span className="text-xs text-gray-500">Salary Expectation /yr</span>
+              <div className='w-4/5'>
+                <h1 className="text-lg font-bold text-gray-900">{candidateData.name}</h1>
+                <p className="text-md font-medium text-gray-500">{candidateData.email}</p>
+                <p className="text-md font-medium text-gray-500">{candidateData.address}</p>
               </div>
             </div>
 
+            {/* Education */}
+            {candidateData.education?.length > 0 && (
+              <section>
+                <h3 className="text-blue-500 font-semibold my-2">Education</h3>
+                {candidateData.education.map((edu: any, i: number) => (
+                  <div key={i} className="mb-2">
+                    <strong>{edu.degree}</strong>, {edu.institution} {edu.location && `(${edu.location})`}
+                    {edu.grade && <div className="text-xs text-gray-500">Grade: {edu.grade}</div>}
+                  </div>
+                ))}
+              </section>
+            )}
+
             {/* Skills */}
             <div className="mt-2 flex flex-wrap gap-2">
-              {(Array.isArray(candidateData.skills)
-                ? candidateData.skills
-                : String(candidateData.skills).split(',')
+              {(Array.isArray(candidateData.technicalSkills)
+                ? candidateData.technicalSkills
+                : String(candidateData.technicalSkills).split(',')
               ).map((skill: string, idx: number) => {
                 const hue = 180 + (idx * 40) % 360;
                 return (

@@ -5,43 +5,31 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { AppDispatch, RootState } from '@/lib/store'
 import { useSelector, useDispatch } from 'react-redux'
-import { submitJobPublishStep } from '@/lib/slices/job/jobPublish-slice' // Add import for your slice action
+import { submitJobPublishStep } from '@/lib/slices/job/jobPublish-slice'
 import { useRouter } from 'next/navigation'
-import JobPublishModal from './JobPublishModal'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 export default function ReviewStepPage() {
-  const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>()
+  const router = useRouter()
 
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal state to control visibility
-  // Get the jobData from Redux
   const jobData: any = useSelector((state: RootState) => state.jobRequirement.response?.jobData)
   const JobStep3 = useSelector((state: RootState) => state.jobRequirement.response)
   const JobStep4 = useSelector((state: RootState) => state.jobPublish.response)
 
-
-  // If jobData is null or undefined, display a loading message
   if (!jobData) {
     return <div>Loading...</div>
   }
 
-  
+  const { basic_info = {}, job_details = {}, requirements = {} } = jobData || {}
 
-  // Destructure the jobData to avoid undefined errors
-  const { basic_info, job_details, requirements } = jobData || {}
-
-  // if (!basic_info || !job_details || !requirements) {
-  //   return <div>Loading...</div> // Show loading if any part of jobData is missing
-  // }
-
-  // Track the publishing options
   const [publishOptions, setPublishOptions] = useState({
     internalJobBoard: false,
     externalJobBoards: true,
     socialMedia: false
   })
 
-  // Handle checkbox change
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = event.target
     setPublishOptions(prevState => ({
@@ -50,10 +38,8 @@ export default function ReviewStepPage() {
     }))
   }
 
-  // Handle job publishing
   const handlePublishJob = async () => {
-    // Ensure sessionId is available and valid (string)
-    const sessionId = JobStep3?.sessionId || 'default-session-id' // Add fallback value here
+    const sessionId = JobStep3?.sessionId || 'default-session-id'
 
     if (!sessionId) {
       alert('Session ID is required!')
@@ -65,36 +51,54 @@ export default function ReviewStepPage() {
       externalJobBoards: publishOptions.externalJobBoards,
       socialMedia: publishOptions.socialMedia,
       applicationFormFields: {
-        resumeUpload: true,  // Assuming resume is required
-        portfolioLink: "optional",  // Using 'optional' string, as in your example
-        expectedJoiningDate: "required",  // Using 'required' string, as in your example
-        coverLetterRequired: false  // Assuming cover letter is not required
+        resumeUpload: true,
+        portfolioLink: "optional",
+        expectedJoiningDate: "required",
+        coverLetterRequired: false
       }
     }
 
-    // Dispatch the publish action
     try {
-      await dispatch(submitJobPublishStep({ sessionId, details: publishRequest })).unwrap()
-      setIsModalOpen(true); // Open the modal after successful job publish
-    } catch (error) {
-      alert('Error occurred while publishing the job.')
+      const response = await dispatch(
+        submitJobPublishStep({ sessionId, details: publishRequest })
+      ).unwrap()
+
+      const message = response?.message || 'Job published successfully!'
+      const toastId = toast.success(message)
+
+      setTimeout(() => {
+        toast.dismiss(toastId)
+        router.push('/jobs')
+      }, 1000)
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to publish job')
     }
   }
 
-  // Function to handle closing the modal and redirecting
-  const handleModalClose = () => {
-    setIsModalOpen(false);  // Close the modal
-    router.push('/jobs');    // Redirect to /jobs page
+  const handleClose = () => {
+    router.push('/jobs')
   }
 
-
   return (
-    <div className="mx-auto py-10 px-4 space-y-6">
+    <div className="mx-auto  px-4 space-y-4">
+      <ToastContainer
+        position="top-center"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="colored"
+      />
+
       {/* Displaying Basic Info */}
       <div className="rounded-md bg-gray-50 p-4 shadow-sm">
         <h3 className="text-lg font-medium">{basic_info.jobTitle}</h3>
         <div className="mt-2 flex flex-wrap gap-2">
           <Badge>{basic_info.department}</Badge>
+           <Badge variant="outline">{requirements.educationLevel}</Badge>
+          
           <Badge variant="outline">{basic_info.location}</Badge>
           <Badge variant="outline">{basic_info.employmentType}</Badge>
           <Badge variant="outline">
@@ -108,50 +112,46 @@ export default function ReviewStepPage() {
         </div>
       </div>
 
-      {/* Displaying Responsibilities and Requirements in Two Columns */}
+      {/* Responsibilities and Requirements */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Key Responsibilities */}
         <div className="rounded-md bg-gray-100 p-4 shadow-sm">
           <h4 className="font-medium">Key Responsibilities</h4>
           <ul className="mt-1 list-inside list-disc text-sm text-gray-600">
-            {job_details.keyResponsibilities.map((resp, index) => (
+            {job_details.keyResponsibilities?.map((resp: string, index: number) => (
               <li key={index}>{resp}</li>
             ))}
           </ul>
         </div>
 
-        {/* Requirements */}
         <div className="rounded-md bg-gray-100 p-4 shadow-sm">
           <h4 className="font-medium">Requirements</h4>
           <ul className="mt-1 list-inside list-disc text-sm text-gray-600">
-            {requirements.requiredSkills.map((skill, index) => (
+            {requirements.requiredSkills?.map((skill: string, index: number) => (
               <li key={index}>{skill}</li>
             ))}
-            <li>{requirements.educationLevel}</li>
-            {requirements.certifications.map((cert, index) => (
+           
+            {requirements.certifications?.map((cert: string, index: number) => (
               <li key={index}>{cert}</li>
             ))}
           </ul>
         </div>
       </div>
 
-      {/* Displaying Soft Skills and Languages in Two Columns */}
+      {/* Soft Skills and Languages */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Soft Skills */}
         <div className="rounded-md bg-gray-100 p-4 shadow-sm">
           <h4 className="font-medium">Soft Skills</h4>
           <ul className="mt-1 list-inside list-disc text-sm text-gray-600">
-            {requirements.softSkills.map((skill, index) => (
+            {requirements.softSkills?.map((skill: string, index: number) => (
               <li key={index}>{skill}</li>
             ))}
           </ul>
         </div>
 
-        {/* Languages */}
         <div className="rounded-md bg-gray-100 p-4 shadow-sm">
           <h4 className="font-medium">Languages</h4>
           <ul className="mt-1 list-inside list-disc text-sm text-gray-600">
-            {requirements.languages.map((language, index) => (
+            {requirements.languages?.map((language: { name: string; proficiency: string }, index: number) => (
               <li key={index}>
                 {language.name} - {language.proficiency}
               </li>
@@ -164,54 +164,40 @@ export default function ReviewStepPage() {
       <div className="rounded-md border p-4 shadow-sm">
         <h3 className="font-medium">Publishing Options</h3>
         <div className="mt-4 space-y-4">
-          <div className="flex items-start gap-2">
-            <input
-              type="checkbox"
-              id="internalJobBoard"
-              name="internalJobBoard"
-              checked={publishOptions.internalJobBoard}
-              onChange={handleCheckboxChange}
-              className="mt-1"
-            />
-            <div>
-              <label htmlFor="internalJobBoard" className="font-medium">
-                Internal Job Board
-              </label>
-              <p className="text-sm text-gray-500">Post this job to your company's internal job board</p>
+          {[
+            {
+              id: 'internalJobBoard',
+              label: 'Internal Job Board',
+              description: 'Post this job to your company\'s internal job board'
+            },
+            {
+              id: 'externalJobBoards',
+              label: 'External Job Boards',
+              description: 'Publish this job to external job boards (Indeed, LinkedIn, etc.)'
+            },
+            {
+              id: 'socialMedia',
+              label: 'Social Media',
+              description: 'Share this job on your company\'s social media accounts'
+            }
+          ].map(({ id, label, description }) => (
+            <div className="flex items-start gap-2" key={id}>
+              <input
+                type="checkbox"
+                id={id}
+                name={id}
+                checked={publishOptions[id as keyof typeof publishOptions]}
+                onChange={handleCheckboxChange}
+                className="mt-1"
+              />
+              <div>
+                <label htmlFor={id} className="font-medium">
+                  {label}
+                </label>
+                <p className="text-sm text-gray-500">{description}</p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <input
-              type="checkbox"
-              id="externalJobBoards"
-              name="externalJobBoards"
-              checked={publishOptions.externalJobBoards}
-              onChange={handleCheckboxChange}
-              className="mt-1"
-            />
-            <div>
-              <label htmlFor="externalJobBoards" className="font-medium">
-                External Job Boards
-              </label>
-              <p className="text-sm text-gray-500">Publish this job to external job boards (Indeed, LinkedIn, etc.)</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <input
-              type="checkbox"
-              id="socialMedia"
-              name="socialMedia"
-              checked={publishOptions.socialMedia}
-              onChange={handleCheckboxChange}
-              className="mt-1"
-            />
-            <div>
-              <label htmlFor="socialMedia" className="font-medium">
-                Social Media
-              </label>
-              <p className="text-sm text-gray-500">Share this job on your company's social media accounts</p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
@@ -244,16 +230,10 @@ export default function ReviewStepPage() {
 
       {/* Publish Button */}
       <div className="mt-4 text-center">
-        <Button onClick={handlePublishJob} className="bg-blue-600 text-white">
+        <Button onClick={handlePublishJob} className="bg-primary-gradient text-white">
           Publish Job
         </Button>
       </div>
-      {/* Job Publish Modal */}
-      <JobPublishModal
-        isOpen={isModalOpen}
-        onClose={handleModalClose}  // Pass the close handler to the modal
-        jobData={JobStep4}  // Pass job data to the modal
-      />
     </div>
   )
 }
