@@ -20,6 +20,7 @@ export const scheduleInterview = createAsyncThunk<InterviewResponse, InterviewSc
   'interview/schedule',
   async (formData, { rejectWithValue }) => {
     try {
+      console.log("sedule form data",formData)
       const response = await axiosApi.post<InterviewResponse>(
         '/api/interviews/schedule',
         formData

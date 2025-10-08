@@ -28,7 +28,7 @@ export const fetchApplications = createAsyncThunk<
       }`;
 
       const response = await axiosApi.get<ApplicationResponse[]>(
-        `/api/candidates/applications/list${query}`
+        `/api/candidates/applications/list/${query}`
       );
 
       return response.data;

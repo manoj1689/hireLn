@@ -45,7 +45,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]): Promise<strin
 
         - "Negative": The user's response shows disagreement, confusion, uncertainty, or inability to answer. 
           This includes responses with negative or uncertain language such as:
-          "no", "I don’t know", "sorry", "not sure", "can’t", "don’t have", "no idea", "nothing", "unable to answer", or any phrase indicating refusal or lack of knowledge.
+          "no", "i don't know", "sorry", "not sure", "can't", "don’t have","no idea", "nothing", "unable to answer", "next question", "another question", "new question", "skip this" or any phrase indicating refusal or lack of knowledge.
           Examples: "No", "Sorry, I don’t know", "I can’t answer that", "I’m not sure", "No idea", "Nothing to say".
         
         - "Leave": The user wants to exit, stop, or end the session or interview.
