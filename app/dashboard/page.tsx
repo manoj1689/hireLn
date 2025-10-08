@@ -177,7 +177,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-base font-medium">Recent Activities</CardTitle>
-            <Link href="/activities" className="text-sm text-primary hover:underline">
+            <Link href="/dashboard/activities" className="text-sm text-primary hover:underline">
               View All
             </Link>
           </CardHeader>

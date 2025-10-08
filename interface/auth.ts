@@ -1,14 +1,24 @@
 
-export interface User {
+interface User {
+  email: string
+  firstName: string
+  lastName: string
+  avatar: string | null
+  role: string
+  companyName: string
+  companySize: string
+  industry: string
+  hiringVolume: string
+  primaryHiringNeeds: string[]
   id: string
   name: string
-  email: string
-  avatar?: string
+  createdAt: string
+  updatedAt: string
 }
 
-export interface AuthState {
+interface AuthState {
+  access_token: string
+  token_type: string
   user: User | null
   isAuthenticated: boolean
-  loading: boolean
-  error: string | null
 }

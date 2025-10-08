@@ -27,38 +27,49 @@ export const getChatbotResponse = async (messages: ChatMessage[]): Promise<strin
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
-        {
-          role: 'system',
-          content: `You are a highly skilled assistant. Your task is to classify the intent behind a user's input into one of the following categories: "Introduce", "Continue", "User Not Available", "Leave", "Unclear", "Repeat", "Explain", "Move to a new question", "Nervous", "Thinking", "Unable to Answer", "Clarify Question", "Ask for Help", "Confirm Understanding", "Request Timeout", "Give Up", "Request Example", "Apologize", "Acknowledge", "Request Feedback", or "Seek More Time".
-          
-          Please analyze the user’s message and determine the most appropriate intent from these categories. If the intent is not clear, respond with "Unclear". Here are the possible intents you should classify the message into:
+    {
+        role: 'system',
+        content: `You are a highly skilled assistant. Your task is to classify the intent behind a user's input into one of the following categories:
+        "Positive", "Negative", "Leave", "Introduce", "Repeat", "Explain", "User Not Available", or "Unclear".
         
-          - "Introduce": The user is asking for an introduction or initiating conversation.
-          - "Continue": The user’s input is contextually relevant and grammatically correct, indicating a desire to proceed with the current activity. This includes any input containing technical terms, data structures, or variable names related to the content.
-          - "User Not Available": The user indicates they are not available for further interaction.
-          - "Leave": The user wants to exit the exam or activity.
-          - "Unclear": The user's intent is not clear from the message, or the message does not fit any of the other categories.
-          - "Explain": The user does not understand the current question and wants more information or clarification about it.
-          - "Repeat": The user is requesting to repeat the last message or question.
-          - "Move to a new question": The user wants to skip to the next question or topic.
-          - "Nervous": The user shows signs of nervousness through hesitation, uncertainty, or repeated pauses.
-          - "Thinking": The user is taking time to process or think about their response, often indicated by phrases like "let me think" or longer pauses.
-          - "Unable to Answer": The user explicitly states they do not know or cannot answer the question.
-          - "Clarify Question": The user is asking for the current question to be rephrased or clarified.
-          - "Ask for Help": The user is asking for assistance or guidance in answering the question.
-          - "Confirm Understanding": The user is confirming whether they have understood the question or instruction correctly.
-          - "Request Timeout": The user is asking to take a break or pause.
-          - "Give Up": The user is admitting they cannot answer the question or proceed.
-          - "Request Example": The user is asking for an example to better understand the question.
-          - "Apologize": The user is apologizing for a mistake or delay in responding.
-          - "Acknowledge": The user is acknowledging the message or instruction but not taking further action.
-          - "Request Feedback": The user is asking for feedback on their performance or answer.
-          - "Seek More Time": The user is asking for additional time to think before answering or proceeding.
+        Analyze the user's message and determine which intent best matches it.
+        If the intent does not clearly fit any category, respond with "Unclear".
         
-          Please provide only one of these categories in your response.`
-        }
+        Intent Definitions:
+        - "Positive": The user's response provides a clear, relevant, and meaningful answer to the question, showing understanding, confidence, or engagement.  
+
+          Examples:
+            - "Yes, I have experience with that."
+            - "I solved this by optimizing the workflow in my project."
+            - "Sure, I can explain my approach."
+
+        - "Negative": The user's response shows disagreement, confusion, uncertainty, or inability to answer. 
+          This includes responses with negative or uncertain language such as:
+          "no", "I don’t know", "sorry", "not sure", "can’t", "don’t have", "no idea", "nothing", "unable to answer", or any phrase indicating refusal or lack of knowledge.
+          Examples: "No", "Sorry, I don’t know", "I can’t answer that", "I’m not sure", "No idea", "Nothing to say".
         
+        - "Leave": The user wants to exit, stop, or end the session or interview.
+          Examples: "I want to leave", "End this", "Quit", "Stop", "Exit interview".
         
+        - "Introduce": The user initiates or asks for an introduction, often at the beginning of the session.
+          Examples: "Hi", "Hello", "Who are you?", "What is this interview about?".
+        
+        - "Repeat": The user requests the previous message or question to be repeated.
+          Examples: "Can you repeat that?", "Say that again", "I didn’t hear", "Repeat please".
+        
+        - "Explain": The user requests further clarification, elaboration, or details about the current question.
+          Examples: "Can you explain?", "What do you mean?", "I don’t understand", "Please elaborate".
+        
+        - "User Not Available": The user indicates they are unavailable or unable to respond.
+          Examples: "I’m not here", "Away", "Can’t talk now", "Busy", "Later".
+        
+        - "Unclear": The user's intent is ambiguous, nonsensical, incomplete, or unrelated to the current context.
+          Examples: "bla bla", random characters, or irrelevant messages.
+
+        Respond with exactly one of the above categories.`
+      }
+
+
         ,
         { role: 'user', content: userMessage },
       ],
@@ -76,15 +87,15 @@ export const getChatbotResponse = async (messages: ChatMessage[]): Promise<strin
 
     let intent = choice.message.content.trim().toLowerCase();
 
-   console.log('Raw intent response:', intent); // Debugging
+    console.log('Raw intent response:', intent); // Debugging
 
     // Improved matching logic
-    if (intent.includes('continue') ) {
-      return 'Continue';
+    if (intent.includes('positive')) {
+      return 'Positive';
     } else if (intent.includes('leave')) {
       return 'Leave';
-    } else if (intent.includes('move to a new question')) {
-      return 'Move to a new question';
+    } else if (intent.includes('negative')) {
+      return 'Negative';
     } else if (intent.includes('introduce')) {
       return 'Introduce';
     } else if (intent.includes('repeat')) {
@@ -93,7 +104,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]): Promise<strin
       return 'Explain';
     } else if (intent.includes('user not available')) {
       return 'User Not Available';
-    }  else {
+    } else {
       return 'Unclear';
     }
   } catch (error) {

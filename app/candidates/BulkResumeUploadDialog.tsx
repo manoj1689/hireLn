@@ -13,139 +13,169 @@ import { Modal } from "react-responsive-modal";
 import "react-responsive-modal/styles.css";
 
 interface Props {
-    showBulkUploadDialog: boolean;
-    setShowBulkUploadDialog: (open: boolean) => void;
+  showBulkUploadDialog: boolean;
+  setShowBulkUploadDialog: (open: boolean) => void;
 }
 
 export default function BulkResumeUploadDialog({
-    showBulkUploadDialog,
-    setShowBulkUploadDialog,
+  showBulkUploadDialog,
+  setShowBulkUploadDialog,
 }: Props) {
-    const dispatch = useDispatch<AppDispatch>();
-    const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
-    const { uploaded, loading, error } = useSelector(
-        (state: RootState) => state.resumeParcing
-    );
+  const { uploaded, loading, error } = useSelector(
+    (state: RootState) => state.resumeParcing
+  );
 
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadComplete, setUploadComplete] = useState(false);
 
-    // useEffect(() => {
-    //     if (uploaded?.summary?.length) {
-    //         const allSuccess = uploaded.summary.every((item: any) => item.success === true);
-    //         if (allSuccess) {
-    //             setTimeout(() => {
-    //                 closeDialog();
-    //                 router.push("/candidates");
-    //             }, 1500);
-    //         }
-    //     }
-    // }, [uploaded]);
+  // ✅ Detect upload completion
+  useEffect(() => {
+    if (uploaded?.summary?.length && !loading) {
+      setUploadComplete(true);
+    }
+  }, [uploaded, loading]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            setSelectedFiles(Array.from(e.target.files));
-        }
-    };
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setSelectedFiles(Array.from(e.target.files));
+    }
+  };
 
-    const handleUpload = async () => {
-        if (selectedFiles.length > 0) {
-            await dispatch(uploadResumes(selectedFiles));
-        }
-    };
+  const handleUpload = async () => {
+    if (selectedFiles.length > 0) {
+      setUploadComplete(false);
+      await dispatch(uploadResumes(selectedFiles));
+    }
+  };
 
-    const closeDialog = () => {
-        setSelectedFiles([]);
-        dispatch(clearUploads());
-        setShowBulkUploadDialog(false);
-    };
+  const handleAddMore = () => {
+    setSelectedFiles([]);
+    dispatch(clearUploads());
+    setUploadComplete(false);
+  };
 
-    return (
-        <Modal open={showBulkUploadDialog} onClose={closeDialog} center>
-            <div className="w-full max-w-md px-2 sm:px-4">
-                <h2 className="text-xl font-semibold mb-4">Bulk Upload Resumes</h2>
+  const closeDialog = () => {
+    setSelectedFiles([]);
+    setUploadComplete(false);
+    dispatch(clearUploads());
+    setShowBulkUploadDialog(false);
+  };
 
-                {loading ? (
-                    <div className="flex w-full mt-6 flex-col justify-center items-center gap-2 text-sm text-muted-foreground">
-                        <Loader2 className="h-20 w-20 animate-spin text-green-300" />
-                        <span className="text-gray-400">Processing resumes, please wait...</span>
-                    </div>
-                ) : (
-                    <div className="mt-6 flex-col w-full justify-end gap-2 space-y-4">
-                        {/* Upload area */}
-                        <label
-                            htmlFor="resume-upload"
-                            className="cursor-pointer rounded-lg border border-dashed p-10 text-center hover:bg-muted/50 transition block"
-                        >
-                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                                <Upload className="h-6 w-6 text-primary" />
-                            </div>
-                            <h3 className="mt-4 text-lg font-medium">Drag and drop your PDF files here</h3>
-                            <p className="mt-2 text-sm text-muted-foreground">or click to browse</p>
-                            <p className="mt-2 text-xs text-muted-foreground">Supported formats: PDF</p>
-                            <input
-                                id="resume-upload"
-                                type="file"
-                                accept=".pdf"
-                                multiple
-                                className="hidden"
-                                onChange={handleFileChange}
-                            />
-                        </label>
+  return (
+    <Modal open={showBulkUploadDialog} onClose={closeDialog} center>
+      <div className="w-full max-w-md px-2 sm:px-4">
+        <h2 className="text-xl font-semibold mb-4">Bulk Upload Resumes</h2>
 
-                        {/* Selected files list */}
-                        {selectedFiles.length > 0 && (
-                            <div className="space-y-2 mt-4">
-                                <Label className="text-sm font-medium">Selected Resumes:</Label>
-                                <ul className="text-sm list-disc pl-5 text-muted-foreground">
-                                    {selectedFiles.map((file, index) => (
-                                        <li key={index}>{file.name}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex w-full mt-6 flex-col justify-center items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-20 w-20 animate-spin text-green-300" />
+            <span className="text-gray-400">
+              Processing resumes, please wait...
+            </span>
+          </div>
+        ) : (
+          <div className="mt-6 flex-col w-full justify-end gap-2 space-y-4">
+            {/* Upload area (hide when upload complete) */}
+            {!uploadComplete && (
+              <>
+                <label
+                  htmlFor="resume-upload"
+                  className="cursor-pointer rounded-lg border border-dashed p-10 text-center hover:bg-muted/50 transition block"
+                >
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                    <Upload className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="mt-4 text-lg font-medium">
+                    Drag and drop your PDF files here
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    or click to browse
+                  </p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Supported formats: PDF
+                  </p>
+                  <input
+                    id="resume-upload"
+                    type="file"
+                    accept=".pdf"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                </label>
 
-                        {/* Upload results */}
-                        {uploaded?.summary?.length > 0 && (
-                            <div className="flex flex-col gap-3 mt-4 max-h-72 overflow-y-auto">
-                                {uploaded.summary.map((item: any, idx: number) => (
-                                    <div
-                                        key={idx}
-                                        className={`flex items-center gap-3 p-3 rounded-lg border ${
-                                            item.success
-                                                ? "border-green-400 bg-green-50"
-                                                : "border-red-400 bg-red-50"
-                                        }`}
-                                    >
-                                        {item.success ? (
-                                            <CheckCircle className="w-5 h-5 text-green-500" />
-                                        ) : (
-                                            <XCircle className="w-5 h-5 text-red-500" />
-                                        )}
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">{item.file}</span>
-                                            <span className="text-sm opacity-80">{item.message}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        <div className="flex justify-center gap-4">
-                            <Button variant="outline" onClick={closeDialog}>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleUpload} disabled={selectedFiles.length === 0}>
-                                Upload
-                            </Button>
-                        </div>
-                    </div>
+                {/* Selected files list */}
+                {selectedFiles.length > 0 && (
+                  <div className="space-y-2 mt-4">
+                    <Label className="text-sm font-medium">Selected Resumes:</Label>
+                    <ul className="text-sm list-disc pl-5 text-muted-foreground">
+                      {selectedFiles.map((file, index) => (
+                        <li key={index}>{file.name}</li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
+              </>
+            )}
 
-                {error && (
-                    <div className="mt-4 text-sm text-red-600">❌ Error: {error}</div>
-                )}
+            {/* Upload results */}
+            {uploaded?.summary?.length > 0 && (
+              <div className="flex flex-col gap-3 mt-4 max-h-72 overflow-y-auto">
+                {uploaded.summary.map((item: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className={`flex items-center gap-3 p-3 rounded-lg border ${
+                      item.success
+                        ? "border-green-400 bg-green-50"
+                        : "border-red-400 bg-red-50"
+                    }`}
+                  >
+                    {item.success ? (
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-red-500" />
+                    )}
+                    <div className="flex flex-col">
+                      <span className="font-medium">{item.file}</span>
+                      <span className="text-sm opacity-80">{item.message}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Footer Buttons */}
+            <div className="flex justify-center gap-4 mt-6">
+              {!uploadComplete ? (
+                <>
+                  <Button variant="outline" onClick={closeDialog}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleUpload} disabled={selectedFiles.length === 0}>
+                    Upload
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={closeDialog}>Close</Button>
+                  <Button  onClick={handleAddMore}>
+                    + Add More
+                  </Button>
+                 
+                </>
+              )}
             </div>
-        </Modal>
-    );
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-4 text-sm text-red-600">❌ Error: {error}</div>
+        )}
+      </div>
+    </Modal>
+  );
 }

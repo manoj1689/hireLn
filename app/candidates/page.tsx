@@ -63,7 +63,7 @@ export default function CandidatesPage() {
       technicalSkills,
 
     }))
-  }, [dispatch, searchQuery, page, technicalSkills])
+  }, [dispatch, searchQuery, page, technicalSkills,showBulkUploadDialog])
 
 
   const handleUpload = (files: File[]) => {

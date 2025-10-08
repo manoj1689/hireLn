@@ -39,6 +39,7 @@ export const CandidateCard = ({ candidate }: CandidateProps) => {
 
   const applicationStatusColor: Record<string, string> = {
     NEW: "bg-red-100 text-red-600",
+    INVITED:"bg-pink-100 text-pink-600",
     APPLIED: "bg-blue-100 text-blue-600",
     SCREENING: "bg-yellow-100 text-yellow-700",
     INTERVIEW: "bg-purple-100 text-purple-600",

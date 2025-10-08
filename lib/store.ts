@@ -15,6 +15,7 @@ import registerStep1Reducer from "@/lib/slices/register/register-step-1";
 import registerStep2Reducer from "@/lib/slices/register/register-step-2";
 import registerStep3Reducer from "@/lib/slices/register/register-step-3";
 import authReducer from "./slices/auth-slice";
+import profileReducer from "./slices/profile/profile-slice"
 import dashboardReducer from '@/lib/slices/dashboard/dashboard-slice';
 import jobBasicInfoReducer from "@/lib/slices/job/jobBasicInfo-slice";
 import jobDetailsReducer from "@/lib/slices/job/jobDetails-slice";
@@ -45,6 +46,7 @@ const rootReducer = combineReducers({
   registerStep2: registerStep2Reducer,
   registerStep3: registerStep3Reducer,
   auth: authReducer,
+  profile:profileReducer,
   dashboard: dashboardReducer,
   jobBasicInfo: jobBasicInfoReducer,
   jobDetails: jobDetailsReducer,

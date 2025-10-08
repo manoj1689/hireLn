@@ -29,7 +29,7 @@ export function InterviewHeader({ onScheduleInterview }: InterviewHeaderProps) {
         <DialogTrigger asChild>
           <Button variant="default">
             <Eye className="mr-2 h-4 w-4" />
-            View Results
+            reschedule
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">

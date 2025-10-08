@@ -385,7 +385,7 @@ const AIChat: React.FC<AIChatProps> = ({
   };
 
 
-  console.log("audio transcript ", audioTranscript)
+  //console.log("audio transcript ", audioTranscript)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -437,7 +437,7 @@ const AIChat: React.FC<AIChatProps> = ({
             }
             break;
 
-          case "Continue":
+          case "Positive":
             if (!intro) {
               setIntro(true);
               currentQuestionIndexRef.current = 0;
@@ -468,7 +468,7 @@ const AIChat: React.FC<AIChatProps> = ({
             }
             break;
 
-          case "Move to a new question":
+          case "Negative":
             await handleSubmitAnswer(interviewId, "NOT ANSWERED", token, questionId);
             const moveNextIndex = currentQuestionIndexRef.current + 1;
 

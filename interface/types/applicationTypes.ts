@@ -1,4 +1,5 @@
 export enum ApplicationStatus {
+  INVITED="INVITED",
   APPLIED = 'APPLIED',
   SCREENING = 'SCREENING',
   INTERVIEW = 'INTERVIEW',

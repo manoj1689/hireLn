@@ -63,7 +63,7 @@ const App: React.FC = () => {
     fetchData()
   }, [jobId, candidateId, modalOpen, refreshTrigger, dispatch])
 
-  console.log("candidate data", candidateData)
+  //console.log("candidate data", candidateData)
 
   const renderStars = (rating = 0) => {
     const stars = []
@@ -76,6 +76,8 @@ const App: React.FC = () => {
   const closeModal = () => setModalOpen(false);  // Function to close modal
   const getStatusClass = (status: string) => {
     switch (status) {
+      case "INVITED":
+        return "bg-pink-500"
       case "APPLIED":
         return "bg-orange-500"
       case "SCREENING":
@@ -94,8 +96,10 @@ const App: React.FC = () => {
   }
   const getStatusDotClass = (status: string) => {
     switch (status) {
+      case "INVITED":
+        return "bg-pink-200"
       case "APPLIED":
-        return "bg-neutral-400"
+        return "bg-neutral-200"
       case "SCREENING":
         return "bg-yellow-200"
       case "INTERVIEW":
@@ -174,7 +178,7 @@ const App: React.FC = () => {
             <div className="flex flex-col w-full bg-primary-gradient  rounded-t-lg  py-4 justify-center items-center">
               <div className="self-start ">
                 {candidateData.applicationStatus &&
-                  ["APPLIED", "SCREENING", "INTERVIEW", "OFFER", "HIRED", "REJECTED"].includes(
+                  ["INVITED","APPLIED", "SCREENING", "INTERVIEW", "OFFER", "HIRED", "REJECTED"].includes(
                     candidateData.applicationStatus,
                   ) ? (
                   <div

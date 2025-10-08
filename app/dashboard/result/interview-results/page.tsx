@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { MainLayout } from "@/components/layout/main-layout"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AlertCircle, Calendar, CheckCircle, Clock, Eye, GraduationCap, RotateCcw, Search, XCircle } from "lucide-react"
+import { AlertCircle, Calendar, CheckCircle, Clock, Eye, RotateCcw, Search, XCircle, Inbox } from "lucide-react"
 import { InterviewResultHeader } from "./result-header"
 import { cn } from "@/lib/utils"
 import { FaArrowLeft } from "react-icons/fa"
@@ -118,135 +118,139 @@ const InterviewResultPage: React.FC = () => {
                     </CardContent>
                 </Card>
 
-                {filteredResults.map((result) => {
-                    const hue = Math.floor(Math.random() * 360)
-                    const avatarBgColor = `hsl(${hue}, 90%, 85%)`
-                    const avatarTextColor = `hsl(${hue}, 40%, 40%)`
+                {/* ✅ No results found handling */}
+                {filteredResults.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-center text-gray-500">
+                        <Inbox className="h-12 w-12 mb-3 text-gray-400" />
+                        <p className="text-lg font-medium">No interview results found</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Try adjusting your filters or search criteria to find more results.
+                        </p>
+                    </div>
+                ) : (
+                    filteredResults.map((result) => {
+                        const hue = Math.floor(Math.random() * 360)
+                        const avatarBgColor = `hsl(${hue}, 90%, 85%)`
+                        const avatarTextColor = `hsl(${hue}, 40%, 40%)`
 
-                    const statusConfig = {
-                        SCHEDULED: {
-                            color: "bg-blue-50 text-blue-700 border border-blue-200",
-                            icon: <Calendar className="h-3 w-3" />,
-                            pulse: true,
-                        },
-                        COMPLETED: {
-                            color: "bg-green-50 text-green-700 border border-green-200",
-                            icon: <CheckCircle className="h-3 w-3" />,
-                            pulse: false,
-                        },
-                        CANCELLED: {
-                            color: "bg-red-50 text-red-700 border border-red-200",
-                            icon: <XCircle className="h-3 w-3" />,
-                            pulse: false,
-                        },
-                        RESCHEDULED: {
-                            color: "bg-yellow-50 text-yellow-700 border border-yellow-200",
-                            icon: <RotateCcw className="h-3 w-3" />,
-                            pulse: true,
-                        },
-                        NO_SHOW: {
-                            color: "bg-gray-50 text-gray-700 border border-gray-200",
-                            icon: <AlertCircle className="h-3 w-3" />,
-                            pulse: false,
-                        },
-                    }
+                        const statusConfig = {
+                            SCHEDULED: {
+                                color: "bg-blue-50 text-blue-700 border border-blue-200",
+                                icon: <Calendar className="h-3 w-3" />,
+                                pulse: true,
+                            },
+                            COMPLETED: {
+                                color: "bg-green-50 text-green-700 border border-green-200",
+                                icon: <CheckCircle className="h-3 w-3" />,
+                                pulse: false,
+                            },
+                            CANCELLED: {
+                                color: "bg-red-50 text-red-700 border border-red-200",
+                                icon: <XCircle className="h-3 w-3" />,
+                                pulse: false,
+                            },
+                            RESCHEDULED: {
+                                color: "bg-yellow-50 text-yellow-700 border border-yellow-200",
+                                icon: <RotateCcw className="h-3 w-3" />,
+                                pulse: true,
+                            },
+                            NO_SHOW: {
+                                color: "bg-gray-50 text-gray-700 border border-gray-200",
+                                icon: <AlertCircle className="h-3 w-3" />,
+                                pulse: false,
+                            },
+                        }
 
-                    const currentStatus = statusConfig[result.status as keyof typeof statusConfig] || statusConfig.SCHEDULED
+                        const currentStatus = statusConfig[result.status as keyof typeof statusConfig] || statusConfig.SCHEDULED
 
-                    return (
-                        <Card key={result.id} className="hover:shadow-md transition-shadow p-4">
-                            <div className=" flex justify-end items-center gap-2 flex-shrink-0  sm:hidden">
-                                <Badge
-                                    className={cn(
-                                        "text-xs font-medium inline-flex items-center px-2 py-1 rounded-md",
-                                        currentStatus.color,
-                                        currentStatus.pulse && "animate-pulse"
-                                    )}
-                                >
-                                    {currentStatus.icon}
-                                    <span className="ml-1">{result.status.replace("_", " ")}</span>
-                                </Badge>
-                            </div>
-
-
-                            <div className="flex flex-wrap justify-between items-start gap-4 mt-2">
-                                <div className="flex items-center gap-4 flex-1 min-w-[250px]">
-                                    <Avatar className="h-14 w-14 ring-2 ring-white">
-                                        <AvatarFallback
-                                            className="text-white font-semibold"
-                                            style={{ backgroundColor: avatarBgColor, color: avatarTextColor }}
-                                        >
-                                            {getInitials(result.candidateName)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div >
-                                        <div className="flex gap-2">
-                                            <h3 className="text-lg font-semibold">{result.candidateName}</h3>
-                                            <div className=" justify-end items-center gap-2 flex-shrink-0 hidden sm:block">
-                                                <Badge
-                                                    className={cn(
-                                                        "text-xs font-medium inline-flex items-center px-2 py-1 rounded-md",
-                                                        currentStatus.color,
-                                                        currentStatus.pulse && "animate-pulse"
-                                                    )}
-                                                >
-                                                    {currentStatus.icon}
-                                                    <span className="ml-1">{result.status.replace("_", " ")}</span>
-                                                </Badge>
-                                            </div>
-                                        </div>
-
-
-                                        {Array.isArray(result.candidateEducation) && result.candidateEducation.length > 0 && (
-                                            <div>
-                                                {result.candidateEducation.map((edu, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="flex gap-4"
-                                                    >
-                                                        {/* Left: Degree */}
-                                                        <p className="text-sm text-muted-foreground">{edu.degree}</p>
-
-                                                    </div>
-                                                ))}
-                                            </div>
+                        return (
+                            <Card key={result.id} className="hover:shadow-md transition-shadow p-4">
+                                <div className=" flex justify-end items-center gap-2 flex-shrink-0  sm:hidden">
+                                    <Badge
+                                        className={cn(
+                                            "text-xs font-medium inline-flex items-center px-2 py-1 rounded-md",
+                                            currentStatus.color,
+                                            currentStatus.pulse && "animate-pulse"
                                         )}
-                                        <p className="text-sm text-muted-foreground">{result.candidateEmail}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex-1 min-w-[200px] text-sm text-muted-foreground space-y-1">
-                                    <p><span className="font-medium text-black">{result.jobTitle}</span></p>
-                                    <p>{result.jobEducation}</p>
-                                    <p>{result.jobDepartment}</p>
-                                </div>
-
-                                <div className="flex-1 min-w-[150px] text-sm text-muted-foreground space-y-1">
-                                    <div className="flex items-center">
-                                        <Calendar className="h-4 w-4 mr-1" />
-                                        {new Date(result.scheduledAt).toLocaleDateString()}
-                                    </div>
-                                    <div className="flex items-center">
-                                        <Clock className="h-4 w-4 mr-1" />
-                                        {result.duration} min
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleViewDetails(result.id)}
-                                        className="flex items-center gap-1"
                                     >
-                                        <Eye className="h-4 w-4" />
-                                        View Result
-                                    </Button>
+                                        {currentStatus.icon}
+                                        <span className="ml-1">{result.status.replace("_", " ")}</span>
+                                    </Badge>
                                 </div>
-                            </div>
-                        </Card>
-                    )
-                })}
+
+                                <div className="flex flex-wrap justify-between items-start gap-4 mt-2">
+                                    <div className="flex items-center gap-4 flex-1 min-w-[250px]">
+                                        <Avatar className="h-14 w-14 ring-2 ring-white">
+                                            <AvatarFallback
+                                                className="text-white font-semibold"
+                                                style={{ backgroundColor: avatarBgColor, color: avatarTextColor }}
+                                            >
+                                                {getInitials(result.candidateName)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div >
+                                            <div className="flex gap-2">
+                                                <h3 className="text-lg font-semibold">{result.candidateName}</h3>
+                                                <div className=" justify-end items-center gap-2 flex-shrink-0 hidden sm:block">
+                                                    <Badge
+                                                        className={cn(
+                                                            "text-xs font-medium inline-flex items-center px-2 py-1 rounded-md",
+                                                            currentStatus.color,
+                                                            currentStatus.pulse && "animate-pulse"
+                                                        )}
+                                                    >
+                                                        {currentStatus.icon}
+                                                        <span className="ml-1">{result.status.replace("_", " ")}</span>
+                                                    </Badge>
+                                                </div>
+                                            </div>
+
+                                            {Array.isArray(result.candidateEducation) && result.candidateEducation.length > 0 && (
+                                                <div>
+                                                    {result.candidateEducation.map((edu, index) => (
+                                                        <div key={index} className="flex gap-4">
+                                                            <p className="text-sm text-muted-foreground">{edu.degree}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <p className="text-sm text-muted-foreground">{result.candidateEmail}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex-1 min-w-[200px] text-sm text-muted-foreground space-y-1">
+                                        <p><span className="font-medium text-black">{result.jobTitle}</span></p>
+                                        <p>{result.jobEducation}</p>
+                                        <p>{result.jobDepartment}</p>
+                                    </div>
+
+                                    <div className="flex-1 min-w-[150px] text-sm text-muted-foreground space-y-1">
+                                        <div className="flex items-center">
+                                            <Calendar className="h-4 w-4 mr-1" />
+                                            {new Date(result.scheduledAt).toLocaleDateString()}
+                                        </div>
+                                        <div className="flex items-center">
+                                            <Clock className="h-4 w-4 mr-1" />
+                                            {result.duration} min
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleViewDetails(result.id)}
+                                            className="flex items-center gap-1"
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                            View Result
+                                        </Button>
+                                    </div>
+                                </div>
+                            </Card>
+                        )
+                    })
+                )}
             </div>
         </MainLayout>
     )

@@ -22,6 +22,7 @@ import Select from "react-select";
 import { MapPin, Save, CheckCircle } from "lucide-react";
 import { FaArrowLeft } from "react-icons/fa";
 import { PreviousJob } from "@/interface/candidate";
+import { toast, ToastContainer } from "react-toastify";
 
 const departmentOptions = [
   { value: "engineering", label: "Engineering" },
@@ -90,8 +91,46 @@ const AddCandidatePage = () => {
       setFn((prev) => [...prev, value.trim()]);
     }
   };
+  // ✅ VALIDATION FUNCTION
+  const validateForm = () => {
+    if (!name.trim()) return "Full Name is required";
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Valid Email is required";
+    if (!phone.trim() || phone.length < 10) return "Valid Phone Number is required";
+    if (!department) return "Department is required";
+    if (!country) return "Country is required";
+    if (!region) return "Region/State is required";
+    if (!summary.trim()) return "Summary is required";
+
+    // Education check
+    for (let edu of education) {
+      if (!edu.degree.trim() || !edu.institution.trim()) {
+        return "Education: Degree and Institution are required";
+      }
+    }
+
+    // Experience check
+    for (let exp of experience) {
+      if (!exp.title.trim() || !exp.company.trim()) {
+        return "Experience: Title and Company are required";
+      }
+    }
+
+    // At least 1 technical skill
+    if (technicalSkills.length === 0) return "At least one Technical Skill is required";
+
+    // Resume link required
+    if (!resume.trim()) return "Resume URL is required";
+
+    return null; // ✅ No errors
+  };
 
   const onSubmit = async () => {
+    const error = validateForm();
+    if (error) {
+      toast.error(error); // show nice error
+      return;
+    }
+
     const payload = {
       name,
       email,
@@ -132,6 +171,7 @@ const AddCandidatePage = () => {
   return (
     <MainLayout>
       <div className="container mx-auto">
+        <ToastContainer />
         {/* Back */}
         <button
           onClick={() => router.push("/candidates")}
@@ -152,8 +192,8 @@ const AddCandidatePage = () => {
         </div>
 
         {/* Stepper */}
-        <div className="flex items-center justify-between mb-6 relative">
-          <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 z-0" />
+        <div className="flex -z-10 items-center justify-between mb-6 relative">
+          <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 " />
           <StepIndicator number={1} title="Personal Details" isActive={currentStep === 1} isCompleted={currentStep > 1} />
           <StepIndicator number={2} title="Experience & Skills" isActive={currentStep === 2} isCompleted={false} />
         </div>
@@ -165,7 +205,7 @@ const AddCandidatePage = () => {
             if (currentStep === 1) setCurrentStep(2);
             else onSubmit();
           }}
-          className="max-w-7xl mx-auto"
+          className="max-w-7xl mx-auto bg-sky-100 p-4 rounded-lg"
         >
           {currentStep === 1 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -282,152 +322,406 @@ const AddCandidatePage = () => {
               </div>
 
               {/* Education */}
-              <div className="col-span-2">
-                <Label>Education</Label>
+              <Label>Education</Label>
+
+              <div className="col-span-2 ">
+
                 {education.map((edu, i) => (
-                  <div key={i} className="grid grid-cols-2 gap-2 mb-2">
-                    <Input placeholder="Degree" value={edu.degree} onChange={(e) => updateArrayField(setEducation, i, "degree", e.target.value)} />
-                    <Input placeholder="Institution" value={edu.institution} onChange={(e) => updateArrayField(setEducation, i, "institution", e.target.value)} />
-                    <Input placeholder="Location" value={edu.location} onChange={(e) => updateArrayField(setEducation, i, "location", e.target.value)} />
-                    <Input placeholder="Grade" value={edu.grade} onChange={(e) => updateArrayField(setEducation, i, "grade", e.target.value)} />
-                    <Input type="date" value={edu.start_date} onChange={(e) => updateArrayField(setEducation, i, "start_date", e.target.value)} />
-                    <Input type="date" value={edu.end_date} onChange={(e) => updateArrayField(setEducation, i, "end_date", e.target.value)} />
-                  </div>
-                ))}
-                <Button type="button" onClick={() => setEducation([...education, { degree: "", institution: "", location: "", start_date: "", end_date: "", grade: "" }])}>
-                  + Add Education
-                </Button>
-              </div>
-            </div>
-          )}
+                  <div
+                    key={i}
+                    className="grid grid-cols-2 gap-2 mb-2 bg-white relative border p-3 rounded-lg"
+                  >
+                    {/* Remove Button */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEducation((prev) => prev.filter((_, idx) => idx !== i))
+                      }
+                      className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                    >
+                      ✕
+                    </button>
 
-          {currentStep === 2 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Experience */}
-              <div className="col-span-2">
-                <Label>Experience</Label>
-                {experience.map((exp, i) => (
-                  <div key={i} className="grid grid-cols-2 gap-2 mb-2">
-                    <Input placeholder="Title" value={exp.title} onChange={(e) => updateArrayField(setExperience, i, "title", e.target.value)} />
-                    <Input placeholder="Company" value={exp.company} onChange={(e) => updateArrayField(setExperience, i, "company", e.target.value)} />
-                    <Input placeholder="Location" value={exp.location} onChange={(e) => updateArrayField(setExperience, i, "location", e.target.value)} />
-                    <Input type="date" value={exp.start_date} onChange={(e) => updateArrayField(setExperience, i, "start_date", e.target.value)} />
-                    <Input type="date" value={exp.end_date} onChange={(e) => updateArrayField(setExperience, i, "end_date", e.target.value)} />
-                  </div>
-                ))}
-                <Button type="button" onClick={() => setExperience([...experience, { title: "", company: "", location: "", start_date: "", end_date: "" }])}>
-                  + Add Experience
-                </Button>
-              </div>
-
-              {/* Previous Jobs */}
-              <div className="col-span-2">
-                <Label>Previous Jobs</Label>
-                {previousJobs.map((job, i) => (
-                  <div key={i} className="grid grid-cols-2 gap-2 mb-2">
                     <Input
-                      placeholder="Title"
-                      value={job.title}
-                      onChange={(e) => updateArrayField(setPreviousJobs, i, "title", e.target.value)}
+                      placeholder="Degree"
+                      value={edu.degree}
+                      onChange={(e) =>
+                        updateArrayField(setEducation, i, "degree", e.target.value)
+                      }
                     />
                     <Input
-                      placeholder="Company"
-                      value={job.company}
-                      onChange={(e) => updateArrayField(setPreviousJobs, i, "company", e.target.value)}
+                      placeholder="Institution"
+                      value={edu.institution}
+                      onChange={(e) =>
+                        updateArrayField(setEducation, i, "institution", e.target.value)
+                      }
                     />
                     <Input
                       placeholder="Location"
-                      value={job.location}
-                      onChange={(e) => updateArrayField(setPreviousJobs, i, "location", e.target.value)}
+                      value={edu.location}
+                      onChange={(e) =>
+                        updateArrayField(setEducation, i, "location", e.target.value)
+                      }
+                    />
+                    <Input
+                      placeholder="Grade"
+                      value={edu.grade}
+                      onChange={(e) =>
+                        updateArrayField(setEducation, i, "grade", e.target.value)
+                      }
                     />
                     <Input
                       type="date"
-                      value={job.start_date}
-                      onChange={(e) => updateArrayField(setPreviousJobs, i, "start_date", e.target.value)}
+                      value={edu.start_date}
+                      onChange={(e) =>
+                        updateArrayField(setEducation, i, "start_date", e.target.value)
+                      }
                     />
                     <Input
                       type="date"
-                      value={job.end_date}
-                      onChange={(e) => updateArrayField(setPreviousJobs, i, "end_date", e.target.value)}
+                      value={edu.end_date}
+                      onChange={(e) =>
+                        updateArrayField(setEducation, i, "end_date", e.target.value)
+                      }
                     />
                   </div>
                 ))}
                 <Button
                   type="button"
                   onClick={() =>
-                    setPreviousJobs([
-                      ...previousJobs,
-                      { title: "", company: "", location: "", start_date: "", end_date: "", description: [] }
+                    setEducation([
+                      ...education,
+                      {
+                        degree: "",
+                        institution: "",
+                        location: "",
+                        start_date: "",
+                        end_date: "",
+                        grade: "",
+                      },
                     ])
                   }
                 >
-                  + Add Previous Job
+                  + Education
+                </Button>
+              </div>
+
+            </div>
+          )}
+
+          {currentStep === 2 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Experience */}
+              <Label>Experience</Label>
+              <div className="col-span-2">
+
+                {experience.map((exp, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-2 gap-2 mb-2 relative border p-3 bg-white rounded-lg"
+                  >
+                    {/* Remove Button */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExperience((prev) => prev.filter((_, idx) => idx !== i))
+                      }
+                      className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                    >
+                      ✕
+                    </button>
+
+                    <Input
+                      placeholder="Title"
+                      value={exp.title}
+                      onChange={(e) =>
+                        updateArrayField(setExperience, i, "title", e.target.value)
+                      }
+                    />
+                    <Input
+                      placeholder="Company"
+                      value={exp.company}
+                      onChange={(e) =>
+                        updateArrayField(setExperience, i, "company", e.target.value)
+                      }
+                    />
+                    <Input
+                      placeholder="Location"
+                      value={exp.location}
+                      onChange={(e) =>
+                        updateArrayField(setExperience, i, "location", e.target.value)
+                      }
+                    />
+                    <Input
+                      type="date"
+                      value={exp.start_date}
+                      onChange={(e) =>
+                        updateArrayField(setExperience, i, "start_date", e.target.value)
+                      }
+                    />
+                    <Input
+                      type="date"
+                      value={exp.end_date}
+                      onChange={(e) =>
+                        updateArrayField(setExperience, i, "end_date", e.target.value)
+                      }
+                    />
+                  </div>
+                ))}
+
+                <Button
+                  type="button"
+                  onClick={() =>
+                    setExperience([
+                      ...experience,
+                      { title: "", company: "", location: "", start_date: "", end_date: "" },
+                    ])
+                  }
+                >
+                  + Experience
                 </Button>
               </div>
 
 
-              {/* Internships */}
-              <TagInput label="Internships" tags={internships} setTags={setInternships} />
-
-              {/* Technical Skills */}
-              <TagInput label="Technical Skills" tags={technicalSkills} setTags={setTechnicalSkills} />
-
-              {/* Soft Skills */}
-              <TagInput label="Soft Skills" tags={softSkills} setTags={setSoftSkills} />
-
-              {/* Languages */}
-              <TagInput label="Languages" tags={languages} setTags={setLanguages} />
-
-              {/* Certifications */}
+              {/* Previous Jobs */}
+              <Label>Previous Jobs</Label>
               <div className="col-span-2">
-                <Label>Certifications</Label>
-                {certifications.map((cert, i) => (
-                  <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                    <Input placeholder="Title" value={cert.title} onChange={(e) => updateArrayField(setCertifications, i, "title", e.target.value)} />
-                    <Input placeholder="Issuer" value={cert.issuer} onChange={(e) => updateArrayField(setCertifications, i, "issuer", e.target.value)} />
-                    <Input type="date" value={cert.date} onChange={(e) => updateArrayField(setCertifications, i, "date", e.target.value)} />
+
+                {previousJobs.map((job, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-2 gap-2 mb-2 relative bg-white border p-3 rounded-lg"
+                  >
+                    {/* Remove Button */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPreviousJobs((prev) => prev.filter((_, idx) => idx !== i))
+                      }
+                      className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                    >
+                      ✕
+                    </button>
+
+                    <Input
+                      placeholder="Title"
+                      value={job.title}
+                      onChange={(e) =>
+                        updateArrayField(setPreviousJobs, i, "title", e.target.value)
+                      }
+                    />
+                    <Input
+                      placeholder="Company"
+                      value={job.company}
+                      onChange={(e) =>
+                        updateArrayField(setPreviousJobs, i, "company", e.target.value)
+                      }
+                    />
+                    <Input
+                      placeholder="Location"
+                      value={job.location}
+                      onChange={(e) =>
+                        updateArrayField(setPreviousJobs, i, "location", e.target.value)
+                      }
+                    />
+                    <Input
+                      type="date"
+                      value={job.start_date}
+                      onChange={(e) =>
+                        updateArrayField(setPreviousJobs, i, "start_date", e.target.value)
+                      }
+                    />
+                    <Input
+                      type="date"
+                      value={job.end_date}
+                      onChange={(e) =>
+                        updateArrayField(setPreviousJobs, i, "end_date", e.target.value)
+                      }
+                    />
                   </div>
                 ))}
-                <Button type="button" onClick={() => setCertifications([...certifications, { title: "", issuer: "", date: "" }])}>
+
+                <Button
+                  type="button"
+                  onClick={() =>
+                    setPreviousJobs([
+                      ...previousJobs,
+                      {
+                        title: "",
+                        company: "",
+                        location: "",
+                        start_date: "",
+                        end_date: "",
+                        description: [],
+                      },
+                    ])
+                  }
+                >
+                  + Previous Job
+                </Button>
+              </div>
+
+
+
+              <div className="col-span-1">
+
+                {/* Left Column */}
+                <div className="flex flex-col gap-4">
+                  <TagInput label="Internships" tags={internships} setTags={setInternships} />
+                  <TagInput label="Technical Skills" tags={technicalSkills} setTags={setTechnicalSkills} />
+                </div>
+
+
+              </div>
+              <div className="col-span-1">
+
+
+
+                {/* Right Column */}
+                <div className="flex flex-col  gap-4">
+                  <TagInput label="Soft Skills" tags={softSkills} setTags={setSoftSkills} />
+                  <TagInput label="Languages" tags={languages} setTags={setLanguages} />
+                </div>
+
+              </div>
+
+
+              {/* Certifications */}
+              <Label>Certifications</Label>
+              <div className="col-span-2">
+
+                {certifications.map((cert, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-3 gap-2 mb-2 relative border p-3 rounded-lg"
+                  >
+                    {/* Remove Button */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCertifications((prev) => prev.filter((_, idx) => idx !== i))
+                      }
+                      className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                    >
+                      ✕
+                    </button>
+
+                    <Input
+                      placeholder="Title"
+                      value={cert.title}
+                      onChange={(e) =>
+                        updateArrayField(setCertifications, i, "title", e.target.value)
+                      }
+                    />
+                    <Input
+                      placeholder="Issuer"
+                      value={cert.issuer}
+                      onChange={(e) =>
+                        updateArrayField(setCertifications, i, "issuer", e.target.value)
+                      }
+                    />
+                    <Input
+                      type="date"
+                      value={cert.date}
+                      onChange={(e) =>
+                        updateArrayField(setCertifications, i, "date", e.target.value)
+                      }
+                    />
+                  </div>
+                ))}
+
+                <Button
+                  type="button"
+                  onClick={() =>
+                    setCertifications([
+                      ...certifications,
+                      { title: "", issuer: "", date: "" },
+                    ])
+                  }
+                >
                   + Add Certification
                 </Button>
               </div>
 
+
               {/* Projects */}
+              <Label>Projects</Label>
               <div className="col-span-2">
-                <Label>Projects</Label>
+
                 {projects.map((proj, i) => (
-                  <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                    <Input placeholder="Title" value={proj.title} onChange={(e) => updateArrayField(setProjects, i, "title", e.target.value)} />
-                    <Input placeholder="Description" value={proj.description} onChange={(e) => updateArrayField(setProjects, i, "description", e.target.value)} />
-                    <Input placeholder="URL" value={proj.url} onChange={(e) => updateArrayField(setProjects, i, "url", e.target.value)} />
+                  <div
+                    key={i}
+                    className="grid grid-cols-3 gap-2 mb-2 relative border p-3 rounded-lg"
+                  >
+                    {/* Remove Button */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setProjects((prev) => prev.filter((_, idx) => idx !== i))
+                      }
+                      className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                    >
+                      ✕
+                    </button>
+
+                    <Input
+                      placeholder="Title"
+                      value={proj.title}
+                      onChange={(e) => updateArrayField(setProjects, i, "title", e.target.value)}
+                    />
+                    <Input
+                      placeholder="Description"
+                      value={proj.description}
+                      onChange={(e) => updateArrayField(setProjects, i, "description", e.target.value)}
+                    />
+                    <Input
+                      placeholder="URL"
+                      value={proj.url}
+                      onChange={(e) => updateArrayField(setProjects, i, "url", e.target.value)}
+                    />
                   </div>
                 ))}
-                <Button type="button" onClick={() => setProjects([...projects, { title: "", description: "", url: "" }])}>
+
+                <Button
+                  type="button"
+                  onClick={() =>
+                    setProjects([...projects, { title: "", description: "", url: "" }])
+                  }
+                >
                   + Add Project
                 </Button>
               </div>
 
-              {/* Hobbies */}
-              <TagInput label="Hobbies" tags={hobbies} setTags={setHobbies} />
+              <div>
+                {/* Hobbies */}
+                <TagInput label="Hobbies" tags={hobbies} setTags={setHobbies} />
+              </div>
 
-              {/* Salary */}
-              <InputField label="Salary Expectation" value={salaryExpectation} onChange={setSalaryExpectation} type="number" />
+              <div>
+                {/* Salary */}
+                <InputField label="Salary Expectation" value={salaryExpectation} onChange={setSalaryExpectation} type="number" />
+              </div>
+
 
               {/* Links */}
-              <InputField label="Resume URL" value={resume} onChange={setResume} className="col-span-2" />
-              <InputField label="Portfolio URL" value={portfolio} onChange={setPortfolio} className="col-span-2" />
-              <InputField label="LinkedIn URL" value={linkedin} onChange={setLinkedin} className="col-span-2" />
-              <InputField label="GitHub URL" value={github} onChange={setGithub} className="col-span-2" />
+              <div className="space-y-2">
+                <InputField label="Resume URL" value={resume} onChange={setResume} className="col-span-2" />
+                <InputField label="Portfolio URL" value={portfolio} onChange={setPortfolio} className="col-span-2" />
+              </div>
+              <div className="space-y-2">
+                <InputField label="LinkedIn URL" value={linkedin} onChange={setLinkedin} className="col-span-2" />
+                <InputField label="GitHub URL" value={github} onChange={setGithub} className="col-span-2" />
+              </div>
+
             </div>
           )}
 
 
 
           {/* Step Controls */}
-          <div className="flex justify-between mt-6">
-            {currentStep > 1 && <Button type="button" variant="outline" onClick={() => setCurrentStep(1)}>Back</Button>}
-            <Button type="submit">{currentStep === 1 ? "Next" : "Add Candidate"}</Button>
+          <div className="flex justify-center gap-8 mt-6">
+            {currentStep > 1 && <Button className="px-12" type="button" variant="outline" onClick={() => setCurrentStep(1)}>Back</Button>}
+            <Button className="px-12" type="submit">{currentStep === 1 ? "Next" : "Add Candidate"}</Button>
           </div>
         </form>
       </div>
@@ -473,24 +767,78 @@ function StepIndicator({ number, title, isActive, isCompleted }: any) {
 }
 
 
-function TagInput({ label, tags, setTags }: { label: string; tags: string[]; setTags: (v: string[]) => void }) {
+function TagInput({
+  label,
+  tags,
+  setTags,
+}: {
+  label: string;
+  tags: string[];
+  setTags: (v: string[]) => void;
+}) {
   const [input, setInput] = useState("");
+
+  const removeTag = (index: number) => {
+    setTags(tags.filter((_, i) => i !== index));
+  };
+
   return (
-    <div className="col-span-2">
+    <><div className="pb-2">
       <Label>{label}</Label>
-      <div className="flex gap-2">
-        <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder={`Add ${label}`} />
-        <Button type="button" onClick={() => { if (input.trim()) { setTags([...tags, input.trim()]); setInput(""); } }}>
-          + Add
-        </Button>
-      </div>
-      {tags.length > 0 && (
-        <ul className="list-disc pl-5 mt-1">
-          {tags.map((t, i) => (
-            <li key={i}>{t}</li>
-          ))}
-        </ul>
-      )}
     </div>
+
+      <div className="col-span-2">
+
+        <div className="flex gap-2">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={`Add ${label}`}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                if (input.trim()) {
+                  setTags([...tags, input.trim()]);
+                  setInput("");
+                }
+              }
+            }}
+          />
+          <Button
+            type="button"
+            onClick={() => {
+              if (input.trim()) {
+                setTags([...tags, input.trim()]);
+                setInput("");
+              }
+            }}
+          >
+            + Add
+          </Button>
+        </div>
+
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {tags.map((t, i) => (
+              <span
+                key={i}
+                className="flex items-center gap-2 bg-white text-gray-700 px-3 py-1 rounded-full text-sm"
+              >
+                {t}
+                <button
+                  type="button"
+                  onClick={() => removeTag(i)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  ✕
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+
   );
 }
+

@@ -73,11 +73,6 @@ export default function InterviewCard({ interview }: InterviewCardProps) {
                     ))}
                 </div>
 
-
-
-
-
-
             </Card>
 
             {/* Grid Section */}
