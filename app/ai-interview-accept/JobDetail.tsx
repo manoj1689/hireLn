@@ -4,15 +4,16 @@ import { useState, useEffect } from "react"
 import { useDispatch } from "react-redux"
 import { useSearchParams } from "next/navigation"
 import { fetchJobById } from "@/lib/slices/job/jobsList-slice"
-import { acceptApplication } from "@/lib/slices/applicant/application-slice"
+import { acceptApplication, getApplication } from "@/lib/slices/applicant/application-slice"
 import { AppDispatch } from "@/lib/store"
-
+import { FiCheckCircle, FiClock, FiUserCheck, FiXCircle, FiAward, FiStar } from "react-icons/fi"
 // React Icons
-import { FiMapPin, FiClock, FiBookOpen, FiCheckCircle } from "react-icons/fi"
+import { FiMapPin, } from "react-icons/fi"
 import { FaMoneyBillWave, FaGraduationCap, FaBuilding } from "react-icons/fa"
 
 export default function JobDetailsPage() {
   const [jobData, setJobData] = useState<any>(null)
+  const [applicationData, setApplicationData] = useState<any>(null)
   const [activeTab, setActiveTab] = useState("overview")
   const dispatch = useDispatch<AppDispatch>()
   const searchParams = useSearchParams()
@@ -21,21 +22,107 @@ export default function JobDetailsPage() {
   const jobId = searchParams.get("job_id") || ""
   const token = searchParams.get("token") || ""
 
+  // Fetch job data
   useEffect(() => {
     if (jobId) {
       dispatch(fetchJobById(jobId)).then((data) => setJobData(data.payload))
     }
   }, [jobId, dispatch])
 
+  // Fetch application data
+  const fetchApplication = () => {
+    if (applicationId) {
+      dispatch(getApplication({ applicationId, token }))
+        .then((res: any) => setApplicationData(res.payload))
+    }
+  }
+
+  useEffect(() => {
+    fetchApplication()
+  }, [applicationId, dispatch, token])
+
   const handleAccept = () => {
     if (!applicationId) return
     dispatch(acceptApplication({ applicationId, token }))
+      .then(() => fetchApplication()) // Refresh status after accepting
   }
 
-  if (!jobData) {
-    return <p className="text-center text-gray-500 mt-10">Loading job details...</p>
+  if (!jobData || !applicationData) {
+    return <p className="text-center text-gray-500 mt-10">Loading...</p>
   }
 
+  const status = applicationData.status
+
+  // Handle non-invited statuses
+if (status !== "INVITED") {
+  let statusContent = {
+    message: "",
+    icon: null,
+    color: ""
+  }
+
+  switch (status) {
+    case "APPLIED":
+      statusContent = {
+        message: "You have already applied to this job.",
+        icon: <FiCheckCircle className="text-blue-600 w-6 h-6" />,
+        color: "bg-blue-50 text-blue-700"
+      }
+      break
+    case "SCREENING":
+      statusContent = {
+        message: "Your application is under screening.",
+        icon: <FiClock className="text-yellow-500 w-6 h-6" />,
+        color: "bg-yellow-50 text-yellow-700"
+      }
+      break
+    case "INTERVIEW":
+      statusContent = {
+        message: "You are scheduled for an interview.",
+        icon: <FiUserCheck className="text-purple-600 w-6 h-6" />,
+        color: "bg-purple-50 text-purple-700"
+      }
+      break
+    case "OFFER":
+      statusContent = {
+        message: "You have received an offer!",
+        icon: <FiAward className="text-green-600 w-6 h-6" />,
+        color: "bg-green-50 text-green-700"
+      }
+      break
+    case "HIRED":
+      statusContent = {
+        message: "Congratulations! You are hired.",
+        icon: <FiStar className="text-green-800 w-6 h-6" />,
+        color: "bg-green-100 text-green-800"
+      }
+      break
+    case "REJECTED":
+      statusContent = {
+        message: "We are sorry, your application was rejected.",
+        icon: <FiXCircle className="text-red-600 w-6 h-6" />,
+        color: "bg-red-50 text-red-700"
+      }
+      break
+    default:
+      statusContent = {
+        message: "Status unknown",
+        icon: <FiXCircle className="text-gray-500 w-6 h-6" />,
+        color: "bg-gray-50 text-gray-700"
+      }
+      break
+  }
+
+  return (
+    <div className={`container mx-auto p-6 mt-10 flex flex-col items-center justify-center rounded-2xl shadow-md ${statusContent.color} max-w-md`}>
+      <div className="flex items-center gap-4">
+        {statusContent.icon}
+        <p className="text-lg font-semibold">{statusContent.message}</p>
+      </div>
+    </div>
+  )
+}
+  // If INVITED, show the full UI (your existing code)
   return (
     <div className="container mx-auto p-6 mt-6">
       <div className="flex flex-col lg:flex-row gap-6">
@@ -197,7 +284,6 @@ export default function JobDetailsPage() {
                 {jobData.status}
               </span>
             </p>
-
           </div>
 
           {/* Apply Box */}

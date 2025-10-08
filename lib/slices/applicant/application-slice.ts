@@ -63,6 +63,30 @@ export const acceptApplication = createAsyncThunk(
   }
 );
 
+// Async thunk to get application data by ID
+export const getApplication = createAsyncThunk<
+  ApplicationResponse, 
+  { applicationId: string; token?: string }, // optional token if needed
+  { rejectValue: string }
+>(
+  'applications/getApplication',
+  async ({ applicationId, token }, { rejectWithValue }) => {
+    try {
+      const headers = token
+        ? { 'X-Interview-Token': token, Accept: 'application/json' }
+        : { Accept: 'application/json' };
+
+      const response = await axios.get(
+        `${baseURL}/api/candidates/applications/${applicationId}`,
+        { headers }
+      );
+
+      return response.data as ApplicationResponse;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Error fetching application');
+    }
+  }
+);
 
 // Async thunk to update application (if still needed)
 export const updateApplication = createAsyncThunk(
@@ -112,6 +136,20 @@ const applicationSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      // Get application
+      .addCase(getApplication.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getApplication.fulfilled, (state, action: PayloadAction<ApplicationResponse>) => {
+        state.loading = false;
+        state.application = action.payload;
+      })
+      .addCase(getApplication.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
 
       // Update application
       .addCase(updateApplication.pending, (state) => {
