@@ -14,7 +14,7 @@ const lexendFont = Lexend({
 export const metadata: Metadata = {
   title: "HireLn – AI-Powered Resume & Interview Screening Platform",
   description:
-    "HireLn uses advanced AI to filter and shortlist candidates from resumes and interviews quickly and accurately. Save time and hire smarter.",
+    "HireLn uses advanced AI to filter and shortlist candidates from resumes and interviews quickly and accurately. Save time and hire candidate smarter.",
   keywords: [
     "AI hiring platform",
     "resume screening",
