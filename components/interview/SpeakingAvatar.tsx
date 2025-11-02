@@ -52,7 +52,7 @@ const SpeakingAvatar = ({
         Array.from({ length: ringCount }).map((_, index) => (
           <div
             key={`${pulseKey}-${index}`}
-            className="absolute w-[80px] h-[80px] border-4 rounded-full border-cyan-400 opacity-30 animate-pulse-ring"
+            className="absolute w-[120px] h-[120px] border-4 rounded-full border-cyan-400 opacity-30 animate-pulse-ring"
             style={
               {
                 animationDelay: `${index * 0.1}s`,
@@ -63,7 +63,7 @@ const SpeakingAvatar = ({
         ))}
 
       {/* Initials Circle */}
-      <div className="w-20 h-20 rounded-full bg-cyan-500 text-white flex border-4 border-white items-center shadow-lg justify-center text-2xl font-bold">
+      <div className="w-28 h-28 rounded-full bg-cyan-500 text-white flex border-4 border-white items-center shadow-lg justify-center text-2xl font-bold">
         {initials}
       </div>
     </div>

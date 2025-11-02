@@ -16,22 +16,35 @@ const initialState: InterviewState = {
   data: null,
 };
 
-export const scheduleInterview = createAsyncThunk<InterviewResponse, InterviewScheduleRequest>(
+export const scheduleInterview = createAsyncThunk<
+  InterviewResponse,
+  InterviewScheduleRequest,
+  { rejectValue: string }
+>(
   'interview/schedule',
   async (formData, { rejectWithValue }) => {
     try {
-      console.log("sedule form data",formData)
-      const response = await axiosApi.post<InterviewResponse>(
-        '/api/interviews/schedule',
-        formData
-      );
+      console.log("Schedule form data:", formData);
+
+      // ✅ Guest vs normal scheduling (if needed later)
+      const url = formData.isGuest
+        ? '/api/try-interview/schedule'
+        : '/api/interviews/schedule';
+
+      const response = await axiosApi.post(url, formData);
+
       console.log("Interview scheduled:", response.data);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.detail || 'Failed to schedule interview');
+      return rejectWithValue(
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        'Failed to schedule interview'
+      );
     }
   }
 );
+
 
 const scheduleInterviewSlice = createSlice({
   name: 'scheduleInterview',

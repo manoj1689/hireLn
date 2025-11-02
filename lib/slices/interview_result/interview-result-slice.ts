@@ -2,38 +2,45 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import axiosApi from "@/services/api"
 import { InterviewResultResponse } from "@/interface/interview-result"
 
-// AsyncThunk to fetch interview result by interviewId
+// ✅ AsyncThunk to fetch interview result by interviewId
 export const fetchResultByInterviewId = createAsyncThunk<
   InterviewResultResponse,
-  string
+  string,
+  { rejectValue: string }
 >(
   "interviewResult/fetchByInterviewId",
   async (interviewId, { rejectWithValue }) => {
     try {
-      const response = await axiosApi.get<InterviewResultResponse>(
-        `/api/interviews/interview/${interviewId}/result`
-       
+      const response = await axiosApi.post<InterviewResultResponse>(
+        `/api/interviews/interview/${interviewId}/auto-evaluate`
       )
+      console.log("auto evaluate data",response.data)
       return response.data
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch interview result")
+      return rejectWithValue(
+        error.response?.data?.detail ||
+          error.response?.data?.message ||
+          "Failed to fetch interview result"
+      )
     }
   }
 )
 
-// Slice
+// ✅ Slice state interface
 interface InterviewResultState {
   result: InterviewResultResponse | null
   loading: boolean
   error: string | null
 }
 
+// ✅ Initial state
 const initialState: InterviewResultState = {
   result: null,
   loading: false,
   error: null,
 }
 
+// ✅ Slice definition
 const interviewResultSlice = createSlice({
   name: "interviewResult",
   initialState,
@@ -56,10 +63,11 @@ const interviewResultSlice = createSlice({
       })
       .addCase(fetchResultByInterviewId.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload as string
+        state.error = action.payload || "An unexpected error occurred"
       })
   },
 })
 
+// ✅ Export actions and reducer
 export const { clearInterviewResult } = interviewResultSlice.actions
 export default interviewResultSlice.reducer

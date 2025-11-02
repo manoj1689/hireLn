@@ -14,7 +14,7 @@ const initialState: InterviewJoinState = {
   status: null,
 }
 
-// ✅ Fetch interview data
+// ✅ Fetch interview data using GET and header token
 export const fetchInterviewJoin = createAsyncThunk(
   'interviewJoin/fetch',
   async (
@@ -22,21 +22,34 @@ export const fetchInterviewJoin = createAsyncThunk(
     thunkAPI
   ) => {
     try {
-      const url = `${baseURL}/api/interview-join/join?interview_id=${interviewId}${token ? `&token=${token}` : ''}`
-      const response = await axios.get(url)
+      const response = await axios.get(
+        `${baseURL}/api/interview-join/join`,
+        {
+          params: {
+            interview_id: interviewId, // send as query param
+          },
+          headers: {
+            "X-Interview-Token": token || "",
+          },
+        }
+      );
+
+      console.log("response of interview join", response.data);
+
       return {
         interview: response.data.interview,
         message: response.data.message,
         redirectUrl: response.data.redirectUrl,
         status: response.data.interview?.status ?? null,
-      }
+      };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.detail || 'Failed to fetch interview'
-      )
+      );
     }
   }
-)
+);
+
 
 // ✅ Confirm interview attendance
 export const confirmInterview = createAsyncThunk(
@@ -45,64 +58,90 @@ export const confirmInterview = createAsyncThunk(
     {
       interviewId,
       responseMessage,
-    }: { interviewId: string; responseMessage?: string },
+      token,
+    }: { interviewId: string; responseMessage?: string; token?: string },
     thunkAPI
   ) => {
     try {
       const url = `${baseURL}/api/interview-join/confirm/${interviewId}?confirmed=true${
         responseMessage ? `&response_message=${encodeURIComponent(responseMessage)}` : ''
-      }`
+      }`;
 
-      const response = await axios.post(url)
+      const response = await axios.post(url, null, {
+        headers: {
+          "X-Interview-Token": token || "",
+        },
+      });
+
       return {
         message: response.data.message,
         status: response.data.status,
-      }
+      };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.detail || 'Failed to confirm interview'
-      )
+      );
     }
   }
-)
+);
 
 // ✅ Start Interview
 export const startInterview = createAsyncThunk(
   'interviewJoin/start',
-  async (interviewId: string, thunkAPI) => {
+  async (
+    { interviewId, token }: { interviewId: string; token?: string },
+    thunkAPI
+  ) => {
     try {
-      const url = `${baseURL}/api/interview-join/${interviewId}/start`
-      const response = await axios.put(url)
+      const url = `${baseURL}/api/interview-join/${interviewId}/start`;
+
+      const response = await axios.put(url, null, {
+        headers: {
+          "X-Interview-Token": token || "",
+        },
+      });
+
       return {
         message: response.data.message,
         status: response.data.status,
-      }
+      };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.detail || 'Failed to start interview'
-      )
+      );
     }
   }
-)
+);
+
 
 // ✅ Complete Interview
 export const completeInterview = createAsyncThunk(
   'interviewJoin/complete',
-  async (interviewId: string, thunkAPI) => {
+  async (
+    { interviewId, token }: { interviewId: string; token?: string },
+    thunkAPI
+  ) => {
     try {
-      const url = `${baseURL}/api/interview-join/${interviewId}/complete`
-      const response = await axios.put(url)
+      const url = `${baseURL}/api/interview-join/${interviewId}/complete`;
+
+      const response = await axios.put(url, null, {
+        headers: {
+          "X-Interview-Token": token || "",
+        },
+      });
+
       return {
         message: response.data.message,
         status: response.data.status,
-      }
+      };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.detail || 'Failed to complete interview'
-      )
+      );
     }
   }
-)
+);
+
 
 const interviewJoinSlice = createSlice({
   name: 'interviewJoin',

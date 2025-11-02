@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosApi from '@/services/api';
-import { CandidateRequest, CandidateResponse } from '../../../interface/candidate';
-
+import { CandidateResponse } from '../../../interface/candidate';
 
 interface CandidateState {
   loading: boolean;
@@ -17,22 +16,7 @@ const initialState: CandidateState = {
   singleCandidate: null,
 };
 
-// Async action to submit candidate data
-export const addCandidate = createAsyncThunk<CandidateResponse, CandidateRequest>(
-  'candidate/add',
-  async (formData, { rejectWithValue }) => {
-    try {
-      console.log("form data",formData)
-      const response = await axiosApi.post<CandidateResponse>('/api/candidates/add', formData);
-      console.log('Candidate response:', response.data);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Something went wrong');
-    }
-  }
-);
-
-// Async action to fetch a list of candidates
+// Fetch Candidates List
 export const fetchCandidates = createAsyncThunk<
   CandidateResponse[],
   {
@@ -43,20 +27,16 @@ export const fetchCandidates = createAsyncThunk<
   }
 >(
   'candidate/fetch',
-  async ({ skip, limit, search, technicalSkills}, { rejectWithValue }) => {
+  async ({ skip, limit, search, technicalSkills }, { rejectWithValue }) => {
     try {
       const params = new URLSearchParams();
-
       params.append('skip', skip.toString());
       params.append('limit', limit.toString());
-
       if (search) params.append('search', search);
       if (technicalSkills && technicalSkills.length > 0) {
-        technicalSkills.forEach(technicalSkills=> params.append('technicalSkills', technicalSkills));
+        technicalSkills.forEach(skill => params.append('technicalSkills', skill));
       }
-
       const response = await axiosApi.get<CandidateResponse[]>(`/api/candidates/?${params.toString()}`);
-      console.log('Candidates response:', response.data);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Something went wrong');
@@ -64,17 +44,15 @@ export const fetchCandidates = createAsyncThunk<
   }
 );
 
-// Async action to fetch a single candidate by ID
+// Fetch Single Candidate by ID
 export const fetchCandidateById = createAsyncThunk<
   CandidateResponse,
-  string  // candidate_id
+  string
 >(
   'candidate/fetchById',
   async (candidateId, { rejectWithValue }) => {
     try {
-      const response = await axiosApi.get<CandidateResponse>(
-        `/api/candidates/${candidateId}`
-      );
+      const response = await axiosApi.get<CandidateResponse>(`/api/candidates/${candidateId}`);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Something went wrong');
@@ -82,24 +60,10 @@ export const fetchCandidateById = createAsyncThunk<
   }
 );
 
-export const updateCandidate = createAsyncThunk<
-  CandidateResponse,
-  { id: string; formData: Partial<CandidateRequest> }
->(
-  'candidate/update',
-  async ({ id, formData }, { rejectWithValue }) => {
-    try {
-      const response = await axiosApi.put<CandidateResponse>(`/api/candidates/${id}`, formData);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update candidate');
-    }
-  }
-);
-
+// Delete Candidate
 export const deleteCandidate = createAsyncThunk<
-  string, // return deleted candidate ID
-  string // candidate ID
+  string, // Return deleted candidate ID
+  string  // Candidate ID
 >(
   'candidate/delete',
   async (id, { rejectWithValue }) => {
@@ -111,7 +75,6 @@ export const deleteCandidate = createAsyncThunk<
     }
   }
 );
-
 
 const candidateSlice = createSlice({
   name: 'candidate',
@@ -126,27 +89,6 @@ const candidateSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Add Candidate
-      .addCase(addCandidate.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(
-        addCandidate.fulfilled,
-        (state, action: PayloadAction<CandidateResponse>) => {
-          state.loading = false;
-          // If the data array already exists, append the new candidate to it
-          if (state.data) {
-            state.data.push(action.payload); // Append the new candidate
-          } else {
-            state.data = [action.payload]; // If no candidates, set the data with the new candidate
-          }
-        }
-      )
-      .addCase(addCandidate.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
       // Fetch Candidates List
       .addCase(fetchCandidates.pending, (state) => {
         state.loading = true;
@@ -160,7 +102,7 @@ const candidateSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Fetch Single Candidate by ID
+      // Fetch Single Candidate
       .addCase(fetchCandidateById.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -173,25 +115,6 @@ const candidateSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(updateCandidate.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateCandidate.fulfilled, (state, action: PayloadAction<CandidateResponse>) => {
-        state.loading = false;
-        if (state.data) {
-          const index = state.data.findIndex(c => c.id === action.payload.id);
-          if (index !== -1) state.data[index] = action.payload;
-        }
-        if (state.singleCandidate?.id === action.payload.id) {
-          state.singleCandidate = action.payload;
-        }
-      })
-      .addCase(updateCandidate.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-
       // Delete Candidate
       .addCase(deleteCandidate.pending, (state) => {
         state.loading = true;

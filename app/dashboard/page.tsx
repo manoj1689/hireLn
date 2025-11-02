@@ -1,54 +1,72 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { useDispatch, useSelector } from "react-redux"
-import type { RootState, AppDispatch } from "@/lib/store"
-import { MainLayout } from "@/components/layout/main-layout"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart3, Download, FileText, Plus, Users, Clock, MessageCircle } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MetricCard } from "@/components/metric-card"
-import { RecruitmentChart } from "@/components/recruitment-chart"
-import { PipelineStage } from "@/components/pipeline-stage"
-import { ActivityItem } from "@/components/activity-item"
-import { DepartmentChart } from "@/components/department-chart"
-import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState, AppDispatch } from "@/lib/store";
+import { MainLayout } from "@/components/layout/main-layout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  BarChart3,
+  Download,
+  FileText,
+  Plus,
+  Users,
+  Clock,
+  MessageCircle,
+} from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MetricCard } from "@/components/metric-card";
+import { RecruitmentChart } from "@/components/recruitment-chart";
+import { PipelineStage } from "@/components/pipeline-stage";
+import { ActivityItem } from "@/components/activity-item";
+import { DepartmentChart } from "@/components/department-chart";
+import { useRouter } from "next/navigation";
 import {
   fetchActivities,
   fetchDashboardMetrics,
   fetchPipelineStages,
   fetchRecruitmentTrends,
-  fetchDepartmentStats
-} from "@/lib/slices/dashboard/dashboard-slice"
-import { activityTypeIconMap } from "@/components/activity-Icons"
+  fetchDepartmentStats,
+} from "@/lib/slices/dashboard/dashboard-slice";
+import { activityTypeIconMap } from "@/components/activity-Icons";
+import BulkResumeUploadDialog from "@/components/bulk-upload/BulkResumeUploadDialog";
 
 export default function DashboardPage() {
-  const router = useRouter()
-  const dispatch = useDispatch<AppDispatch>()
-  const { user } = useSelector((state: RootState) => state.auth)
-  const { metrics, activities, pipelineStages, recruitmentTrends, departmentStats } = useSelector((state: RootState) => state.dashboard)
-  const [mounted, setMounted] = useState(false)
-
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const {
+    metrics,
+    activities,
+    pipelineStages,
+    recruitmentTrends,
+    departmentStats,
+  } = useSelector((state: RootState) => state.dashboard);
+  const [mounted, setMounted] = useState(false);
+  const [showBulkUploadDialog, setShowBulkUploadDialog] = useState(false);
   useEffect(() => {
-    setMounted(true)
-    dispatch(fetchDashboardMetrics())
-    dispatch(fetchActivities())
-    dispatch(fetchPipelineStages())
-    dispatch(fetchRecruitmentTrends())
-    dispatch(fetchDepartmentStats())
-  }, [dispatch])
+    setMounted(true);
+    dispatch(fetchDashboardMetrics());
+    dispatch(fetchActivities());
+    dispatch(fetchPipelineStages());
+    dispatch(fetchRecruitmentTrends());
+    dispatch(fetchDepartmentStats());
+  }, [dispatch]);
 
-  if (!mounted || !metrics) return null
+  if (!mounted || !metrics) return null;
 
   return (
     <MainLayout>
       <div className="flex w-full flex-col lg:flex-row bg-primary-gradient space-y-4 justify-between px-4 py-4 shadow-lg rounded-lg">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Recruitment Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">
+            Recruitment Dashboard
+          </h1>
           <p className=" text-white">
-            Welcome back, {user?.name || "Jack"}! Here's your recruitment overview.
+            Welcome back, {user?.name || "Jack"}! Here's your recruitment
+            overview.
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -56,9 +74,14 @@ export default function DashboardPage() {
             <Download className="h-4 w-4" />
             Download Report
           </Button> */}
-          <Button size="sm" className="flex items-center gap-2" onClick={() => router.push("/jobs/create")} >
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={() => setShowBulkUploadDialog(true)}
+          >
             <Plus className="h-4 w-4" />
-            Create New Job
+            Add Resumes
           </Button>
         </div>
       </div>
@@ -70,20 +93,24 @@ export default function DashboardPage() {
             </div>
             <div>
               <div className="text-lg font-medium">AI Interviews Completed</div>
-              <div className="text-sm font-light text-gray-400">Here’s your overall report</div>
+              <div className="text-sm font-light text-gray-400">
+                Here’s your overall report
+              </div>
             </div>
           </div>
-
         </div>
         <div className="flex flex-row w-full lg:w-1/3 justify-around">
           <div className="flex flex-col justify-center items-center">
-            <div className="text-2xl font-semibold text-gray-800">{metrics.aiInterviewsCompleted.value}</div>
-            <div className={`text-sm ${true ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="text-2xl font-semibold text-gray-800">
+              {metrics.aiInterviewsCompleted.value}
+            </div>
+            <div
+              className={`text-sm ${true ? "text-green-600" : "text-red-600"}`}
+            >
               {metrics.aiInterviewsCompleted.change} % vs last month
             </div>
           </div>
           <div className="flex items-center justify-between">
-
             <Button
               size="sm"
               variant="secondary"
@@ -94,7 +121,6 @@ export default function DashboardPage() {
             </Button>
           </div>
         </div>
-
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -103,7 +129,9 @@ export default function DashboardPage() {
           icon={FileText}
           title="Total Job Postings"
           value={metrics.totalJobs.value.toString()}
-          trend={`${metrics.totalJobs.change >= 0 ? '+' : ''}${metrics.totalJobs.change}% vs last month`}
+          trend={`${metrics.totalJobs.change >= 0 ? "+" : ""}${
+            metrics.totalJobs.change
+          }% vs last month`}
           trendUp={metrics.totalJobs.change >= 0}
           iconColor="bg-red-200 text-red-400"
         />
@@ -113,7 +141,9 @@ export default function DashboardPage() {
           icon={Users}
           title="Active Candidates"
           value={metrics.activeCandidates.value.toString()}
-          trend={`${metrics.activeCandidates.change >= 0 ? '+' : ''}${metrics.activeCandidates.change}% vs last month`}
+          trend={`${metrics.activeCandidates.change >= 0 ? "+" : ""}${
+            metrics.activeCandidates.change
+          }% vs last month`}
           trendUp={metrics.activeCandidates.change >= 0}
           iconColor="bg-indigo-200 text-indigo-400"
         />
@@ -123,7 +153,9 @@ export default function DashboardPage() {
           icon={BarChart3}
           title="Hiring Success Rate"
           value={`${metrics.hiringSuccessRate.value}%`}
-          trend={`${metrics.hiringSuccessRate.change >= 0 ? '+' : ''}${metrics.hiringSuccessRate.change}% vs last month`}
+          trend={`${metrics.hiringSuccessRate.change >= 0 ? "+" : ""}${
+            metrics.hiringSuccessRate.change
+          }% vs last month`}
           trendUp={metrics.hiringSuccessRate.change >= 0}
           iconColor="bg-green-200 text-green-400"
         />
@@ -133,19 +165,20 @@ export default function DashboardPage() {
           icon={Clock}
           title="Avg. Time to Hire"
           value={`${metrics.avgTimeToHire.value} days`}
-          trend={`${metrics.avgTimeToHire.change >= 0 ? '-' : '+'}${Math.abs(metrics.avgTimeToHire.change)}% vs last month`}
+          trend={`${metrics.avgTimeToHire.change >= 0 ? "-" : "+"}${Math.abs(
+            metrics.avgTimeToHire.change
+          )}% vs last month`}
           trendUp={metrics.avgTimeToHire.change < 0} // lower time is better
           iconColor="bg-orange-200 text-orange-400"
         />
-
-
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium">Recruitment Trends</CardTitle>
-
+            <CardTitle className="text-base font-medium">
+              Recruitment Trends
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -156,7 +189,9 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium">Hiring Pipeline</CardTitle>
+            <CardTitle className="text-base font-medium">
+              Hiring Pipeline
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -176,8 +211,13 @@ export default function DashboardPage() {
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium">Recent Activities</CardTitle>
-            <Link href="/dashboard/activities" className="text-sm text-primary hover:underline">
+            <CardTitle className="text-base font-medium">
+              Recent Activities
+            </CardTitle>
+            <Link
+              href="/dashboard/activities"
+              className="text-sm text-primary hover:underline"
+            >
               View All
             </Link>
           </CardHeader>
@@ -187,7 +227,11 @@ export default function DashboardPage() {
                 <ActivityItem
                   key={activity.id}
                   type={activity.type}
-                  icon={activityTypeIconMap[activity.type] ?? <MessageCircle className="text-gray-400" />}
+                  icon={
+                    activityTypeIconMap[activity.type] ?? (
+                      <MessageCircle className="text-gray-400" />
+                    )
+                  }
                   title={activity.title}
                   description={activity.description}
                   time={activity.time}
@@ -199,7 +243,9 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium">Department Overview</CardTitle>
+            <CardTitle className="text-base font-medium">
+              Department Overview
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -208,6 +254,10 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+      <BulkResumeUploadDialog
+        showBulkUploadDialog={showBulkUploadDialog}
+        setShowBulkUploadDialog={setShowBulkUploadDialog}
+      />
     </MainLayout>
-  )
+  );
 }

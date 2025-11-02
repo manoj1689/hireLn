@@ -14,21 +14,22 @@ const initialState: ApplicationsState = {
   error: null,
 };
 
+
 // Create async thunk to fetch applications
 export const fetchApplications = createAsyncThunk<
   ApplicationResponse[],
-  { candidate_id: string; status?: string; skip?: number; limit?: number }
+  { job_id: string; candidate_id: string; status?: string; skip?: number; limit?: number }
 >(
   'applications/fetch',
-  async ({ candidate_id, status, skip = 0, limit = 10 }, { rejectWithValue }) => {
+  async ({ job_id, candidate_id, status, skip = 0, limit = 10 }, { rejectWithValue }) => {
     try {
-      // Building query string directly
-      const query = `?candidate_id=${candidate_id}&skip=${skip}&limit=${limit}${
+      // Build query string
+      const query = `?job_id=${job_id}&candidate_id=${candidate_id}&skip=${skip}&limit=${limit}${
         status ? `&status=${status}` : ''
       }`;
 
       const response = await axiosApi.get<ApplicationResponse[]>(
-        `/api/candidates/applications/list/${query}`
+        `/api/application/applications/list/${query}`
       );
 
       return response.data;
@@ -37,6 +38,7 @@ export const fetchApplications = createAsyncThunk<
     }
   }
 );
+
 
 const getApplicationsSlice = createSlice({
   name: 'getApplications',

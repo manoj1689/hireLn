@@ -16,7 +16,8 @@ import { fetchJobs, deleteJob } from "@/lib/slices/job/jobsList-slice"
 import { AppDispatch } from "@/lib/store"
 import ViewJobModal from "./ViewJobModal"
 import EditJobModal from "./EditJobModal"
-import MatchedCandidateModal from "./MatchedCandidateModal"
+import { useRouter } from "next/navigation"
+
 
 const departmentOptions = [
   { value: "engineering", label: "Engineering" },
@@ -31,12 +32,13 @@ const departmentOptions = [
 
 
 export default function JobsPage() {
+  const router=useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedDepartment, setselectedDepartment] = useState("")
   const [statusFilter, setStatusFilter] = useState<'DRAFT' | 'ACTIVE' | 'PAUSED' | 'CLOSED' | 'all'>('all')
   const [openModal, setOpenModal] = useState(false)
   const [editOpenModal, setEditOpenModal] = useState(false)
-  const [openMatchedCandidateModal, setOpenMatchedCandidateModal] = useState(false)
+
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
 
   const dispatch = useDispatch<AppDispatch>()
@@ -63,15 +65,12 @@ useEffect(() => {
     setEditOpenModal(true)
   }
 
-  const openMatchedCandidateModalHandler = (jobId: string) => {
-    setSelectedJobId(jobId)
-    setOpenMatchedCandidateModal(true)
-  }
+ 
 
   const closeAllModals = () => {
     setOpenModal(false)
     setEditOpenModal(false)
-    setOpenMatchedCandidateModal(false)
+
     setSelectedJobId(null)
   }
 
@@ -235,7 +234,7 @@ useEffect(() => {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openJobModal(job.id)}>View Details</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openEditJobModal(job.id)}>Edit Job</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openMatchedCandidateModalHandler(job.id)}>Matched Candidates</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push(`/jobs/matched-resumes?job_id=${job.id}`)}>Matched Candidates</DropdownMenuItem>
                             <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteJob(job.id)}>Delete</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -261,7 +260,7 @@ useEffect(() => {
 
       {/* Modals */}
       <ViewJobModal jobId={selectedJobId} openModal={openModal} closeModal={closeAllModals} />
-      <MatchedCandidateModal jobId={selectedJobId} openModal={openMatchedCandidateModal} closeModal={closeAllModals} />
+
       <EditJobModal jobId={selectedJobId} openModal={editOpenModal} closeModal={closeAllModals} />
     </MainLayout>
   )

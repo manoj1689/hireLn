@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "@/lib/store"
@@ -10,13 +10,32 @@ import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
+import { onMessageListener } from "@/lib/firebase/firebaseConfig"
+
 export function Header() {
   const dispatch = useDispatch()
   const router = useRouter()
-
   const { user } = useSelector((state: RootState) => state.auth)
+
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [notifications, setNotifications] = useState<any[]>([])
+
+  useEffect(() => {
+    // ✅ Only listen for incoming messages — token already handled elsewhere
+    const unsubscribe = onMessageListener().then((payload) => {
+      console.log("FCM Message received: ", payload)
+      const { title, body } = payload.notification
+      setNotifications((prev) => [
+        ...prev,
+        { title, description: body, time: "Just now", isNew: true },
+      ])
+    })
+
+    return () => {
+      // No cleanup needed because onMessageListener returns a Promise
+    }
+  }, [])
 
   const handleLogout = () => {
     dispatch(logout())
@@ -24,56 +43,56 @@ export function Header() {
   }
 
   return (
-    <header className="border-b fixed bg-white z-10  w-full">
+    <header className="border-b fixed bg-white z-10 w-full">
       <div className="flex h-16 items-center px-6">
         <Link href="/dashboard" className="pl-8 flex items-center gap-2">
-          <img
-              src="/images/logo/company-logo.png"
-              alt="Company Logo"
-              className="w-28"
-            />
+          <img src="/images/logo/company-logo.png" alt="Company Logo" className="w-28" />
         </Link>
+
         <div className="ml-auto flex items-center gap-4">
+          {/* 🔔 Notification Popover */}
           <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
-                <span className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
-                  2
-                </span>
+                {notifications.length > 0 && (
+                  <span className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+                    {notifications.length}
+                  </span>
+                )}
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 p-0">
               <div className="flex items-center justify-between p-2 border-b">
                 <h3 className="font-medium">Notifications</h3>
-                <Button variant="ghost" size="sm" className="text-xs text-primary">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-primary"
+                  onClick={() =>
+                    setNotifications((prev) => prev.map((n) => ({ ...n, isNew: false })))
+                  }
+                >
                   Mark all as read
                 </Button>
               </div>
+
               <div className="max-h-80 overflow-y-auto">
-                <NotificationItem
-                  title="New candidate application"
-                  description="Sarah Anderson applied for Senior Frontend Developer"
-                  time="10 minutes ago"
-                  isNew
-                />
-                <NotificationItem
-                  title="Interview scheduled"
-                  description="Interview with Michael Chen at 2:00 PM tomorrow"
-                  time="1 hour ago"
-                  isNew
-                />
-                <NotificationItem
-                  title="Job posting expires soon"
-                  description="UX Designer job posting expires in 2 days"
-                  time="5 hours ago"
-                />
-                <NotificationItem
-                  title="Candidate assessment completed"
-                  description="David Thompson completed the technical assessment"
-                  time="Yesterday"
-                />
+                {notifications.length > 0 ? (
+                  notifications.map((n, i) => (
+                    <NotificationItem
+                      key={i}
+                      title={n.title}
+                      description={n.description}
+                      time={n.time}
+                      isNew={n.isNew}
+                    />
+                  ))
+                ) : (
+                  <p className="text-center text-sm text-gray-500 py-4">No notifications</p>
+                )}
               </div>
+
               <div className="p-2 border-t">
                 <Button variant="ghost" size="sm" className="w-full text-primary">
                   View all notifications
@@ -82,6 +101,7 @@ export function Header() {
             </PopoverContent>
           </Popover>
 
+          {/* 👤 Profile Popover */}
           <Popover open={profileOpen} onOpenChange={setProfileOpen}>
             <PopoverTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2">
@@ -89,14 +109,14 @@ export function Header() {
                   <AvatarImage src="/placeholder.svg?height=32&width=32" alt={user?.name || "User"} />
                   <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
-                <span>{user?.name || "Emily Johnson"}</span>
+                <span>{user?.name || "User"}</span>
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-56 p-0">
               <div className="p-2 border-b">
-                <p className="text-sm font-medium">{user?.name || "Emily Johnson"}</p>
-                <p className="text-xs text-muted-foreground">{user?.email || "emily.johnson@example.com"}</p>
+                <p className="text-sm font-medium">{user?.name}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
               <div className="py-2">
                 <MenuItem href="/profile" label="My Profile" />
@@ -106,7 +126,11 @@ export function Header() {
                 <MenuItem href="/company/billing" label="Billing & Subscription" />
               </div>
               <div className="p-2 border-t">
-                <Button variant="ghost" className="w-full justify-start text-red-500" onClick={handleLogout}>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-red-500"
+                  onClick={handleLogout}
+                >
                   Logout
                 </Button>
               </div>
@@ -131,12 +155,15 @@ function NotificationItem({ title, description, time, isNew = false }) {
     <div className={`p-3 border-b hover:bg-muted/50 ${isNew ? "bg-muted/20" : ""}`}>
       <div className="flex justify-between items-start">
         <h4 className="text-sm font-medium">{title}</h4>
-        {isNew && <span className="px-1.5 py-0.5 text-[10px] font-medium bg-primary text-white rounded-full">New</span>}
+        {isNew && (
+          <span className="px-1.5 py-0.5 text-[10px] font-medium bg-primary text-white rounded-full">
+            New
+          </span>
+        )}
       </div>
       <p className="text-xs text-muted-foreground mt-1">{description}</p>
       <p className="text-xs text-muted-foreground mt-2">{time}</p>
     </div>
   )
 }
-
 

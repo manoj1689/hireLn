@@ -1,299 +1,267 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { useRouter } from "next/navigation"
-import { Upload, UserPlus, MapPin, UserCheck, Filter, Delete } from "lucide-react"
-import Select from "react-select"
-import { Search, Globe, Briefcase, Settings2 } from "lucide-react";
-import { MainLayout } from "@/components/layout/main-layout"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
-  Select as ShadSelect,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical } from "lucide-react";
+import { AppDispatch, RootState } from "@/lib/store";
+import { fetchCandidates, deleteCandidate } from "@/lib/slices/candidate/candidate-slice";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  flexRender,
+  ColumnDef,
+  RowSelectionState,
+} from "@tanstack/react-table";
+import { HiArrowSmUp, HiArrowSmDown, HiChevronLeft, HiChevronRight } from "react-icons/hi";
+import { MainLayout } from "@/components/layout/main-layout";
+import { Modal } from "react-responsive-modal";
+import "react-responsive-modal/styles.css";
+import CandidateDetails from "./details-candidate/page";
 
-import { CandidateCard } from "./candidate-list"
-import { AppDispatch, RootState } from "@/lib/store"
-import { fetchCandidates, resetCandidateState } from "@/lib/slices/candidate/candidate-slice"
-import { CountryDropdown, RegionDropdown } from "react-country-region-selector"
-import { uploadResumes } from "@/lib/slices/aitools/resume-parcing-slice"
-import BulkResumeUploadDialog from "./BulkResumeUploadDialog"
-import { RxReload } from "react-icons/rx"
+type Candidate = {
+  id: string;
+  name: string;
+  email: string;
+  status: string | null;
+  interviewStatus: string | null;
+};
 
 export default function CandidatesPage() {
-  const dispatch = useDispatch<AppDispatch>()
-  const router = useRouter()
-  const { data: candidates, loading, error } = useSelector((state: RootState) => state.candidate)
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+  const { data: candidates } = useSelector((state: RootState) => state.candidate);
 
-  const [searchQuery, setSearchQuery] = useState("")
-  const [page, setPage] = useState(1)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [open, setOpen] = useState(false);
 
-  const [showScheduleDialog, setShowScheduleDialog] = useState(false)
-  const [showBulkUploadDialog, setShowBulkUploadDialog] = useState(false)
-  const [technicalSkills, setTechnicalSkills] = useState<string[]>([]);
-  const [skillInput, setSkillInput] = useState<string>("");
-
-  const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if ((e.key === 'Enter' || e.key === ',') && skillInput.trim()) {
-      e.preventDefault();
-      setTechnicalSkills([...technicalSkills, skillInput.trim()]);
-      setSkillInput(""); // clear input
-    }
-  };
-
-  const removeSkill = (index: number) => {
-    setTechnicalSkills(technicalSkills.filter((_, i) => i !== index));
-  };
-
-  const itemsPerPage = 6
+  const itemsPerPage = 6;
 
   useEffect(() => {
-    dispatch(fetchCandidates({
-      skip: (page - 1) * itemsPerPage,
-      limit: itemsPerPage,
-      search: searchQuery,
-      technicalSkills,
+    dispatch(
+      fetchCandidates({
+        skip: (page - 1) * itemsPerPage,
+        limit: itemsPerPage,
+        search: searchQuery,
+      })
+    );
+  }, [dispatch, searchQuery, page]);
 
-    }))
-  }, [dispatch, searchQuery, page, technicalSkills,showBulkUploadDialog])
+  const handleNextPage = () => setPage((prev) => prev + 1);
+  const handlePrevPage = () => page > 1 && setPage((prev) => prev - 1);
 
-
-  const handleUpload = (files: File[]) => {
-    dispatch(uploadResumes(files));
+  // Status color styles
+  const applicationStatusColor: Record<string, string> = {
+    NEW: "bg-red-100 text-red-600",
+    INVITED: "bg-pink-100 text-pink-600",
+    APPLIED: "bg-blue-100 text-blue-600",
+    SCREENING: "bg-yellow-100 text-yellow-700",
+    INTERVIEW: "bg-purple-100 text-purple-600",
+    OFFER: "bg-green-100 text-green-600",
+    HIRED: "bg-emerald-100 text-emerald-600",
+    REJECTED: "bg-gray-200 text-gray-600",
   };
 
-  const handleNextPage = () => setPage((prev) => prev + 1)
-  const handlePrevPage = () => page > 1 && setPage((prev) => prev - 1)
+  const interviewStatusStyles: Record<string, string> = {
+    "NOT SCHEDULED": "bg-gray-200 text-gray-700",
+    SCHEDULED: "bg-blue-100 text-blue-700",
+    CONFIRMED: "bg-indigo-100 text-indigo-700",
+    IN_PROGRESS: "bg-yellow-100 text-yellow-800",
+    COMPLETED: "bg-green-100 text-green-700",
+    CANCELLED: "bg-red-100 text-red-700",
+    NO_SHOW: "bg-orange-100 text-orange-700",
+    RESCHEDULED: "bg-purple-100 text-purple-700",
+  };
 
-  const experienceOptions = [
-    { value: '0-1', label: '0–1 year' },
-    { value: '1-3', label: '1–3 years' },
-    { value: '3-5', label: '3–5 years' },
-    { value: '5-10', label: '5–10 years' },
-    { value: '10+', label: '10+ years' },
-  ]
+  const columns: ColumnDef<Candidate>[] = [
+    {
+      id: "select",
+      header: "S.No",
+      cell: ({ row }) => <span>{row.index + 1}</span>,
+    },
+    { accessorKey: "name", header: "Name" },
+    { accessorKey: "email", header: "Email" },
+    {
+      accessorKey: "status",
+      header: "Candidate Status",
+      cell: ({ getValue }) => {
+        const value = getValue() as string;
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium ${
+              applicationStatusColor[value] || "bg-gray-100 text-gray-600"
+            }`}
+          >
+            {value || "NEW"}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "interviewStatus",
+      header: "Interview Status",
+      cell: ({ getValue }) => {
+        const value = getValue() as string;
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium ${
+              interviewStatusStyles[value] || "bg-gray-100 text-gray-600"
+            }`}
+          >
+            {value || "NOT SCHEDULED"}
+          </span>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => {
+        const candidate = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedCandidate(candidate);
+                  setOpen(true);
+                }}
+              >
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem>Schedule Interview</DropdownMenuItem>
+              <DropdownMenuItem>Share</DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={() => dispatch(deleteCandidate(candidate.id))}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
 
-  const allowedStatuses = ["APPLIED", "SCREENING", "INTERVIEW", "OFFER", "HIRED", "REJECTED"] as const
-  type Status = typeof allowedStatuses[number]
-  type DisplayStatus = Status | "NEW"
-  function toValidStatus(value: string | null | undefined): DisplayStatus {
-    return value && allowedStatuses.includes(value as Status) ? (value as Status) : "NEW"
-  }
-
-  const allowedInterviewStatuses = [
-    "SCHEDULED",
-    "CONFIRMED",
-    "IN_PROGRESS",
-    "COMPLETED",
-    "CANCELLED",
-    "NO_SHOW",
-    "RESCHEDULED",
-  ] as const
-  type InterviewStatus = typeof allowedInterviewStatuses[number]
-  type DisplayInterviewStatus = InterviewStatus | "NOT SCHEDULED"
-  function toValidInterviewStatus(value: string | null | undefined): DisplayInterviewStatus {
-    return value && allowedInterviewStatuses.includes(value as InterviewStatus)
-      ? (value as InterviewStatus)
-      : "NOT SCHEDULED"
-  }
+  const table = useReactTable({
+    data: candidates || [],
+    columns,
+    state: { rowSelection, globalFilter: searchQuery },
+    onRowSelectionChange: setRowSelection,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+  });
 
   return (
     <MainLayout>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row bg-primary-gradient  space-y-4 justify-between p-4 shadow-lg rounded-lg">
+      <div className="flex flex-col sm:flex-row bg-primary-gradient justify-between p-4 shadow-lg rounded-lg">
         <div>
-          <h1 className="text-3xl text-white font-bold tracking-tight">Candidates Management</h1>
-          <p className="text-white"><span>Total candidates </span> <span className="text-lg text-yellow-200">{candidates?.length}</span> </p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Candidates</h1>
+          <p className="text-white text-sm">
+            View candidate profiles and manage them efficiently.
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowBulkUploadDialog(true)}>
-            <Upload className="h-4 w-4 mr-1" />
-            Bulk Upload
-          </Button>
-          <Button variant="outline" onClick={() => router.push("/candidates/create-candidate")}>
-            <UserPlus className="h-4 w-4 mr-1" />
-            Add Candidate
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters */}
-
-
-      <div className="flex flex-col md:flex-row gap-4 w-full my-4">
-        <div className="flex w-full justify-between gap-4">
-          {/* Skills input */}
-          <div className="flex flex-col w-full ">
-            <div className="relative w-full">
-              <div>
-                <UserCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
-                <Input
-                  placeholder="Skills (comma or space separated)"
-
-                  className="w-full pl-10 bg-white focus:outline-none focus:ring-0"
-                  type="text"
-                  value={skillInput}
-                  onChange={(e) => setSkillInput(e.target.value)}
-                  onKeyDown={handleSkillKeyDown}
-                />
-              </div>
-
-
-            </div>
-
-            {/* Skill badges */}
-            <div className="flex flex-wrap gap-1 mt-2 ">
-              {(Array.isArray(technicalSkills) ? technicalSkills : String(technicalSkills).split(",")).map((skill: string, index: number) => {
-                const hue = Math.floor(Math.random() * 360);
-                const bgColor = `hsl(${hue}, 90%, 85%)`;
-                const textColor = `hsl(${hue}, 30%, 40%)`;
-                return (
-                  <span
-                    key={index}
-                    className="flex px-2 py-0.5 rounded-full text-xs font-light gap-1 whitespace-nowrap items-center"
-                    style={{ backgroundColor: bgColor, color: textColor }}
-                  >
-                    <span> {skill.trim()}</span>
-                    <span><button onClick={() => removeSkill(index)} className=" text-red-500"><Delete size={16} /></button></span>
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-
-        </div>
-        {/* Search input with icon */}
-        <div className="relative w-full md:w-1/4">
-          <Search className="absolute left-3 top-1/3 transform -translate-y-1/2 text-muted-foreground" size={18}  />
-          <Input
-            type="search"
-            placeholder="Search Candidate..."
-            className="w-full pl-10 focus:outline-none focus:ring-0"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
-        <div className="flex justify-end mb-2">
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => {
-              setSearchQuery("")
-              setTechnicalSkills([])
-              setPage(1)
-              dispatch(resetCandidateState())
-            }}
-            className="text-sm "
-          >
-            <RxReload size={20} />
-          </Button>
+        <div className="flex items-center mt-2 sm:mt-0">
+          <p className="text-white">
+            Total candidates:{" "}
+            <span className="text-yellow-200 text-2xl">
+              {candidates?.length || 0}
+            </span>
+          </p>
         </div>
       </div>
 
+      {/* Search */}
+      <div className="flex justify-between items-center my-4 gap-4">
+        <Input
+          type="search"
+          placeholder="Search Candidate..."
+          className="w-full max-w-sm"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
 
-
-
-
-
-
-      {/* Candidate List */}
-      <div className="mt-6">
-        {loading && <p>Loading...</p>}
-        {error && <p className="text-red-500">{error}</p>}
-        {!loading && !error && candidates?.length ? (
-          <div className="flex flex-col space-y-4">
-            {candidates.map((candidate) => (
-              <CandidateCard key={candidate.id} candidate={candidate} />
+      {/* Table */}
+      <div className="overflow-x-auto border border-gray-200 rounded-md">
+        <table className="min-w-full text-sm">
+          <thead className="bg-gray-100">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th key={header.id} className="px-4 py-2 text-left">
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </th>
+                ))}
+              </tr>
             ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground mt-6">No candidates found.</p>
-        )}
-
-        {/* Pagination */}
-        <div className="flex justify-between mt-6">
-          <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={page === 1}>
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNextPage}
-            disabled={(candidates?.length ?? 0) < itemsPerPage}
-          >
-            Next
-          </Button>
-        </div>
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map((row) => (
+              <tr key={row.id} className="hover:bg-gray-50">
+                {row.getVisibleCells().map((cell) => (
+                  <td key={cell.id} className="border-t px-4 py-2">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
+      {/* Pagination */}
+      <div className="flex justify-between mt-4">
+        <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={page === 1}>
+          <HiChevronLeft /> Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleNextPage}
+          disabled={(candidates?.length ?? 0) < itemsPerPage}
+        >
+          Next <HiChevronRight />
+        </Button>
+      </div>
 
-      <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Schedule Interview</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="interviewDate">Interview Date & Time</Label>
-              <Input id="interviewDate" type="datetime-local" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="interviewType">Interview Type</Label>
-              <ShadSelect>
-                <SelectTrigger id="interviewType">
-                  <SelectValue placeholder="Select type of Interviewer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="technical">Technical Interview</SelectItem>
-                  <SelectItem value="behavioral">Behavioral Interview</SelectItem>
-                  <SelectItem value="cultural">Cultural Fit</SelectItem>
-                  <SelectItem value="ai">AI Interview</SelectItem>
-                </SelectContent>
-              </ShadSelect>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="interviewer">Interviewer</Label>
-              <ShadSelect>
-                <SelectTrigger id="interviewer">
-                  <SelectValue placeholder="Select interviewer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="john">John Smith</SelectItem>
-                  <SelectItem value="sarah">Sarah Johnson</SelectItem>
-                  <SelectItem value="michael">Michael Brown</SelectItem>
-                  <SelectItem value="ai">AI Interviewer</SelectItem>
-                </SelectContent>
-              </ShadSelect>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">Additional Notes</Label>
-              <Textarea id="notes" placeholder="Add any additional notes or instructions" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowScheduleDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => setShowScheduleDialog(false)}>Schedule</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <BulkResumeUploadDialog
-        showBulkUploadDialog={showBulkUploadDialog}
-        setShowBulkUploadDialog={setShowBulkUploadDialog}
-      />
+  
+       {/* ✅ React Responsive Modal */}
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        center
+        classNames={{
+          modal: "rounded-xl p-6 ",
+        }}
+      >
+        {selectedCandidate && (
+          <CandidateDetails candidateId={selectedCandidate.id} />
+        )}
+      </Modal>
     </MainLayout>
-  )
+  );
 }
-
-

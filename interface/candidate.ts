@@ -72,6 +72,7 @@ export interface PreviousJob {
 
 export type ApplicationStatus =
   | "NEW"
+  | "INVITED"
   | "APPLIED"
   | "SCREENING"
   | "INTERVIEW"

@@ -65,8 +65,18 @@ const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
     sendCalendarInvite: true,
     sendEmailNotification: true,
     interviewers: [{ name: '', email: '', role: '', avatar: '' }],
+    isGuest:false
   });
 
+  // ✅ Sync props → form state
+  React.useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      candidateId,
+      applicationId,
+    }));
+  }, [candidateId, applicationId]);
+  
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
 
@@ -139,7 +149,7 @@ const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
       open={open}
       onClose={onClose}
       center
-      classNames={{ modal: 'max-w-3xl rounded-xl overflow-y-auto ' }}
+      classNames={{ modal: 'max-w-4xl rounded-xl overflow-y-auto ' }}
     >
       <div className="p-6">
         <div className="flex justify-center ">

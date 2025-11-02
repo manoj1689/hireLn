@@ -14,7 +14,10 @@ import {
   Menu,
   Settings,
   Users,
-  UserCircle, Users2, CreditCard
+  UserCircle,
+  Users2,
+  CreditCard,
+  FileStack
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -48,12 +51,21 @@ export function Sidebar() {
               <NavItem href="/dashboard" icon={Home} title="Dashboard" isActive={pathname.startsWith("/dashboard")} />
               <NavItem href="/jobs" icon={Briefcase} title="Jobs" isActive={pathname.startsWith("/jobs")} />
               <NavItem href="/candidates" icon={Users} title="Candidates" isActive={pathname.startsWith("/candidates")} />
+
+              {/* 🆕 Added Applications section */}
+              <NavItem
+                href="/applications"
+                icon={FileStack}
+                title="Applications"
+                isActive={pathname.startsWith("/applications")}
+              />
+
               <NavItem href="/interviews" icon={Calendar} title="Interviews" isActive={pathname.startsWith("/interviews")} />
               <NavItem href="/ai-tools" icon={BarChart3} title="AI Tools" isActive={pathname.startsWith("/ai-tools")} />
 
-
               <div className="mt-6">
                 <h3 className="mb-2 px-4 text-xs font-semibold uppercase text-muted-foreground">Administration</h3>
+
                 <Collapsible open={isCompanyOpen} onOpenChange={setIsCompanyOpen}>
                   <CollapsibleTrigger
                     onClick={() => setIsCompanyOpen(!isCompanyOpen)}
@@ -63,7 +75,10 @@ export function Sidebar() {
                       <Building2 className="h-4 w-4" />
                       <span>Company</span>
                     </div>
-                    <ChevronDown className="h-4 w-4 transition-transform duration-200" style={{ transform: isCompanyOpen ? "rotate(180deg)" : "rotate(0deg)" }} />
+                    <ChevronDown
+                      className="h-4 w-4 transition-transform duration-200"
+                      style={{ transform: isCompanyOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                    />
                   </CollapsibleTrigger>
 
                   <CollapsibleContent>
@@ -90,19 +105,8 @@ export function Sidebar() {
                   </CollapsibleContent>
                 </Collapsible>
 
-
-                <NavItem
-                  href="/reports"
-                  icon={FileText}
-                  title="Reports"
-                  isActive={pathname.startsWith("/reports")}
-                />
-                <NavItem
-                  href="/settings"
-                  icon={Settings}
-                  title="Settings"
-                  isActive={pathname.startsWith("/settings")}
-                />
+                <NavItem href="/reports" icon={FileText} title="Reports" isActive={pathname.startsWith("/reports")} />
+                <NavItem href="/settings" icon={Settings} title="Settings" isActive={pathname.startsWith("/settings")} />
               </div>
             </nav>
           </div>
@@ -125,24 +129,16 @@ function NavItem({ href, icon: Icon, title, isActive }: NavItemProps) {
       href={href}
       className={cn(
         "flex items-center gap-3 text-md font-light text-neutral-500 px-4 py-2 hover:bg-muted",
-        isActive && " ml-2 bg-primary/10  text-lg text-neutral-700",
+        isActive && "ml-2 bg-primary/10 text-lg text-neutral-700"
       )}
     >
       <div className="flex w-full justify-start gap-4 items-center">
-        <span className={cn(
-          "flex ",
-          isActive && " flex w-2 h-8 rounded-lg bg-orange-400",
-        )}>
-
-        </span>
-        <Icon className={cn(
-          "w-4 h-4 ",
-          isActive && "text-orange-400",
-        )} />
-        <span className="">{title}</span>
-
+        <span
+          className={cn("flex", isActive && "flex w-2 h-8 rounded-lg bg-orange-400")}
+        ></span>
+        <Icon className={cn("w-4 h-4", isActive && "text-orange-400")} />
+        <span>{title}</span>
       </div>
-
     </Link>
   )
 }

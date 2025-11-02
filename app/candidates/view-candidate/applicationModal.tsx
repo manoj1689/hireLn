@@ -53,6 +53,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
           coverLetter,
           userId: userId.user?.id || '',
           appliedAt: new Date().toISOString(),
+          isGuest:false
         };
         setLoading(true);
         await dispatch(postApplication(applicationData));

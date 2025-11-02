@@ -4,10 +4,13 @@ import { ApplicationStatus } from "./types/applicationTypes";
 export interface ApplicationRequest {
   jobId: string;
   candidateId: string;
-  coverLetter: string;
-  userId: string;
-  appliedAt: string;
+  coverLetter?: string;
+  userId?: string;
+  appliedAt?: string;
+  matchScore?: number;   // ✅ make optional
+  isGuest?: boolean;     // ✅ add this
 }
+
 
 
 
@@ -28,3 +31,4 @@ export interface UpdateApplicationRequest {
   notes: string
   matchScore: number
 }
+

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "@/lib/store"
@@ -27,51 +27,54 @@ import AuthNavbar from "@/components/auth-navbar/page"
 
 dayjs.extend(duration)
 dayjs.extend(utc)
-
 const InterviewInfoPage = () => {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const interviewId = searchParams.get("interview_id") || ""
-  const token = searchParams.get("token") || ""
-  const dispatch = useDispatch<AppDispatch>()
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const interviewId = searchParams.get("interview_id") || "";
+  const token = searchParams.get("token") || "";
+  const dispatch = useDispatch<AppDispatch>();
 
-  const { interview, loading, error, confirmationMessage, redirectUrl, status } =
-    useSelector((state: RootState) => state.joinInterview)
+  const { interview, loading,confirmationMessage, error, status } = useSelector(
+    (state: RootState) => state.joinInterview
+  );
 
-  const [remainingTime, setRemainingTime] = useState("")
-  const [canJoin, setCanJoin] = useState(true)
-  const [responseMsg, setResponseMsg] = useState("")
-  const [confirming, setConfirming] = useState(false)
-  const [toastShown, setToastShown] = useState(false)
+  const [remainingTime, setRemainingTime] = useState("");
+  const [canJoin, setCanJoin] = useState(true);
+  const [responseMsg, setResponseMsg] = useState("");
+  const [confirming, setConfirming] = useState(false);
+
+
+  // ✅ Prevent multiple fetches in Strict Mode
+  const fetched = useRef(false);
+
+  // ---- 1️⃣ Fetch interview data ----
   useEffect(() => {
-    if (interviewId) {
-      dispatch(fetchInterviewJoin({ interviewId, token }))
-    }
-  }, [interviewId, token, dispatch])
+   
 
-  const handleConfirmInterview = () => {
-    if (interview?.id) {
-      setConfirming(true)
-      dispatch(
-        confirmInterview({ interviewId: interview.id, responseMessage: responseMsg })
-      )
-    }
-  }
+    if (fetched.current) return;
+    fetched.current = true;
 
+    if (interviewId && token) {
+      dispatch(fetchInterviewJoin({ interviewId, token }));
+    }
+  }, [interviewId, token, dispatch]);
+
+  // ---- 2️⃣ Start timer only after interview is fetched ----
   useEffect(() => {
-    if (!interview?.scheduledAt) return
+    if (!interview?.scheduledAt) return;
+   
 
     const interval = setInterval(() => {
-      const now = dayjs()
-      const scheduledTime = dayjs.utc(interview.scheduledAt).local()
-      const diff = scheduledTime.diff(now)
+      const now = dayjs();
+      const scheduledTime = dayjs.utc(interview.scheduledAt).local();
+      const diff = scheduledTime.diff(now);
 
       if (diff <= 0) {
-        setCanJoin(true)
-        setRemainingTime("✅ Interview can be joined now!")
-        clearInterval(interval)
+        setCanJoin(true);
+        setRemainingTime("✅ Interview can be joined now!");
+        clearInterval(interval);
       } else {
-        const d = dayjs.duration(diff)
+        const d = dayjs.duration(diff);
         const display = [
           d.asDays() > 0 ? `${Math.floor(d.asDays())}d` : null,
           `${String(d.hours()).padStart(2, "0")}h`,
@@ -79,65 +82,70 @@ const InterviewInfoPage = () => {
           `${String(d.seconds()).padStart(2, "0")}s`,
         ]
           .filter(Boolean)
-          .join(" ")
-
-        setRemainingTime(display)
+          .join(" ");
+        setRemainingTime(display);
       }
-    }, 1000)
+    }, 1000);
 
-    return () => clearInterval(interval)
-  }, [interview?.scheduledAt])
+    return () => clearInterval(interval);
+  }, [interview?.scheduledAt]);
 
+  // ---- 3️⃣ Redirect only after confirmed and interview exists ----
   useEffect(() => {
-    if (status === "CONFIRMED") {
-      router.push(`/ai-interview-test?interview_id=${interview.id}&token=${token}`)
+    if (status === "CONFIRMED" && interview?.id) {
+    
+      router.push(
+        `/ai-interview-test?interview_id=${interview.id}&token=${token}`
+      );
     }
-  }, [status, interview?.id, token, router])
+  }, [status, interview?.id, router, token]);
 
-  useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>
 
-    if (interviewId && confirmationMessage && !toastShown) {
-      console.log("confirmation", confirmationMessage)
-
-      timeoutId = setTimeout(() => {
-        toast.success(confirmationMessage, {
-          position: "top-right",
-          autoClose: 2000,
+  const handleConfirmInterview = () => {
+    if (interview?.id) {
+      setConfirming(true);
+      dispatch(
+        confirmInterview({
+          interviewId: interview.id,
+          responseMessage: responseMsg,
+          token,
         })
-        setToastShown(true)
-      }, 2000) // 20 seconds
+      );
     }
+  };
 
-    return () => clearTimeout(timeoutId) // Cleanup on unmount
-  }, [interviewId, confirmationMessage, toastShown])
-
-
+  // ---- Render states ----
   if (loading || confirming) {
-    return <div className="flex items-center justify-center h-screen ">
-      <div className="flex flex-col w-full gap-8">
-        <div className="flex w-full justify-center">
-          <ColorRing
-            visible={true}
-            height="80"
-            width="80"
-            ariaLabel="color-ring-loading"
-            wrapperStyle={{}}
-            wrapperClass="color-ring-wrapper"
-            colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
-          />
-        </div>
-        <div className="flex justify-center text-lg lg:text-2xl font-semibold text-stone-600">
-          Confirming Interview ....
+    return (
+      <div className="flex items-center justify-center h-screen ">
+        <div className="flex flex-col w-full gap-8">
+          <div className="flex w-full justify-center">
+            <ColorRing
+              visible={true}
+              height="80"
+              width="80"
+              ariaLabel="color-ring-loading"
+              wrapperStyle={{}}
+              wrapperClass="color-ring-wrapper"
+              colors={[
+                "#e15b64",
+                "#f47e60",
+                "#f8b26a",
+                "#abbd81",
+                "#849b87",
+              ]}
+            />
+          </div>
+          <div className="flex justify-center text-lg lg:text-2xl font-semibold text-stone-600">
+            Confirming Interview ....
+          </div>
         </div>
       </div>
-    </div>
+    );
   }
 
-  if (error) return <p className="p-6 text-red-500">Error: {error}</p>
-  if (!interview) return <p className="p-6">No interview found.</p>
-  console.log("interview ", interview)
-
+  if (error) return <p className="p-6 text-red-500">Error: {error}</p>;
+  if (!interview) return <p className="p-6">No interview found.</p>;
   return (
     <>
       <div>
@@ -147,7 +155,7 @@ const InterviewInfoPage = () => {
         <ToastContainer />
         {/* Left: Candidate Info*/}
 
-        <div className="w-full  lg:w-1/4">
+        <div className="w-full  lg:w-2/5">
           {/* Candidate Profile Card */}
           <div className="shadow-sm rounded-lg bg-white">
             {/* Header */}
@@ -181,10 +189,10 @@ const InterviewInfoPage = () => {
                   </div>
                 )}
               </div>
-              <div>
+              <div className="">
                 {/* Education */}
                 {Array.isArray(interview.candidateEducation) && interview.candidateEducation.length > 0 && (
-                  <div className="bg-slate-100 p-4 rounded-xl border border-gray-100 shadow-sm">
+                  <div className="bg-slate-100 p-4 rounded-xl border  border-gray-100 shadow-sm">
                     <h3 className="text-blue-500 font-semibold ">Education</h3>
 
                     {interview.candidateEducation.map((edu, index) => (
@@ -197,19 +205,19 @@ const InterviewInfoPage = () => {
                           <p className="text-base font-semibold text-gray-900">{edu.degree}</p>
                           <p className="text-base font-medium text-gray-500">{edu.institution}</p>
                           {edu.location && (
-                            <p className="text-sm text-gray-500">{edu.location}</p>
+                            <p className="text-sm text-gray-500 text-left">{edu.location}</p>
                           )}
                         </div>
 
                         {/* Right: Dates & Grade */}
-                        <div className="flex flex-col items-start lg:items-end text-sm text-gray-600">
+                        {/* <div className="flex flex-col items-start text-left lg:items-end text-sm text-pink-600">
                           {(edu.start_date || edu.end_date) && (
                             <span>
                               {edu.start_date} - {edu.end_date || "Present"}
                             </span>
                           )}
 
-                        </div>
+                        </div> */}
                       </div>
                     ))}
                   </div>
@@ -319,12 +327,12 @@ const InterviewInfoPage = () => {
           </div>
         </div>
 
-        <div className="w-full lg:w-3/4">
+        <div className="w-full lg:w-3/5">
           {/* Interview Info Block */}
           <div className="flex flex-col lg:flex-row bg-white p-4 rounded-xl shadow-sm border border-gray-200 gap-4 justify-between items-center">
             <div className="w-full lg:w-2/3 xl:w-1/2">
               <h3 className="text-neutral-700 font-bold text-2xl">{interview.jobTitle}</h3>
-              <p className="text-sm text-sky-400 italic ">{interview.jobEducation}</p>
+              <p className="text-sm text-sky-400 italic  ">{interview.jobEducation}</p>
               <p className="text-lg text-gray-500 ">{interview.jobDepartment}</p>
             </div>
 

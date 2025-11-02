@@ -1,45 +1,11 @@
-// Define the structure of personal info and resume data
-interface PersonalInfo {
-  dob: string;
-  gender: string;
-  maritalStatus: string;
-  nationality: string;
-}
-
-export interface ParsedResumeData {
-  email: string;
-  name: string;
-  phone: string;
-  resume: string;
-  portfolio: string;
-  linkedin: string;
-  github: string;
-  skills: string[];
-  technicalSkills: string[];
-  softSkills: string[];
-  languages: string[];
-  hobbies: string[];
-  certifications: string[];
-  projects: string[];
-  summary: string;
-  experience: string;
-  education: string;
-  educationField: string;
-  internships: any[];
-  location: string;
-  salaryExpectation: number;
-  department: string;
-  experienceSummary: string;
-  previousJobs: any[];
-  address: string[];
-  links: string[];
-  personalInfo: PersonalInfo;
-}
-
+// Upload resume data in mongo_db
 export interface ResumeUploadResponseItem {
-  file_name: string;
-  data: ParsedResumeData;
-  error: string;
+  resume_name: string;
+  resume_id: string;
+}
+
+export interface ResumeUploadApiResponse {
+  summary: ResumeUploadResponseItem[];
 }
 
 export interface ResumeUploadState {

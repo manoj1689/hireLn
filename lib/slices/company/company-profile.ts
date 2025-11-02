@@ -1,28 +1,31 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosApi from '@/services/api';
 import { CompanyRequest, CompanyResponse } from '@/interface/company';
+import { setUserRegistered } from '@/lib/slices/auth-slice'; // ✅ Import correct action
+import type { AppDispatch } from '@/lib/store';
 
-// State interface
+// ------------------ State Interface ------------------
 interface CompanyState {
   company: CompanyResponse | null;
   loading: boolean;
   error: string | null;
 }
 
-// Initial state
+// ------------------ Initial State ------------------
 const initialState: CompanyState = {
   company: null,
   loading: false,
   error: null,
 };
 
-// Thunk to get company profile
+// ------------------ Thunks ------------------
+
+// ✅ GET Company Profile
 export const getCompanyProfile = createAsyncThunk(
   'company/getCompanyProfile',
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosApi.get('/api/company/profile');
-      console.log("response of company data",response)
       return response.data as CompanyResponse;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || 'Error fetching company profile');
@@ -30,10 +33,36 @@ export const getCompanyProfile = createAsyncThunk(
   }
 );
 
-// Thunk to update company profile
-export const updateCompanyProfile = createAsyncThunk(
+// ✅ CREATE Company Profile
+export const createCompanyProfile = createAsyncThunk<
+  CompanyResponse,
+  Partial<CompanyRequest>,
+  { rejectValue: string; dispatch: AppDispatch }
+>(
+  'company/createCompanyProfile',
+  async (companyData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await axiosApi.post('/api/company/profile', companyData);
+      const company = response.data as CompanyResponse;
+
+      // ✅ Mark user as registered in auth slice
+      dispatch(setUserRegistered(true));
+
+      return company;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Error creating company profile');
+    }
+  }
+);
+
+// ✅ UPDATE Company Profile
+export const updateCompanyProfile = createAsyncThunk<
+  CompanyResponse,
+  Partial<CompanyRequest>,
+  { rejectValue: string }
+>(
   'company/updateCompanyProfile',
-  async (companyData: CompanyRequest, { rejectWithValue }) => {
+  async (companyData, { rejectWithValue }) => {
     try {
       const response = await axiosApi.put('/api/company/profile', companyData);
       return response.data as CompanyResponse;
@@ -43,13 +72,13 @@ export const updateCompanyProfile = createAsyncThunk(
   }
 );
 
-// Slice
+// ------------------ Slice ------------------
 const companySlice = createSlice({
   name: 'company',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    // GET
+    // ----- GET -----
     builder.addCase(getCompanyProfile.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -63,7 +92,21 @@ const companySlice = createSlice({
       state.error = action.payload;
     });
 
-    // UPDATE
+    // ----- CREATE -----
+    builder.addCase(createCompanyProfile.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(createCompanyProfile.fulfilled, (state, action: PayloadAction<CompanyResponse>) => {
+      state.loading = false;
+      state.company = action.payload;
+    });
+    builder.addCase(createCompanyProfile.rejected, (state, action: PayloadAction<any>) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+
+    // ----- UPDATE -----
     builder.addCase(updateCompanyProfile.pending, (state) => {
       state.loading = true;
       state.error = null;

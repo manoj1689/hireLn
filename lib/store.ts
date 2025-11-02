@@ -22,17 +22,15 @@ import jobDetailsReducer from "@/lib/slices/job/jobDetails-slice";
 import jobRequirementReducer from "@/lib/slices/job/jobRequirements-slice";
 import jobPublishReducer from "@/lib/slices/job/jobPublish-slice";
 import jobsListReducer from "@/lib/slices/job/jobsList-slice";
+import createJobReducer from "@/lib/slices/job/create-guest-job-slice"
 import matchedCandidateReducer from "@/lib/slices/aitools/matched-candidate-Slice";
+import resumeParserReducer from "@/lib/slices/aitools/parse-resume-slice"
 import candidateReducer from "@/lib/slices/candidate/candidate-slice";
 import applicationReducer from "@/lib/slices/applicant/application-slice";
 import getApplicationReducer from "@/lib/slices/applicant/getapplications-slice";
 import joinInterviewReducer from "@/lib/slices/join_interview/interview-join-slice";
-import generateInterviewQuestionsReducer from "@/lib/slices/aitools/generate-interview-questions";
-import bulkUploadQuestionsReducer from "@/lib/slices/questions/upload-bulk-questions";
-import interviewQuestionsReducer from '@/lib/slices/questions/interview-question-Slice';
-import resumeParcingReducer from "@/lib/slices/aitools/resume-parcing-slice"
-import submitAnswerReducer from "@/lib/slices/questions/submit-answer-slice";
-import autoEvaluateAnswerReducer from "@/lib/slices/questions/auto-evaluate-answer-slice";
+import interviewChatReducer from "@/lib/slices/interview_chat/interview-chat-slice"
+import resumeuploadReducer from "@/lib/slices/aitools/upload-resume-slice"
 import fetchInterviewReducer from "@/lib/slices/interviews/fetch-interview-slice";
 import finalInterviewEvaluationReducer from "@/lib/slices/final_evaluation/final-evaluate-interview-slice";
 import interviewResultReducer from "@/lib/slices/interview_result/interview-result-slice";
@@ -52,20 +50,18 @@ const rootReducer = combineReducers({
   jobDetails: jobDetailsReducer,
   jobRequirement: jobRequirementReducer,
   jobPublish: jobPublishReducer,
+  createJob:createJobReducer,
   jobsList: jobsListReducer,
   matchedCandidate: matchedCandidateReducer,
+  resumeParser:resumeParserReducer,
   candidate: candidateReducer,
   application: applicationReducer,
   getApplication: getApplicationReducer,
   joinInterview: joinInterviewReducer,
-  generateInterviewQuestions: generateInterviewQuestionsReducer,
-  bulkUploadQuestions: bulkUploadQuestionsReducer,
-  interviewQuestions: interviewQuestionsReducer,
-  submitAnswer: submitAnswerReducer,
-  autoEvaluateAnswer: autoEvaluateAnswerReducer,
+  interviewChat:interviewChatReducer,
   fetchInterview: fetchInterviewReducer,
   finalInterviewEvaluation: finalInterviewEvaluationReducer,
-  resumeParcing:resumeParcingReducer,
+  resumeUpload:resumeuploadReducer,
   interviewResult: interviewResultReducer,
   finalMail:finalMailReducer,
   companyProfile: companyProfileReducer,

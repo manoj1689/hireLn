@@ -19,6 +19,7 @@ export interface InterviewScheduleRequest {
   sendCalendarInvite: boolean;
   sendEmailNotification: boolean;
   interviewers: InterviewerInfo[];
+  isGuest:boolean;
 }
 
 export interface Education {

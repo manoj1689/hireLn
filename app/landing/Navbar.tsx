@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiMenu, FiX } from "react-icons/fi"; // Import icons from react-icons
-
+import FirebaseLoginButton from "@/components/firebase/FirebaseLoginButton";
 
 
 
@@ -151,17 +151,9 @@ function Navbar() {
               )}
             </div>
 
-            <div className="flex flex-col items-center">
-              <button
-                onClick={() => {
-                  setActiveSection("Signin");
-                  router.push("/auth/login");
-                }}
-                className={`bg-white text-[#15B8A6] text-lg rounded-full shadow-lg px-4 py-1 hover:bg-gray-200 hover:scale-105 transition-all duration-300 ${activeSection === "Signin" ? "font-medium" : ""
-                  }`}
-              >
-                Sign In
-              </button>
+          
+            <div>
+              <FirebaseLoginButton />
             </div>
           </div>
 
@@ -195,18 +187,12 @@ function Navbar() {
             } transition-transform duration-300 ease-in-out z-50`}
         >
           <div className="flex flex-col items-center mt-4 gap-6">
-            <a href="#Signup">
-              <button
-                onClick={() => {
-                  setActiveSection("Signup");
-                  setIsSidebarOpen(false);
-                }}
-                className={`text-lg rounded-full px-8 py-2 text-white bg-gradient-to-r from-[#63A7D4] to-[#F295BE] font-medium transition-all duration-300 ${activeSection === "Signup" ? "font-bold" : "font-semibold"
-                  }`}
-              >
-                Signup/Login
-              </button>
-            </a>
+            
+            {/* Google Login Button in Sidebar */}
+          <div onClick={() => setIsSidebarOpen(false)}>
+            <FirebaseLoginButton />
+          </div>
+          
 
             <a href="#Home">
               <button

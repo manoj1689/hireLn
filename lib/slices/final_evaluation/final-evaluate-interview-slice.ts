@@ -32,7 +32,7 @@ export const fetchInterviewEvaluation = createAsyncThunk(
           },
         }
       );
-      console.log(response)
+      console.log("auto evaluate api",response)
       return response.data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.detail || 'Something went wrong');

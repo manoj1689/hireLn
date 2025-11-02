@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { MoreVertical } from "lucide-react"
@@ -10,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import EditCandidateModal from "./edit-candidate.tsx/page"
 import { useDispatch } from "react-redux"
 import { CandidateResponse } from "@/interface/candidate"
 import { AppDispatch } from "@/lib/store"
@@ -23,8 +21,7 @@ interface CandidateProps {
 
 export const CandidateCard = ({ candidate }: CandidateProps) => {
   const dispatch = useDispatch<AppDispatch>()
-  const router=useRouter()
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const router = useRouter()
 
   const {
     id: candidateId,
@@ -59,101 +56,82 @@ export const CandidateCard = ({ candidate }: CandidateProps) => {
     RESCHEDULED: "bg-purple-100 text-purple-700"
   }
 
-  const openEditCandidateModal = () => setIsModalOpen(true)
-
   return (
-    <>
-      <Card className="flex flex-row gap-4 p-4 rounded-xl shadow-md bg-white">
-        {/* Candidate Info */}
-        <div className="w-4/5 flex flex-col">
-          <div className="flex gap-4 items-start mb-3">
-            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-semibold text-stone-500">
-              {name.split(" ").map((n) => n[0]).join("").toUpperCase()}
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <div className="flex gap-2 items-center">
-                <span className="font-medium text-neutral-800 text-lg">{name}</span>
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${applicationStatusColor[applicationStatus ?? "NEW"]}`}>
-                  {applicationStatus ?? "NEW"}
-                </span>
-              </div>
-              {location && <p className="text-sm text-gray-600">{location}</p>}
-              {email && <p className="text-sm text-muted-foreground">{email}</p>}
-            </div>
+    <Card className="flex flex-row gap-4 p-4 rounded-xl shadow-md bg-white">
+      {/* Candidate Info */}
+      <div className="w-4/5 flex flex-col">
+        <div className="flex gap-4 items-start mb-3">
+          <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-semibold text-stone-500">
+            {name.split(" ").map((n) => n[0]).join("").toUpperCase()}
           </div>
-
-
-
-          <div className="flex flex-wrap gap-2 mt-2">
-            {(Array.isArray(technicalSkills) ? technicalSkills : String(technicalSkills).split(",")).map((skill: string, index: number) => {
-              const hue = Math.floor(Math.random() * 360)
-              return (
-                <span
-                  key={index}
-                  className="px-2 py-0.5 rounded-full text-xs font-light"
-                  style={{
-                    backgroundColor: `hsl(${hue}, 90%, 85%)`,
-                    color: `hsl(${hue}, 30%, 40%)`
-                  }}
-                >
-                  {skill.trim()}
-                </span>
-              )
-            })}
+          <div className="flex flex-col gap-0.5">
+            <div className="flex gap-2 items-center">
+              <span className="font-medium text-neutral-800 text-lg">{name}</span>
+              <span className={`text-xs px-2 py-1 rounded-full font-medium ${applicationStatusColor[applicationStatus ?? "NEW"]}`}>
+                {applicationStatus ?? "NEW"}
+              </span>
+            </div>
+            {location && <p className="text-sm text-gray-600">{location}</p>}
+            {email && <p className="text-sm text-muted-foreground">{email}</p>}
           </div>
         </div>
 
-        {/* Actions */}
-    <div className="w-1/5 flex justify-end items-start">
-  <div className="flex h-full flex-col justify-around items-end gap-2 text-sm">
-    {/* Interview Status */}
-    <div className={`text-xs px-3 py-1 rounded-lg italic font-semibold ${interviewStatusStyles[interviewStatus ?? "NOT SCHEDULED"]}`}>
-      {interviewStatus ?? "NOT SCHEDULED"}
-    </div>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {(Array.isArray(technicalSkills) ? technicalSkills : String(technicalSkills).split(",")).map((skill: string, index: number) => {
+            const hue = Math.floor(Math.random() * 360)
+            return (
+              <span
+                key={index}
+                className="px-2 py-0.5 rounded-full text-xs font-light"
+                style={{
+                  backgroundColor: `hsl(${hue}, 90%, 85%)`,
+                  color: `hsl(${hue}, 30%, 40%)`
+                }}
+              >
+                {skill.trim()}
+              </span>
+            )
+          })}
+        </div>
+      </div>
 
-    {/* Dropdown Menu */}
-    <div>
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
-          <MoreVertical className="w-4 h-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-         <DropdownMenuItem onClick={() => router.push(`/candidates/details-candidate?candidate_id=${candidateId}`)}>View Details</DropdownMenuItem>
-        {/* <DropdownMenuItem onClick={openEditCandidateModal}>Edit</DropdownMenuItem> */}
-        <DropdownMenuItem>Share</DropdownMenuItem>
-        <DropdownMenuItem
-          className="text-red-600"
-          onClick={() => dispatch(deleteCandidate(candidateId))}
-        >
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-    </div>
+      {/* Actions */}
+      <div className="w-1/5 flex justify-end items-start">
+        <div className="flex h-full flex-col justify-around items-end gap-2 text-sm">
+          {/* Interview Status */}
+          <div className={`text-xs px-3 py-1 rounded-lg italic font-semibold ${interviewStatusStyles[interviewStatus ?? "NOT SCHEDULED"]}`}>
+            {interviewStatus ?? "NOT SCHEDULED"}
+          </div>
 
+          {/* Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => router.push(`/candidates/details-candidate?candidate_id=${candidateId}`)}>
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem>Share</DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={() => dispatch(deleteCandidate(candidateId))}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-    {/* Created Date */}
-    <div className="text-gray-400 text-xs">
-      {createdAt && !isNaN(new Date(createdAt).getTime())
-        ? new Date(createdAt).toISOString().split("T")[0]
-        : "Date N/A"}
-    </div>
-  </div>
-</div>
-
-      </Card>
-
-      {/* Modal */}
-      {isModalOpen && (
-        <EditCandidateModal
-          candidate={candidate}
-          candidateId={candidateId}
-          openModal={isModalOpen}
-          closeModal={() => setIsModalOpen(false)}
-        />
-      )}
-    </>
+          {/* Created Date */}
+          <div className="text-gray-400 text-xs">
+            {createdAt && !isNaN(new Date(createdAt).getTime())
+              ? new Date(createdAt).toISOString().split("T")[0]
+              : "Date N/A"}
+          </div>
+        </div>
+      </div>
+    </Card>
   )
 }
