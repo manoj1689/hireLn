@@ -2,9 +2,6 @@
 import React, { useState } from "react";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import { Button } from "@/components/ui/button";
-import Select from "react-select";
-import { FiUploadCloud, FiUser, FiMail } from "react-icons/fi";
 import {
   FiCheckCircle,
   FiClock,
@@ -17,8 +14,11 @@ import { Mic2Icon } from "lucide-react";
 import { FaSignOutAlt } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import ResumeToJob from "./Resume-to-Job";
+import { logout } from "@/lib/slices/auth-slice";
+import { useDispatch } from "react-redux";
 
 const FreeTrialInterview = () => {
+  const dispatch = useDispatch()
   const router = useRouter();
    
   const interviewDetails = [
@@ -60,7 +60,10 @@ const FreeTrialInterview = () => {
     tablet: { breakpoint: { max: 1024, min: 768 }, items: 1 },
     mobile: { breakpoint: { max: 768, min: 0 }, items: 1 },
   };
-
+  const handleLogout = () => {
+    dispatch(logout())
+    router.push("/")
+  }
   return (
     <div className="min-h-screen container mx-auto flex flex-col items-center px-4 py-4">
       {/* Header */}
@@ -73,7 +76,7 @@ const FreeTrialInterview = () => {
           />
         </div>
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 text-gray-500 hover:scale-105 transition-all">
+          <button className="flex items-center gap-2 text-gray-500 hover:scale-105 transition-all" onClick={handleLogout}>
             <FaSignOutAlt size={25} className="text-gray-500" />
             <span>Logout</span>
           </button>
@@ -145,3 +148,5 @@ const FreeTrialInterview = () => {
 };
 
 export default FreeTrialInterview;
+
+

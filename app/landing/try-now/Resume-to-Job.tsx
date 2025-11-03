@@ -118,8 +118,65 @@ export default function JobStepper() {
     if (resumeError) toast.error(resumeError);
   }, [resumeError]);
 
+  const validateJobForm = () => {
+    if (!job.title.trim()) {
+      toast.error("Job title is required");
+      return false;
+    }
+    if (!job.department) {
+      toast.error("Please select department");
+      return false;
+    }
+    if (!job.location.trim()) {
+      toast.error("Location is required");
+      return false;
+    }
+    if (!job.education.trim()) {
+      toast.error("Education is required");
+      return false;
+    }
+    if (!job.description.trim()) {
+      toast.error("Job description is required");
+      return false;
+    }
+
+    if (!job.salaryMin) {
+      toast.error("Minimum salary is required");
+      return false;
+    }
+    if (!job.salaryMax) {
+      toast.error("Maximum salary is required");
+      return false;
+    }
+    if (Number(job.salaryMin) <= 0) {
+      toast.error("Salary Min must be greater than 0");
+      return false;
+    }
+    if (Number(job.salaryMax) <= 0) {
+      toast.error("Salary Max must be greater than 0");
+      return false;
+    }
+    if (Number(job.salaryMin) >= Number(job.salaryMax)) {
+      toast.error("Salary Min should be less than Salary Max");
+      return false;
+    }
+
+    if (job.skills.length === 0) {
+      toast.error("Add at least one skill");
+      return false;
+    }
+    if (job.languages.length === 0) {
+      toast.error("Add at least one language");
+      return false;
+    }
+
+    return true;
+  };
+
   /* ✅ Submit Job */
   const submitJob = async () => {
+    if (!validateJobForm()) return;
+
     const payload = {
       ...job,
       salaryMin: Number(job.salaryMin),
@@ -130,7 +187,7 @@ export default function JobStepper() {
     try {
       const data = await dispatch(createJob(payload)).unwrap();
       toast.success("Job Created Successfully ✅");
-
+      console.log(data);
       if (data?.id && createdCandidate?.candidate_id) {
         router.push(
           `/landing/try-now/guest-info?candidate_id=${createdCandidate.candidate_id}&job_id=${data.id}&isGuest=true`
@@ -164,90 +221,150 @@ export default function JobStepper() {
       </div>
 
       {/* ✅ Step 1 — Upload Resume */}
-      {step === 1 && (
-        <div className="space-y-4">
-          {!resume ? (
-            <label className="cursor-pointer w-full p-10 border-2 border-dashed border-teal-400 rounded-xl bg-teal-50/50 hover:bg-teal-100 transition flex flex-col items-center gap-3 text-center">
-              <Upload className="w-10 h-10 text-teal-600" />
-              <span className="font-semibold text-sm text-teal-700">Click to upload resume</span>
-              <input
-                type="file"
-                className="hidden"
-                onChange={(e) => setResume(e.target.files?.[0] || null)}
-              />
-            </label>
-          ) : (
-            <div className="bg-green-50 border border-green-300 p-5 rounded-xl flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FileText className="text-orange-400 w-10 h-10" />
-                <p className="font-medium text-gray-800">{resume.name}</p>
-              </div>
-              <button onClick={() => setResume(null)} className="text-red-500 hover:text-red-600">
-                <X />
-              </button>
-            </div>
-          )}
+     {step === 1 && (
+  <div className="space-y-4">
 
-          {!createdCandidate && (
-            <Button
-              className="w-full bg-teal-500 hover:bg-teal-600"
-              disabled={!resume || resumeLoading}
-              onClick={handleResumeSubmit}
-            >
-              {resumeLoading && <Loader2 className="animate-spin mr-2" />} Upload & Parse Resume
-            </Button>
-          )}
-
-          {createdCandidate && (
-            <div className="bg-teal-50 border border-teal-200 p-4 rounded-lg mt-4">
-              <p className="text-sm"><b>Name:</b> {createdCandidate.candidate_name}</p>
-              <p className="text-sm"><b>Email:</b> {createdCandidate.email}</p>
-              <p className="text-sm"><b>Resume:</b> {createdCandidate.resume_name}</p>
-              <Button className="mt-3 w-full bg-teal-600 hover:bg-teal-700" onClick={() => setStep(2)}>
-                Next & Continue
-              </Button>
-            </div>
-          )}
-
-          {resumeStatus === false && resumeMessage?.includes("exists") && (
-            <Button className="mt-3 w-full bg-orange-500 hover:bg-orange-600" onClick={() => setStep(2)}>
-              Candidate Exists — Continue
-            </Button>
-          )}
+    {/* Resume Upload Box */}
+    {!resume ? (
+      <label className="cursor-pointer w-full p-10 border-2 border-dashed border-teal-400 rounded-xl bg-teal-50/50 hover:bg-teal-100 transition flex flex-col items-center gap-3 text-center">
+        <Upload className="w-10 h-10 text-teal-600" />
+        <span className="font-semibold text-sm text-teal-700">
+          Upload Resume (PDF/DOC)
+        </span>
+        <input
+          type="file"
+          accept=".pdf,.doc,.docx"
+          className="hidden"
+          onChange={(e) => setResume(e.target.files?.[0] || null)}
+        />
+      </label>
+    ) : (
+      <div className="bg-green-50 border border-green-300 p-4 rounded-lg flex items-center justify-between animate-fadeIn">
+        <div className="flex items-center gap-3">
+          <FileText className="text-teal-600 w-9 h-9" />
+          <div>
+            <p className="font-medium text-gray-900">{resume.name}</p>
+            <p className="text-xs text-gray-500">Uploaded successfully</p>
+          </div>
         </div>
-      )}
+        <button
+          onClick={() => {
+            setResume(null);
+            setToastShown(false);
+          }}
+          className="text-red-500 hover:text-red-600"
+        >
+          <X />
+        </button>
+      </div>
+    )}
+
+    {/* Upload Button */}
+    {!createdCandidate && (
+      <Button
+        className="w-full bg-teal-600 hover:bg-teal-700"
+        disabled={!resume || resumeLoading}
+        onClick={handleResumeSubmit}
+      >
+        {resumeLoading && <Loader2 className="animate-spin mr-2" />}
+        Upload & Parse Resume
+      </Button>
+    )}
+
+    {/* Resume Exists Case */}
+    {resume !==null &&  resumeStatus === false && resumeMessage?.includes("exists") && (
+      <div className="bg-yellow-50 text-yellow-800 p-4 rounded-lg text-sm">
+        {resumeMessage}
+        <br />
+        <b className="text-yellow-900">Use a different resume</b>
+      </div>
+    )}
+
+    {resume !==null && resumeStatus === false && resumeMessage?.includes("exists") && (
+      <Button
+        className="w-full bg-red-500 hover:bg-red-600"
+        onClick={() => {
+          setResume(null);
+          setToastShown(false);
+        }}
+      >
+        Try with another resume
+      </Button>
+    )}
+
+    {/* Parsed Candidate card */}
+    {createdCandidate && (
+      <div className="bg-teal-50 border border-teal-200 p-4 rounded-lg shadow-sm animate-fadeIn">
+        <p className="text-sm"><b>Name:</b> {createdCandidate.candidate_name}</p>
+        <p className="text-sm"><b>Email:</b> {createdCandidate.email}</p>
+        <p className="text-sm"><b>Resume:</b> {createdCandidate.resume_name}</p>
+
+        <Button
+          className="mt-4 w-full bg-teal-600 hover:bg-teal-700"
+          onClick={() => setStep(2)}
+        >
+          Continue to Job Form
+        </Button>
+      </div>
+    )}
+  </div>
+)}
+
 
       {/* ✅ Step 2 — Job Form */}
       {step === 2 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input className="border p-2 w-full bg-gray-50 rounded-md col-span-2"
+          <input
+            className="border p-2 w-full bg-gray-50 rounded-md col-span-2"
             placeholder="Job Title"
             value={job.title}
-            onChange={(e) => setJob({ ...job, title: e.target.value })} />
+            onChange={(e) => setJob({ ...job, title: e.target.value })}
+          />
 
-          <Select options={departmentOptions} placeholder="Select Department"
-            onChange={(opt) => setJob({ ...job, department: opt?.value || "" })} />
+          <Select
+            options={departmentOptions}
+            placeholder="Select Department"
+            onChange={(opt) => setJob({ ...job, department: opt?.value || "" })}
+          />
 
-          <Select options={employmentOptions} defaultValue={employmentOptions[0]}
-            onChange={(opt) => setJob({ ...job, employmentType: opt?.value as EmploymentType })} />
+          <Select
+            options={employmentOptions}
+            defaultValue={employmentOptions[0]}
+            onChange={(opt) =>
+              setJob({ ...job, employmentType: opt?.value as EmploymentType })
+            }
+          />
 
           {/* Skills */}
           <div className="col-span-2">
-            <input className="border p-2 w-full bg-gray-50 rounded-md"
+            <input
+              className="border p-2 w-full bg-gray-50 rounded-md"
               placeholder="Press Enter to add skill"
               value={skillInput}
               onChange={(e) => setSkillInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && skillInput.trim()) {
-                  setJob({ ...job, skills: [...job.skills, skillInput.trim()] });
+                  setJob({
+                    ...job,
+                    skills: [...job.skills, skillInput.trim()],
+                  });
                   setSkillInput("");
                 }
-              }} />
+              }}
+            />
 
             <div className="flex gap-2 flex-wrap mt-2">
               {job.skills.map((skill) => (
-                <span key={skill} className="bg-amber-100 px-2 py-1 rounded-md text-sm cursor-pointer hover:bg-amber-200"
-                  onClick={() => setJob({ ...job, skills: job.skills.filter((s) => s !== skill) })}>
+                <span
+                  key={skill}
+                  className="bg-amber-100 px-2 py-1 rounded-md text-sm cursor-pointer hover:bg-amber-200"
+                  onClick={() =>
+                    setJob({
+                      ...job,
+                      skills: job.skills.filter((s) => s !== skill),
+                    })
+                  }
+                >
                   {skill} ✕
                 </span>
               ))}
@@ -257,10 +374,12 @@ export default function JobStepper() {
           {/* Languages */}
           <div className="col-span-2">
             <div className="flex gap-2">
-              <input className="border p-2 w-full bg-gray-50 rounded-md"
+              <input
+                className="border p-2 w-full bg-gray-50 rounded-md"
                 placeholder="Enter language"
                 value={languageInput}
-                onChange={(e) => setLanguageInput(e.target.value)} />
+                onChange={(e) => setLanguageInput(e.target.value)}
+              />
 
               <select
                 className="border p-2 rounded-md bg-gray-50"
@@ -277,7 +396,10 @@ export default function JobStepper() {
                   if (!languageInput.trim()) return;
                   setJob({
                     ...job,
-                    languages: [...job.languages, { language: languageInput.trim(), level: selectedLevel }],
+                    languages: [
+                      ...job.languages,
+                      { language: languageInput.trim(), level: selectedLevel },
+                    ],
                   });
                   setLanguageInput("");
                 }}
@@ -289,11 +411,15 @@ export default function JobStepper() {
 
             <div className="flex gap-2 flex-wrap mt-2">
               {job.languages.map((lang) => (
-                <span key={lang.language} className="bg-teal-100 px-2 py-1 rounded-md text-sm cursor-pointer hover:bg-teal-200"
+                <span
+                  key={lang.language}
+                  className="bg-teal-100 px-2 py-1 rounded-md text-sm cursor-pointer hover:bg-teal-200"
                   onClick={() =>
                     setJob({
                       ...job,
-                      languages: job.languages.filter((l) => l.language !== lang.language),
+                      languages: job.languages.filter(
+                        (l) => l.language !== lang.language
+                      ),
                     })
                   }
                 >
@@ -303,23 +429,36 @@ export default function JobStepper() {
             </div>
           </div>
 
-          <input type="number" className="border p-2 bg-gray-50 rounded-md"
+          <input
+            type="number"
+            className="border p-2 bg-gray-50 rounded-md"
             placeholder="Min Salary"
             value={job.salaryMin}
-            onChange={(e) => setJob({ ...job, salaryMin: e.target.value })} />
+            onChange={(e) => setJob({ ...job, salaryMin: e.target.value })}
+          />
 
-          <input type="number" className="border p-2 bg-gray-50 rounded-md"
+          <input
+            type="number"
+            className="border p-2 bg-gray-50 rounded-md"
             placeholder="Max Salary"
             value={job.salaryMax}
-            onChange={(e) => setJob({ ...job, salaryMax: e.target.value })} />
+            onChange={(e) => setJob({ ...job, salaryMax: e.target.value })}
+          />
 
-          <input className="border p-2 bg-gray-50 rounded-md"
+          <input
+            className="border p-2 bg-gray-50 rounded-md"
             placeholder="Location"
             value={job.location}
-            onChange={(e) => setJob({ ...job, location: e.target.value })} />
+            onChange={(e) => setJob({ ...job, location: e.target.value })}
+          />
 
-          <Select options={salaryPeriodOptions} defaultValue={salaryPeriodOptions[0]}
-            onChange={(opt) => setJob({ ...job, salaryPeriod: opt?.value as SalaryPeriod })} />
+          <Select
+            options={salaryPeriodOptions}
+            defaultValue={salaryPeriodOptions[0]}
+            onChange={(opt) =>
+              setJob({ ...job, salaryPeriod: opt?.value as SalaryPeriod })
+            }
+          />
 
           <input
             className="border p-2 bg-gray-50 rounded-md col-span-2"
@@ -336,9 +475,16 @@ export default function JobStepper() {
           />
 
           <div className="col-span-2 flex justify-between mt-4">
-            <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
-            <Button className="bg-teal-600 hover:bg-teal-700" disabled={jobLoading} onClick={submitJob}>
-              {jobLoading && <Loader2 className="animate-spin mr-2" />} Submit Job
+            <Button variant="outline" onClick={() => setStep(1)}>
+              Back
+            </Button>
+            <Button
+              className="bg-teal-600 hover:bg-teal-700"
+              disabled={jobLoading}
+              onClick={submitJob}
+            >
+              {jobLoading && <Loader2 className="animate-spin mr-2" />} Submit
+              Job
             </Button>
           </div>
         </div>

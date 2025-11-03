@@ -160,8 +160,8 @@ export default function JobDetailsPage() {
             </div>
             <div className="text-right">
               <p className="text-xl lg:text-2xl font-bold flex items-center gap-2 justify-end">
-                <FaMoneyBillWave /> ₹{jobData.salaryMin.toLocaleString()} - ₹
-                {jobData.salaryMax.toLocaleString()}
+                <FaMoneyBillWave /> ₹{jobData.salaryMin} - ₹
+                {jobData.salaryMax}
               </p>
               <p className="text-sm opacity-80">per {jobData.salaryPeriod}</p>
               <span className="bg-green-500 text-white text-xs px-3 py-1 mt-2 inline-block rounded-full">
