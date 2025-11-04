@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosApi from '@/services/api'; // Import your axios instance
 import { JobsState, JobListData, JobData } from '@/interface/jobsteps'; // Update your interfaces accordingly
-
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 // Initial state for jobs
 const initialState: JobsState = {
   jobs: [],
@@ -39,17 +39,38 @@ export const fetchJobs = createAsyncThunk<JobListData[], { skip: number; limit: 
 );
 
 // Async thunk for fetching a specific job using its job_id
-export const fetchJobById = createAsyncThunk<JobData, string>(
+// ✅ Fetch Job with optional interview token
+export const fetchJobById = createAsyncThunk(
   'jobs/fetchJobById',
-  async (jobId, thunkAPI) => {
+  async (
+    { jobId, token }: { jobId: string; token?: string },
+    thunkAPI
+  ) => {
     try {
-      const response = await axiosApi.get(`/api/jobs/${jobId}`);
+      const response = await axiosApi.get(`/api/jobs/${jobId}`, {
+        headers: {
+          "X-Interview-Token": token || "",
+        },
+      });
+
       return response.data;
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
   }
 );
+
+// export const fetchJobById = createAsyncThunk<JobData, string>(
+//   'jobs/fetchJobById',
+//   async (jobId, thunkAPI) => {
+//     try {
+//       const response = await axiosApi.get(`/api/jobs/${jobId}`);
+//       return response.data;
+//     } catch (error: any) {
+//       return thunkAPI.rejectWithValue(error.message);
+//     }
+//   }
+// );
 
 // Async thunk for updating a job using its job_id
 export const updateJob = createAsyncThunk<JobData, { jobId: string; updatedJob: JobData }>(

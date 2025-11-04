@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/lib/store";
 import { evaluateInterview } from "@/lib/slices/interview_chat/interview-chat-slice";
 import { completeInterview } from "@/lib/slices/join_interview/interview-join-slice";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Hourglass } from "react-loader-spinner";
 import PreventBackForward from "@/components/BlockBackForward";
 import { fetchResultByInterviewId } from "@/lib/slices/interview_result/interview-result-slice";
@@ -24,6 +24,7 @@ import { Lightbulb } from "lucide-react";
 const EvaluationPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const searchParams = useSearchParams();
+  const router=useRouter();
 
   const interviewId = searchParams.get("interview_id") ?? "";
   const token = searchParams.get("token") ?? "";
@@ -59,7 +60,7 @@ const EvaluationPage = () => {
         console.log("✅ Starting evaluation...");
 
         await dispatch(evaluateInterview({ interviewId, token }) as any);
-        await dispatch(completeInterview({ interviewId, token }) as any);
+        //await dispatch(completeInterview({ interviewId, token }) as any);
 
         // ✅ now fetch result
         if (user?.role === "GUEST") {
@@ -159,6 +160,7 @@ const EvaluationPage = () => {
 
         {/* ✅ Guest UI - Result Page */}
         {user?.role === "GUEST" && result && (
+          <>
           <div className="max-w-4xl mx-auto space-y-6">
             {/* ✅ Summary Card */}
             <Card className="shadow-lg">
@@ -262,6 +264,16 @@ const EvaluationPage = () => {
               </CardContent>
             </Card>
           </div>
+                {/* ✅ Try Again Button */}
+          <div className="text-center mt-6">
+            <button
+              onClick={() => router.push("/")}
+              className="text-sky-600 font-semibold underline hover:text-sky-800 transition"
+            >
+              Try Again
+            </button>
+          </div>
+          </>
         )}
       </main>
     </div>

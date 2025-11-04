@@ -35,7 +35,7 @@ export default function JobDetailsPage() {
   // Fetch job data
   useEffect(() => {
     if (jobId) {
-      dispatch(fetchJobById(jobId)).then((data) => setJobData(data.payload));
+      dispatch(fetchJobById({ jobId, token })).then((data) => setJobData(data.payload));
     }
   }, [jobId, dispatch]);
 
@@ -47,7 +47,7 @@ export default function JobDetailsPage() {
       );
     }
   };
-
+  console.log("jobData",jobData)
   useEffect(() => {
     fetchApplication();
   }, [applicationId, dispatch, token]);

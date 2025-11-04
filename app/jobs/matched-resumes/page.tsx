@@ -192,23 +192,21 @@ export default function Page() {
             matchScore: Math.round(overall_semantic_score),
           })
         );
-
-        if (!postApplication.fulfilled.match(appRes)) {
+        if (postApplication.fulfilled.match(appRes)) {
+          results.push({
+            resumeId: resume_id,
+            status: "success",
+            message: "🎉 Candidate invited for this job",
+          });
+        } else {
           results.push({
             resumeId: resume_id,
             status: "error",
             message: "⚠️ Application failed",
           });
         }
-      } else {
-        results.push({
-          resumeId: resume_id,
-          status: "error",
-          message: payload?.message || "❌ Failed to create",
-        });
       }
     }
-
     setCreatedCandidates(results);
     setModalOpen(true);
     setIsParsing(false);
