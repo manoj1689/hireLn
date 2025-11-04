@@ -5,9 +5,9 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/lib/store";
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import { fetchJobById } from "@/lib/slices/job/jobsList-slice";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+
 import { fetchCandidateById } from "@/lib/slices/candidate/candidate-slice";
 import { fetchApplications } from "@/lib/slices/applicant/getapplications-slice";
 import { postApplication } from "@/lib/slices/applicant/application-slice";
@@ -24,7 +24,6 @@ const GuestInfo: React.FC = () => {
   const jobId = searchParams.get("job_id");
   const candidateId = searchParams.get("candidate_id");
 
-  const [jobData, setJobData] = useState<any>(null);
   const [candidateData, setCandidateData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [coverLetter, setCoverLetter] = useState("");
@@ -45,10 +44,7 @@ const GuestInfo: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      if (jobId) {
-        const jobRes = await dispatch(fetchJobById(jobId));
-        setJobData(jobRes.payload);
-      }
+
       if (candidateId) {
         const candRes = await dispatch(fetchCandidateById(candidateId));
         setCandidateData(candRes.payload);
@@ -60,17 +56,17 @@ const GuestInfo: React.FC = () => {
   }, [jobId, candidateId, dispatch]);
 
   const handleApplyAndStart = async () => {
-    if (!jobData || !candidateData) return;
+    if (!candidateData) return;
 
     const appRes: any = await dispatch(
       postApplication({
-        jobId: jobData.id,
+        jobId: jobId || "",
         candidateId: candidateData.id,
         coverLetter:
           coverLetter ||
           `Hello,
 
-I am excited to apply and participate in this interview for the ${jobData?.title} role.
+I am excited to apply and participate in this interview for this role.
 Looking forward to demonstrating my skills.
 
 Thank you,
@@ -150,51 +146,51 @@ ${candidateData?.name}`,
           </h2>
 
           <p className="text-lg lg:text-xl text-gray-600 mb-8">
-            Hi <span className="font-semibold">{candidateData?.name}</span>, you're
-            about to begin your{" "}
-            <span className="font-semibold">{jobData?.title}</span> interview
-            conducted by Smart Grader AI 🤖
+            Hi <span className="font-semibold">{candidateData?.name}</span>,
+            you're about to begin your interview conducted by Smart Grader AI 🤖
           </p>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Card - React Calendar */}
+            <div className="rounded-2xl bg-white shadow-lg p-6 border border-sky-100">
+              <h3 className="text-xl font-semibold text-sky-700 mb-4 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-sky-500" /> Interview Date & Time
+              </h3>
 
-          
-           {/* Left Card - React Calendar */}
-<div className="rounded-2xl bg-white shadow-lg p-6 border border-sky-100">
-  <h3 className="text-xl font-semibold text-sky-700 mb-4 flex items-center gap-2">
-    <Clock className="w-5 h-5 text-sky-500" /> Interview Date & Time
-  </h3>
+              <div className="flex flex-col items-center">
+                <Calendar
+                  calendarType="gregory"
+                  value={new Date()}
+                  className="rounded-xl  border-sky-100 py-4 shadow-sm"
+                  tileClassName={({ date }) =>
+                    date.toDateString() === new Date().toDateString()
+                      ? "bg-sky-500 text-white rounded-full"
+                      : ""
+                  }
+                />
 
-  <div className="flex flex-col items-center">
-    <Calendar
-    calendarType="gregory"
-      value={new Date()}
-      className="rounded-xl  border-sky-100 py-4 shadow-sm"
-      tileClassName={({ date }) =>
-        date.toDateString() === new Date().toDateString()
-          ? "bg-sky-500 text-white rounded-full"
-          : ""
-      }
-    />
+                {/* Today Section */}
+                <div className="mt-6 bg-sky-50 rounded-xl p-4 text-center w-full">
+                  <div className="text-2xl font-bold text-gray-800">
+                    {currentDate}
+                  </div>
+                  <div className="text-gray-500 text-md">📅 Today</div>
 
-    {/* Today Section */}
-    <div className="mt-6 bg-sky-50 rounded-xl p-4 text-center w-full">
-      <div className="text-2xl font-bold text-gray-800">{currentDate}</div>
-      <div className="text-gray-500 text-md">📅 Today</div>
-
-      <div className="mt-4">
-        <div className="text-xl font-bold text-gray-800">{currentTime}</div>
-        <div className="text-md text-gray-500">⏰ Current Time</div>
-      </div>
-    </div>
-  </div>
-</div>
-
+                  <div className="mt-4">
+                    <div className="text-xl font-bold text-gray-800">
+                      {currentTime}
+                    </div>
+                    <div className="text-md text-gray-500">⏰ Current Time</div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Right Card */}
             <div className="rounded-2xl bg-white shadow-lg p-6 border border-sky-100">
               <h3 className="text-xl font-semibold text-sky-700 mb-4 flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-sky-500" /> Interview Application
+                <Briefcase className="w-5 h-5 text-sky-500" /> Interview
+                Application
               </h3>
 
               <div className="space-y-3 text-left mb-6">
@@ -202,13 +198,6 @@ ${candidateData?.name}`,
                   <User className="w-5 h-5 text-gray-500" />
                   <span className="text-gray-800">
                     Candidate: <strong>{candidateData?.name}</strong>
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Briefcase className="w-5 h-5 text-gray-500" />
-                  <span className="text-gray-800">
-                    Job: <strong>{jobData?.title}</strong>
                   </span>
                 </div>
               </div>
@@ -221,11 +210,11 @@ ${candidateData?.name}`,
                 className="w-full h-48 border border-sky-100 rounded-xl p-3 bg-sky-50 focus:outline-none focus:ring-2 focus:ring-sky-300"
                 defaultValue={`Hello,
 
-I am excited to apply for the ${jobData?.title} role.
-Looking forward to this interview opportunity!
+                              I am excited to apply for this role.
+                              Looking forward to this interview opportunity!
 
-Thank you,
-${candidateData?.name}`}
+                              Thank you,
+                              ${candidateData?.name}`}
                 onChange={(e) => setCoverLetter(e.target.value)}
               ></textarea>
 

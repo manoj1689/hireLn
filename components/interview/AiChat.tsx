@@ -12,56 +12,40 @@ import SpeakingAvatar from "@/components/interview/SpeakingAvatar";
 import { Button } from "../ui/button";
 import { AppDispatch, RootState } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from "react-speech-recognition";
-import { IoMdEye, IoMdEyeOff } from "react-icons/io";
-import { IoMdMic, IoMdMicOff } from "react-icons/io";
+import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
+import { IoMdEye, IoMdEyeOff, IoMdMic, IoMdMicOff } from "react-icons/io";
 import { RiRobot3Fill } from "react-icons/ri";
+
 interface InterviewChatPageProps {
   interviewId: string;
   candidate: { id: string; name?: string };
   candidateId: string;
   applicationId: string;
   token: string;
-  job: any; // or define a proper Job type if you have one
+  job: any;
 }
 
 const InterviewChatPage: React.FC<InterviewChatPageProps> = ({
-  interviewId,
-  candidate,
-  candidateId,
-  applicationId,
-  token,
-  job,
+  interviewId, candidate, candidateId, applicationId, token, job,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
-  const {
-    greeting,
-    currentQuestion,
-    chatHistory,
-    level,
-    lastScore,
-    loading,
-    error,
-  } = useSelector((state: RootState) => state.interviewChat);
+  const { greeting, currentQuestion, chatHistory, level, lastScore, loading, error } =
+    useSelector((state: RootState) => state.interviewChat);
 
   const [started, setStarted] = useState(false);
   const [currentText, setCurrentText] = useState<string | null>(null);
   const [greetingDone, setGreetingDone] = useState(false);
-  const [conversationLoading, setConversationLoading] = useState(false);
   const [showTranscript, setShowTranscript] = useState(true);
-  const [lastTranscriptTime, setLastTranscriptTime] = useState<number>(0);
   const [examEnded, setExamEnded] = useState(false);
 
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition,
-  } = useSpeechRecognition();
+  // Silence tracking
+  const [warningGiven, setWarningGiven] = useState(false);
+  const [silenceStartTime, setSilenceStartTime] = useState<number | null>(null);
+
+  const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } =
+    useSpeechRecognition();
 
   useEffect(() => {
     if (!browserSupportsSpeechRecognition) {
@@ -69,56 +53,60 @@ const InterviewChatPage: React.FC<InterviewChatPageProps> = ({
     }
   }, [browserSupportsSpeechRecognition]);
 
-  // 🟢 Step 1: Start interview
   const handleStartInterview = async () => {
-    try {
-      await dispatch(startInterviewChat({ interviewId, candidate, token }));
-      setStarted(true);
-      setCurrentText(greeting);
-    } catch (err) {
-      console.error("Failed to start interview:", err);
-    }
+    await dispatch(startInterviewChat({ interviewId, candidate, token }));
+    setStarted(true);
+    setCurrentText(greeting);
   };
 
-  // 🟢 Step 2: Greeting complete → first question
   const handleGreetingComplete = () => {
     setGreetingDone(true);
     setCurrentText(currentQuestion);
   };
 
-  // 🟢 Step 3: After AI question → start mic
   const handleQuestionSpoken = () => {
-    console.log("🎤 Starting mic...");
     resetTranscript();
     SpeechRecognition.startListening({ continuous: true, language: "en-IN" });
-    setLastTranscriptTime(Date.now());
+
+    // reset silence logic
+    setWarningGiven(false);
+    setSilenceStartTime(Date.now());
   };
 
-  // 🟢 Step 4: Track speech activity
-  useEffect(() => {
-    if (transcript.trim()) setLastTranscriptTime(Date.now());
-  }, [transcript]);
-
-  // 🟢 Step 5: Detect silence → auto-stop mic
+  // Silence detector (5s warning, 10s auto-exit)
   useEffect(() => {
     if (!listening || !greetingDone || examEnded) return;
 
-    const silenceTimer = setInterval(() => {
-      if (Date.now() - lastTranscriptTime > 3000 && transcript.trim()) {
-        console.log("🛑 Detected silence, stopping mic...");
+    const interval = setInterval(() => {
+      if (!silenceStartTime) return;
+
+      const elapsed = Date.now() - silenceStartTime;
+
+      // User spoke → reset timer
+      if (transcript.trim()) {
+        setSilenceStartTime(Date.now());
+        return;
+      }
+
+      // 5 sec → warn once
+      if (elapsed > 5000 && !warningGiven) {
+        setWarningGiven(true);
+        setCurrentText("Please respond or I will end the interview.");
+      }
+
+      // 10 sec → auto-exit
+      if (elapsed > 10000) {
         SpeechRecognition.stopListening();
-        clearInterval(silenceTimer);
-        handleSendAnswer(transcript);
+        clearInterval(interval);
+        handleSendAnswer("I did not respond. Please exit the interview.");
       }
     }, 1000);
 
-    return () => clearInterval(silenceTimer);
-  }, [listening, lastTranscriptTime, transcript, greetingDone, examEnded]);
+    return () => clearInterval(interval);
+  }, [listening, silenceStartTime, transcript, warningGiven, greetingDone, examEnded]);
 
-  // 🟢 Step 6: Send answer to backend
   const handleSendAnswer = async (userSpeech: string) => {
     if (!userSpeech.trim() || examEnded) return;
-    setConversationLoading(true);
 
     const payload = {
       interviewId,
@@ -131,14 +119,10 @@ const InterviewChatPage: React.FC<InterviewChatPageProps> = ({
       token,
     };
 
-    // console.log("🎯 Sending payload:", payload);
-
     try {
       const res = await dispatch(sendChatResponse(payload)).unwrap();
-      setConversationLoading(false);
       resetTranscript();
 
-      // 🟢 Proper condition fix
       if (res.intent === "exit" || res.intent === "leave") {
         setCurrentText(res.response);
         await handleAutoExamEnd();
@@ -147,146 +131,90 @@ const InterviewChatPage: React.FC<InterviewChatPageProps> = ({
       }
     } catch (err) {
       console.error("Error sending answer:", err);
-      setConversationLoading(false);
     }
   };
 
-  // 🟢 Step 7: Save and redirect automatically
   const handleAutoExamEnd = async () => {
     if (examEnded) return;
     setExamEnded(true);
+
     SpeechRecognition.stopListening();
+
     try {
       await dispatch(
-        saveChatHistory({
-          interviewId,
-          candidateId,
-          applicationId, // ✅ now properly passed
-          history: chatHistory,
-          token,
-        })
+        saveChatHistory({ interviewId, candidateId, applicationId, history: chatHistory, token })
       );
-      console.log("✅ Chat saved successfully");
     } catch (err) {
       console.error("Error saving chat:", err);
     }
 
     setTimeout(() => {
-      router.push(
-        `/ai-interview-result?interview_id=${interviewId}&token=${token}`
-      );
+      router.push(`/ai-interview-result?interview_id=${interviewId}&token=${token}`);
     }, 7500);
   };
- console.log(candidate.name)
+
   return (
     <div className="p-6 max-w-3xl mx-auto text-center">
-      <h1 className="flex text-2xl font-bold gap-4 justify-center mb-6"><span><RiRobot3Fill size={28} color="orange"/></span> AI Voice Interview</h1>
+      <h1 className="flex text-2xl font-bold gap-4 justify-center mb-6">
+        <RiRobot3Fill size={28} color="orange" /> AI Voice Interview
+      </h1>
 
       {!started && (
         <>
-          <div className="text-3xl text-stone-700">
-            Are you ready for this interview? Click to start.
-          </div>
-          <Button
-            onClick={handleStartInterview}
-            disabled={loading}
-            className="px-12 text-lg py-4 mt-12 transition-all"
-          >
+          <div className="text-3xl text-stone-700">Are you ready? Click to start.</div>
+          <Button onClick={handleStartInterview} disabled={loading} className="px-12 text-lg py-4 mt-12">
             {loading ? "Starting..." : "Start Interview"}
           </Button>
         </>
       )}
 
-      {/* Greeting */}
       {started && !examEnded && !greetingDone && (
-        <div className="flex flex-col items-center gap-4">
-          <TextSpeaker
-            text={greeting ?? ""}
-            trigger={!!greeting}
-            onComplete={handleGreetingComplete}
-          />
-        </div>
+        <TextSpeaker text={greeting ?? ""} trigger={!!greeting} onComplete={handleGreetingComplete} />
       )}
 
-      {/* Main Interview */}
       {started && !examEnded && greetingDone && (
         <div className="mt-6 space-y-6">
-          <TextSpeaker
-            text={currentText ?? ""}
-            trigger={!!currentText}
-            onComplete={handleQuestionSpoken}
-          />
+          <TextSpeaker text={currentText ?? ""} trigger={!!currentText} onComplete={handleQuestionSpoken} />
 
-          <SpeakingAvatar
-            text={transcript}
-            imgSrc="/images/Avatar/femaleUsAi.jpeg"
-            candidateName={candidate.name || ""}
-          />
+          <SpeakingAvatar text={transcript} imgSrc="/images/Avatar/femaleUsAi.jpeg" candidateName={candidate.name || ""} />
 
-          {/* Transcript */}
           <div className="flex flex-col w-full bg-gray-200 rounded-lg shadow-lg mx-auto relative p-2">
-            <button
-              className="absolute top-0 right-2 p-2 md:p-3 z-10"
-              onClick={() => setShowTranscript(!showTranscript)}
-            >
-              {!showTranscript ? (
-                <IoMdEye className="text-gray-600" size={24} />
-              ) : (
-                <IoMdEyeOff className="text-gray-600" size={24} />
-              )}
+            <button className="absolute top-0 right-2 p-2" onClick={() => setShowTranscript(!showTranscript)}>
+              {showTranscript ? <IoMdEyeOff /> : <IoMdEye />}
             </button>
 
-            <div
-              className={`flex flex-col w-full px-4 py-4 transition-all duration-300 ${
-                showTranscript ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <div className="w-full max-h-64 overflow-y-auto pr-2">
-                <p className="text-sm sm:text-base text-gray-800 whitespace-pre-wrap">
-                  {transcript || "Speak when AI stops talking..."}
-                </p>
+            {showTranscript && (
+              <div className="px-4 py-4">
+                <div className="max-h-64 overflow-y-auto pr-2">
+                  <p className="text-sm text-gray-800 whitespace-pre-wrap">
+                    {transcript || "Speak after AI finishes..."}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Listening Indicator */}
             <div className="flex justify-center items-center mt-2">
-              <span
-                className={`flex gap-4 text-sm font-medium ${
-                  listening ? "text-green-600" : "text-gray-500"
-                }`}
-              >
-                {listening ? (
-                  <>
-                  <div></div>
-                    <IoMdMic size={20} className="text-sky-500" />
-                    <span>Listening...</span>
-                  </>
-                ) : (
-                  <>
-                    <IoMdMicOff size={20} className="text-gray-500" />
-                    <span>Mic inactive</span>
-                  </>
-                )}
-              </span>
+              {listening ? (
+                <>
+                  <IoMdMic size={20} className="text-sky-500" />
+                  <span className="text-green-600 ml-2">Listening...</span>
+                </>
+              ) : (
+                <>
+                  <IoMdMicOff size={20} className="text-gray-500" />
+                  <span className="text-gray-500 ml-2">Mic inactive</span>
+                </>
+              )}
             </div>
           </div>
         </div>
       )}
+
       {examEnded && (
-        <div className="mt-10">
-          <TextSpeaker
-            text={currentText ?? ""}
-            trigger={!!currentText}
-            onComplete={() => {}}
-          />
-        </div>
+        <TextSpeaker text={currentText ?? ""} trigger={!!currentText} onComplete={() => {}} />
       )}
-      {/* Error */}
-      {error && (
-        <pre className="text-red-500 mt-4 whitespace-pre-wrap text-sm">
-          {typeof error === "string" ? error : JSON.stringify(error, null, 2)}
-        </pre>
-      )}
+
+      {error && <pre className="text-red-500 mt-4 text-sm whitespace-pre-wrap">{JSON.stringify(error)}</pre>}
     </div>
   );
 };
