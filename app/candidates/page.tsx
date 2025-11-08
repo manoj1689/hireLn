@@ -34,7 +34,7 @@ type Candidate = {
   id: string;
   name: string;
   email: string;
-  status: string | null;
+  applicationStatus: string | null;
   interviewStatus: string | null;
 };
 
@@ -79,6 +79,7 @@ export default function CandidatesPage() {
   const interviewStatusStyles: Record<string, string> = {
     "NOT SCHEDULED": "bg-gray-200 text-gray-700",
     SCHEDULED: "bg-blue-100 text-blue-700",
+    JOINED: "bg-orange-100 text-orange-700",
     CONFIRMED: "bg-indigo-100 text-indigo-700",
     IN_PROGRESS: "bg-yellow-100 text-yellow-800",
     COMPLETED: "bg-green-100 text-green-700",
@@ -96,8 +97,8 @@ export default function CandidatesPage() {
     { accessorKey: "name", header: "Name" },
     { accessorKey: "email", header: "Email" },
     {
-      accessorKey: "status",
-      header: "Candidate Status",
+      accessorKey: "applicationStatus",
+      header: "Application Status",
       cell: ({ getValue }) => {
         const value = getValue() as string;
         return (
@@ -255,7 +256,7 @@ export default function CandidatesPage() {
         onClose={() => setOpen(false)}
         center
         classNames={{
-          modal: "rounded-xl p-6 ",
+          modal: "rounded-xl w-full p-6 ",
         }}
       >
         {selectedCandidate && (

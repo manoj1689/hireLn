@@ -30,7 +30,7 @@ export default function BulkResumeUploadDialog({
   const { uploaded, loading, error } = useSelector(
     (state: RootState) => state.resumeUpload
   );
-  console.log("uploaded", uploaded);
+ 
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadComplete, setUploadComplete] = useState(false);
 
@@ -74,7 +74,7 @@ export default function BulkResumeUploadDialog({
       center
       classNames={{ modal: "max-w-4xl rounded-2xl" }}
     >
-      <div className="w-full max-w-md px-2 sm:px-4">
+      <div className="w-full  px-2 sm:px-4">
         <h2 className="text-xl font-semibold mb-4">Bulk Upload Resumes</h2>
 
         {/* Loading State */}

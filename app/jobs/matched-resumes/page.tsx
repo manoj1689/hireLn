@@ -4,11 +4,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "next/navigation";
 import { AppDispatch, RootState } from "@/lib/store";
 import { fetchMatchedCandidatesByJobId } from "@/lib/slices/aitools/matched-candidate-Slice";
-import { createCandidate } from "@/lib/slices/aitools/parse-resume-slice";
 import {
   postApplication,
   resetApplications,
 } from "@/lib/slices/applicant/application-slice";
+
 import {
   useReactTable,
   getCoreRowModel,
@@ -19,6 +19,7 @@ import {
   ColumnDef,
   RowSelectionState,
 } from "@tanstack/react-table";
+
 import {
   HiArrowSmUp,
   HiArrowSmDown,
@@ -34,6 +35,7 @@ import PreviewCandidateDetails from "@/app/candidates/preview-candidate/page";
 
 type Candidate = {
   resume_id: string;
+  candidate_id: string;
   name: string;
   email: string;
   filename: string;
@@ -45,14 +47,9 @@ export default function Page() {
   const jobId = searchParams.get("job_id");
   const dispatch = useDispatch<AppDispatch>();
 
-  const {
-    matchedCandidates,
-    loading: matchedLoading,
-    error: matchedError,
-  } = useSelector((state: RootState) => state.matchedCandidate);
-
-  const { loading: parserLoading, error: parserError } = useSelector(
-    (state: RootState) => state.resumeParser
+  const { user } = useSelector((state: RootState) => state.auth); // ✅ Added user
+  const { matchedCandidates, loading: matchedLoading } = useSelector(
+    (state: RootState) => state.matchedCandidate
   );
 
   const [globalFilter, setGlobalFilter] = useState("");
@@ -63,17 +60,21 @@ export default function Page() {
     null
   );
   const [selectedResumeData, setSelectedResumeData] = useState<
-    { resume_id: string; overall_semantic_score: number }[]
+    { candidate_id: string; resume_id: string; overall_semantic_score: number }[]
   >([]);
   const [createdCandidates, setCreatedCandidates] = useState<any[]>([]);
-  const [isParsing, setIsParsing] = useState(false); // ✅ spinner state
+  const [isParsing, setIsParsing] = useState(false);
 
-  // Fetch matched resumes
+    const { applications, loading, error } = useSelector(
+    (state: RootState) => state.application
+  );
+
+  // ✅ Fetch matched resumes
   useEffect(() => {
     if (jobId) dispatch(fetchMatchedCandidatesByJobId(jobId));
   }, [jobId, dispatch]);
 
-  // Table columns
+  // ✅ Table Columns
   const columns: ColumnDef<Candidate>[] = [
     {
       id: "select",
@@ -82,11 +83,8 @@ export default function Page() {
           <span>S.No</span>
           <input
             type="checkbox"
-            checked={table.getIsAllRowsSelected()}
-            ref={(el) =>
-              el && (el.indeterminate = table.getIsSomeRowsSelected())
-            }
-            onChange={(event) => table.getToggleAllRowsSelectedHandler()(event)}
+            checked={table.getIsAllPageRowsSelected()}
+            onChange={table.getToggleAllPageRowsSelectedHandler()}
           />
         </div>
       ),
@@ -96,8 +94,7 @@ export default function Page() {
           <input
             type="checkbox"
             checked={row.getIsSelected()}
-            ref={(el) => el && (el.indeterminate = row.getIsSomeSelected())}
-            onChange={(event) => row.getToggleSelectedHandler()(event)}
+            onChange={row.getToggleSelectedHandler()}
           />
         </div>
       ),
@@ -127,7 +124,7 @@ export default function Page() {
     },
   ];
 
-  // Setup table
+  // ✅ Setup table
   const table = useReactTable({
     data: matchedCandidates || [],
     columns,
@@ -139,17 +136,18 @@ export default function Page() {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  // Sync selected rows
+  // ✅ Sync selected rows
   useEffect(() => {
     const selected = table.getSelectedRowModel().flatRows.map((r) => ({
       resume_id: r.original.resume_id,
+      candidate_id: r.original.candidate_id,
       overall_semantic_score: r.original.overall_semantic_score,
     }));
     setSelectedResumeData(selected);
   }, [table.getState().rowSelection]);
 
-  // ✅ Create Candidates with proper status handling
-  const handleCreateCandidates = async () => {
+  // ✅ Invite Candidates
+  const handleInviteCandidates = async () => {
     if (selectedResumeData.length === 0 || !jobId) return;
 
     setIsParsing(true);
@@ -159,54 +157,42 @@ export default function Page() {
     const results: any[] = [];
 
     for (const item of selectedResumeData) {
-      const { resume_id, overall_semantic_score } = item;
-      const createRes: any = await dispatch(createCandidate(resume_id));
-      const payload = createRes.payload;
+      const { candidate_id, overall_semantic_score } = item;
 
-      // ❗ Backend duplicate case
-      if (payload?.status === false) {
-        results.push({
-          resumeId: resume_id,
-          status: "error",
-          message: payload.message || "Candidate exists",
-        });
-        continue;
-      }
-
-      if (createCandidate.fulfilled.match(createRes) && payload?.candidate) {
-        const candidateData = payload.candidate;
-
-        results.push({
-          resumeId: resume_id,
-          status: "success",
-          message: "✅ Candidate created",
-        });
-
+      try {
         const appRes = await dispatch(
           postApplication({
             jobId,
-            candidateId: candidateData.candidate_id,
+            candidateId: candidate_id,
             coverLetter: "AI Interview Invitation",
-            userId: candidateData.user_id,
+            userId: user?.id || "",
             appliedAt: new Date().toISOString(),
-            matchScore: Math.round(overall_semantic_score),
+            matchScore: Math.round(overall_semantic_score || 0),
           })
         );
+
         if (postApplication.fulfilled.match(appRes)) {
           results.push({
-            resumeId: resume_id,
+            candidateId: candidate_id,
             status: "success",
-            message: "🎉 Candidate invited for this job",
+            message: "🎉 Candidate invited successfully",
           });
         } else {
           results.push({
-            resumeId: resume_id,
+            candidateId: candidate_id,
             status: "error",
-            message: "⚠️ Application failed",
+            message: error,
           });
         }
+      } catch {
+        results.push({
+          candidateId: candidate_id,
+          status: "error",
+          message: "❌ Error inviting candidate",
+        });
       }
     }
+
     setCreatedCandidates(results);
     setModalOpen(true);
     setIsParsing(false);
@@ -230,7 +216,7 @@ export default function Page() {
         </div>
       )}
 
-      {/* Search + Table */}
+      {/* Table */}
       {!matchedLoading && (
         <div className="p-4">
           <input
@@ -241,7 +227,7 @@ export default function Page() {
             className="border rounded-md px-3 py-2 mb-4 w-full max-w-sm"
           />
 
-          <table className="min-w-full border border-gray-200">
+          <table className="min-w-full border border-gray-200 text-sm">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
@@ -295,45 +281,42 @@ export default function Page() {
 
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4 gap-2">
-            {" "}
             <button
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
               className="px-3 py-1 border rounded flex items-center gap-1"
             >
-              {" "}
-              <HiChevronLeft /> Previous{" "}
-            </button>{" "}
+              <HiChevronLeft /> Previous
+            </button>
+
             <span>
-              {" "}
               Page{" "}
               <strong>
-                {" "}
                 {table.getState().pagination.pageIndex + 1} of{" "}
-                {table.getPageCount()}{" "}
-              </strong>{" "}
-            </span>{" "}
+                {table.getPageCount()}
+              </strong>
+            </span>
+
             <button
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
               className="px-3 py-1 border rounded flex items-center gap-1"
             >
-              {" "}
-              Next <HiChevronRight />{" "}
-            </button>{" "}
+              Next <HiChevronRight />
+            </button>
           </div>
 
-          {/* Create Button */}
-          <div className="flex mt-4 justify-center">
+          {/* Invite Button */}
+          <div className="flex mt-6 justify-center">
             <Button
-              className="mt-4 px-12 py-2 rounded-full flex items-center gap-2"
-              onClick={handleCreateCandidates}
+              className="px-12 py-2 rounded-full flex items-center gap-2"
+              onClick={handleInviteCandidates}
               disabled={selectedResumeData.length === 0 || isParsing}
             >
               {isParsing && (
                 <span className="animate-spin border-2 border-t-transparent rounded-full w-4 h-4" />
               )}
-              {isParsing ? "Creating..." : "Create Candidate"}
+              {isParsing ? "Processing..." : "Invite Candidate"}
             </Button>
           </div>
         </div>
@@ -347,7 +330,7 @@ export default function Page() {
         classNames={{ modal: "max-w-3xl rounded-2xl" }}
       >
         <h2 className="text-xl font-semibold mb-4 text-center">
-          Candidate Creation Summary
+          Candidate Invitation Summary
         </h2>
 
         <div className="flex flex-col gap-3">
@@ -361,7 +344,7 @@ export default function Page() {
               }`}
             >
               <p>
-                <strong>Resume:</strong> {res.resumeId}
+                <strong>Candidate ID:</strong> {res.candidateId}
               </p>
               <p
                 className={

@@ -13,7 +13,7 @@ import Footer from "../Footer";
 import { Mic2Icon } from "lucide-react";
 import { FaSignOutAlt } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import ResumeToJob from "./Resume-to-Job";
+import CandidateToJob from "./Candidate-to-Job";
 import { logout } from "@/lib/slices/auth-slice";
 import { useDispatch } from "react-redux";
 
@@ -136,7 +136,7 @@ const FreeTrialInterview = () => {
           </div>
           {/* Right: Candidate-Job process */}
           <div>
-            <ResumeToJob />
+            <CandidateToJob />
           </div>
         </div>
       </main>

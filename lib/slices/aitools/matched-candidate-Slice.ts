@@ -26,7 +26,9 @@ export const fetchMatchedCandidatesByJobId = createAsyncThunk<
       const response = await axiosApi.get<CandidateResponse[]>(
         `/api/ai-tools/match/${jobId}`
       );
+      console.log("matched candidate",response.data)
       return response.data;
+
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Something went wrong');
     }

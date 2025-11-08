@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "next/navigation";
 import { fetchJobById } from "@/lib/slices/job/jobsList-slice";
 import {
   acceptApplication,
   getApplication,
 } from "@/lib/slices/applicant/application-slice";
-import { AppDispatch } from "@/lib/store";
+import { AppDispatch, RootState } from "@/lib/store";
 import {
   FiCheckCircle,
   FiClock,
@@ -31,6 +31,10 @@ export default function JobDetailsPage() {
   const applicationId = searchParams.get("application_id") || "";
   const jobId = searchParams.get("job_id") || "";
   const token = searchParams.get("token") || "";
+  
+    const { applications, loading, error } = useSelector(
+    (state: RootState) => state.application
+  );
 
   // Fetch job data
   useEffect(() => {
@@ -58,7 +62,13 @@ export default function JobDetailsPage() {
       fetchApplication()
     ); // Refresh status after accepting
   };
-
+   if (error)
+    return (
+      <div className="flex h-screen items-center justify-center text-red-600 font-medium">
+        Error: {error}
+      </div>
+    );
+  
   if (!jobData || !applicationData) {
     return <p className="text-center text-gray-500 mt-10">Loading...</p>;
   }

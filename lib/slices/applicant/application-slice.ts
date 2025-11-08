@@ -50,7 +50,7 @@ export const postApplication = createAsyncThunk<
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || 'Error posting application'
+        error.response?.data?.detail|| 'Error posting application'
       );
     }
   }
@@ -74,7 +74,8 @@ export const getApplication = createAsyncThunk<
       console.log('response of get application', response);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Error fetching application');
+      console.log('response of get application error', error.response);
+      return rejectWithValue(error.response?.data?.detail || 'Error fetching application');
     }
   }
 );
@@ -102,7 +103,7 @@ export const acceptApplication = createAsyncThunk<
       console.log('Response', response);
       return response.data as ApplicationResponse;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Error accepting application');
+      return rejectWithValue(error.response?.data?.detail || 'Error accepting application');
     }
   }
 );
@@ -119,7 +120,7 @@ export const updateApplication = createAsyncThunk<
       const response = await axiosApi.put(`/api/application/applications/${applicationId}`, updateData);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Error updating application');
+      return rejectWithValue(error.response?.data?.detail || 'Error updating application');
     }
   }
 );

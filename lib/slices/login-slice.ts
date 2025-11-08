@@ -64,3 +64,61 @@ export const login = createAsyncThunk<
     }
   }
 );
+
+/* -------------------------------------------
+   🔹 2. Guest Login (Without Firebase)
+-------------------------------------------- */
+export const guestLogin = createAsyncThunk<
+  void,
+  {
+   
+    accountType: string;
+    subscriptionActive: boolean;
+    trialEndsAt: string;
+  },
+  { rejectValue: string }
+>(
+  "auth/guestLogin",
+  async (
+    { accountType, subscriptionActive, trialEndsAt },
+    thunkAPI
+  ) => {
+    try {
+      const res = await fetch(`${baseURL}/api/auth/guest-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+         
+          accountType,
+          subscriptionActive,
+          trialEndsAt,
+        }),
+      });
+
+      let errorData: any = {};
+      try {
+        errorData = await res.clone().json();
+      } catch {
+        errorData = {};
+      }
+
+      if (!res.ok) {
+        const msg =
+          errorData?.detail ||
+          errorData?.message ||
+          "Guest login failed. Please try again.";
+        return thunkAPI.rejectWithValue(msg);
+      }
+
+      const data = await res.json();
+      console.log("✅ Guest login successful:", data);
+
+      thunkAPI.dispatch(setAuthData(data));
+      setAuthToken(data.access_token);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Network error. Please try again.";
+      return thunkAPI.rejectWithValue(msg);
+    }
+  }
+);

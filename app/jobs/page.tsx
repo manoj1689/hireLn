@@ -96,7 +96,7 @@ useEffect(() => {
         return <Badge variant="secondary">{status}</Badge>
     }
   }
-  console.log("job list", jobs)
+ 
   return (
     <MainLayout>
 

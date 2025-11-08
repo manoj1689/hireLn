@@ -104,7 +104,7 @@ const InterviewChatPage: React.FC<InterviewChatPageProps> = ({
     if (!listening || !greetingDone || examEnded) return;
 
     const silenceTimer = setInterval(() => {
-      if (Date.now() - lastTranscriptTime > 3000 && transcript.trim()) {
+      if (Date.now() - lastTranscriptTime > 8000 && transcript.trim()) {
         console.log("🛑 Detected silence, stopping mic...");
         SpeechRecognition.stopListening();
         clearInterval(silenceTimer);
@@ -131,9 +131,9 @@ const InterviewChatPage: React.FC<InterviewChatPageProps> = ({
       token,
     };
 
-    // console.log("🎯 Sending payload:", payload);
+     console.log("🎯 Sending payload:", payload);
 
-    try {
+     try {
       const res = await dispatch(sendChatResponse(payload)).unwrap();
       setConversationLoading(false);
       resetTranscript();
@@ -177,7 +177,7 @@ const InterviewChatPage: React.FC<InterviewChatPageProps> = ({
       );
     }, 7500);
   };
- console.log(candidate.name)
+
   return (
     <div className="p-6 max-w-3xl mx-auto text-center">
       <h1 className="flex text-2xl font-bold gap-4 justify-center mb-6"><span><RiRobot3Fill size={28} color="orange"/></span> AI Voice Interview</h1>

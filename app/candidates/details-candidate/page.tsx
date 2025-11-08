@@ -46,9 +46,9 @@ const CandidateDetails: React.FC<CandidateDetailsProps> = ({ candidateId }) => {
       <div className="flex text-2xl font-bold justify-center">
         Candidate Details
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 py-8">
+      <div className=" flex w-full gap-4    py-8">
         {/* Left Sidebar */}
-        <div className="bg-white shadow rounded-lg p-4">
+        <div className="w-full lg:w-1/2 bg-white shadow rounded-lg p-4">
           {/* Profile Avatar */}
           <div className="flex flex-col  bg-sky-100 p-4 rounded-lg shadow-lg items-center">
             <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-3xl font-semibold text-stone-600">
@@ -187,7 +187,7 @@ const CandidateDetails: React.FC<CandidateDetailsProps> = ({ candidateId }) => {
         </div>
 
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="w-full lg:w-1/2 space-y-6">
           {/* Education */}
           {candidateData.education?.length > 0 && (
             <section>

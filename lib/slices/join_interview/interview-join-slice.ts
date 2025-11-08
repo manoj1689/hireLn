@@ -104,6 +104,7 @@ export const startInterview = createAsyncThunk(
       return {
         message: response.data.message,
         status: response.data.status,
+        interview: response.data.interview
       };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -133,6 +134,7 @@ export const completeInterview = createAsyncThunk(
       return {
         message: response.data.message,
         status: response.data.status,
+        interview: response.data.interview,
       };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -194,10 +196,12 @@ const interviewJoinSlice = createSlice({
         state.loading = false
         state.confirmationMessage = action.payload.message
         state.status = action.payload.status
+        
         if (state.interview) {
           state.interview.status = action.payload.status
         }
       })
+
       .addCase(startInterview.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload as string

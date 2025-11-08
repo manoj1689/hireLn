@@ -15,11 +15,13 @@ import {
   FiUser,
   FiUsers,
   FiPlus,
+  FiLoader,
 } from 'react-icons/fi';
 import Select from 'react-select';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/lib/store';
 import { scheduleInterview } from '@/lib/slices/interview/scheduleInterviewSlice';
+
 
 interface Interviewer {
   name: string;
@@ -51,6 +53,7 @@ const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
   applicationId,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const [loading, setLoading] = useState(false); 
   const [form, setForm] = useState({
     candidateId,
     applicationId,
@@ -67,7 +70,7 @@ const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
     interviewers: [{ name: '', email: '', role: '', avatar: '' }],
     isGuest:false
   });
-
+  
   // ✅ Sync props → form state
   React.useEffect(() => {
     setForm((prev) => ({
@@ -111,6 +114,8 @@ const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
   };
 
   const handleSubmit = async () => {
+    setLoading(true); // ✅ Start loader
+
     const cleanedInterviewers = form.interviewers
       .filter((int) => int.name.trim() && int.email.trim())
       .map(({ name, email, role, avatar }) => ({
@@ -137,10 +142,12 @@ const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
     };
 
     try {
-      const result = await dispatch(scheduleInterview(payload)).unwrap();
+      await dispatch(scheduleInterview(payload)).unwrap();
       onClose();
     } catch (err) {
       console.error('Failed to schedule:', err);
+    } finally {
+      setLoading(false); // ✅ Stop loader
     }
   };
 
@@ -341,12 +348,25 @@ const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
           </div>
         </div>
 
-        <div className="flex mt-6 justify-center">
+    
+       <div className="flex mt-6 justify-center">
           <button
             onClick={handleSubmit}
-            className="px-6 py-2 bg-primary-gradient text-white rounded hover:scale-105 transition"
+            disabled={loading}
+            className={`px-6 py-2 rounded text-white transition ${
+              loading
+                ? 'bg-stone-500 cursor-not-allowed'
+                : 'bg-primary-gradient hover:scale-105'
+            } flex items-center gap-2`}
           >
-            Schedule Interview
+            {loading ? (
+              <>
+                <FiLoader className="animate-spin" />
+                Scheduling...
+              </>
+            ) : (
+              'Schedule Interview'
+            )}
           </button>
         </div>
       </div>

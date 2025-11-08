@@ -27,6 +27,8 @@ export interface InterviewJoinData {
   tokenExpiry: string;
   createdAt: string;
   updatedAt: string;
+  startedAt:string;
+  completedAt:string;
 
   // Candidate Info
   candidateEducation: string;

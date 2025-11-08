@@ -70,7 +70,7 @@ const InterviewScreenPage = () => {
     const devToolsOpen = window.outerWidth - window.innerWidth > threshold;
     setPermissions((prev) => ({ ...prev, devToolsOpen }));
   }, []);
-
+ 
   // -----------------------------
   // Effects
   // -----------------------------
@@ -188,8 +188,9 @@ const InterviewScreenPage = () => {
         </div>
       </header>
       <main className="container mx-auto py-4 px-4 space-y-4  pt-20 rounded-lg">
-        <section className="flex justify-end">
-            <div className="flex justify-between items-center px-6 py-4 bg-sky-300 rounded-lg shadow-xl text-white text-sm sm:text-base font-medium">
+        <section className="flex items-center justify-end gap-6">
+          <div className="flex justify-center items-center">
+   <div className="flex justify-between items-center px-6 py-4 bg-sky-300 rounded-lg shadow-xl text-white text-sm sm:text-base font-medium">
               <div className="flex flex-col  items-center">
                 <p>Status</p>
                 <p>
@@ -199,6 +200,11 @@ const InterviewScreenPage = () => {
                 </p>
               </div>
             </div> 
+          </div>
+         
+            <div>
+              <ShowTimer duration={interview.duration}/>
+            </div>
         </section>
         <section >
               <div >

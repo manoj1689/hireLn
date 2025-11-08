@@ -24,7 +24,7 @@ import { Lightbulb } from "lucide-react";
 const EvaluationPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const searchParams = useSearchParams();
-  const router=useRouter();
+  const router = useRouter();
 
   const interviewId = searchParams.get("interview_id") ?? "";
   const token = searchParams.get("token") ?? "";
@@ -60,7 +60,7 @@ const EvaluationPage = () => {
         console.log("✅ Starting evaluation...");
 
         await dispatch(evaluateInterview({ interviewId, token }) as any);
-        //await dispatch(completeInterview({ interviewId, token }) as any);
+        await dispatch(completeInterview({ interviewId, token }) as any);
 
         // ✅ now fetch result
         if (user?.role === "GUEST") {
@@ -79,11 +79,11 @@ const EvaluationPage = () => {
   // UI loaders
   if (chatHistoryLoading)
     return (
-      <div className="flex w-full h-screen justify-center items-center">
-        <div className="text-center items-center space-y-6">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            Processing your interview result...
-          </h2>
+      <div className="flex flex-col items-center justify-center min-h-screen text-center space-y-6">
+        <h2 className="text-2xl font-semibold text-gray-800">
+          Processing your interview result...
+        </h2>
+        <div className="flex justify-center">
           <Hourglass visible height={140} width={140} />
         </div>
       </div>
@@ -92,7 +92,7 @@ const EvaluationPage = () => {
   if (error)
     return (
       <div className="flex h-screen items-center justify-center text-red-600 font-medium">
-        Error: {error}
+        Error: {error.response.statusText}
       </div>
     );
 
@@ -161,118 +161,123 @@ const EvaluationPage = () => {
         {/* ✅ Guest UI - Result Page */}
         {user?.role === "GUEST" && result && (
           <>
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* ✅ Summary Card */}
-            <Card className="shadow-lg">
-              <CardContent className="p-6 space-y-4">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Interview Result
-                </h2>
-                <p className="text-sm text-gray-500">
-                  Interview ID: {result.interviewId}
-                </p>
-
-                <div className="text-lg font-semibold">
-                  Final Status:{" "}
-                  <span
-                    className={
-                      result.passStatus === "pass"
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }
-                  >
-                    {result.passStatus.toUpperCase()}
-                  </span>
-                </div>
-
-                <p className="font-medium text-gray-700">
-                  {result.summaryResult}
-                </p>
-
-                {/* ✅ Score Bar */}
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">
-                    Overall Score: {result.averageScore.toFixed(1)}/5
+            <div className="max-w-4xl mx-auto space-y-6 pt-24">
+              {/* ✅ Summary Card */}
+              <Card className="shadow-lg">
+                <CardContent className="p-6 space-y-4">
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    Interview Result
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Interview ID: {result.interviewId}
                   </p>
-                  <Progress value={result.averageScore * 20} />
-                </div>
 
-                {/* ✅ Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center pt-4">
-                  {[
-                    ["Factual Accuracy", result.averageFactualAccuracy],
-                    ["Completeness", result.averageCompleteness],
-                    ["Relevance", result.averageRelevance],
-                    ["Coherence", result.averageCoherence],
-                    ["Questions", result.evaluatedCount],
-                  ].map(([label, value], i) => (
-                    <div key={i} className="border p-3 rounded-lg bg-gray-50">
-                      <p className="text-xl font-bold text-sky-600">{value}</p>
-                      <p className="text-xs text-gray-500">{label}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="text-lg font-semibold">
+                    Final Status:{" "}
+                    <span
+                      className={
+                        result.passStatus === "pass"
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }
+                    >
+                      {result.passStatus.toUpperCase()}
+                    </span>
+                  </div>
 
-            {/* ✅ Detailed Breakdown */}
-            <Card className="shadow-lg">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-4">Detailed Evaluation</h3>
+                  <p className="font-medium text-gray-700">
+                    {result.summaryResult}
+                  </p>
 
-                <Accordion type="single" collapsible>
-                  {result.evaluations.map((item: any, index: number) => (
-                    <AccordionItem key={index} value={`item-${index}`}>
-                      <AccordionTrigger className="font-medium text-left">
-                        Q{index + 1}. {item.questionText}
-                      </AccordionTrigger>
+                  {/* ✅ Score Bar */}
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">
+                      Overall Score: {result.averageScore.toFixed(1)}/5
+                    </p>
+                    <Progress value={result.averageScore * 20} />
+                  </div>
 
-                      <AccordionContent>
-                        <div className="space-y-2">
-                          <p className="text-sm">
-                            <span className="font-semibold">Answer:</span>{" "}
-                            {item.answerText}
-                          </p>
+                  {/* ✅ Stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center pt-4">
+                    {[
+                      ["Factual Accuracy", result.averageFactualAccuracy],
+                      ["Completeness", result.averageCompleteness],
+                      ["Relevance", result.averageRelevance],
+                      ["Coherence", result.averageCoherence],
+                      ["Questions", result.evaluatedCount],
+                    ].map(([label, value], i) => (
+                      <div key={i} className="border p-3 rounded-lg bg-gray-50">
+                        <p className="text-xl font-bold text-sky-600">
+                          {value}
+                        </p>
+                        <p className="text-xs text-gray-500">{label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-                          <div className="text-sm grid grid-cols-2 md:grid-cols-4 gap-2">
-                            <p>
-                              <b>Accuracy:</b> {item.evaluation.factualAccuracy}
+              {/* ✅ Detailed Breakdown */}
+              <Card className="shadow-lg">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold mb-4">
+                    Detailed Evaluation
+                  </h3>
+
+                  <Accordion type="single" collapsible>
+                    {result.evaluations.map((item: any, index: number) => (
+                      <AccordionItem key={index} value={`item-${index}`}>
+                        <AccordionTrigger className="font-medium text-left">
+                          Q{index + 1}. {item.questionText}
+                        </AccordionTrigger>
+
+                        <AccordionContent>
+                          <div className="space-y-2">
+                            <p className="text-sm">
+                              <span className="font-semibold">Answer:</span>{" "}
+                              {item.answerText}
                             </p>
-                            <p>
-                              <b>Completeness:</b>{" "}
-                              {item.evaluation.completeness}
+
+                            <div className="text-sm grid grid-cols-2 md:grid-cols-4 gap-2">
+                              <p>
+                                <b>Accuracy:</b>{" "}
+                                {item.evaluation.factualAccuracy}
+                              </p>
+                              <p>
+                                <b>Completeness:</b>{" "}
+                                {item.evaluation.completeness}
+                              </p>
+                              <p>
+                                <b>Relevance:</b> {item.evaluation.relevance}
+                              </p>
+                              <p>
+                                <b>Coherence:</b> {item.evaluation.coherence}
+                              </p>
+                            </div>
+
+                            <p className="text-sm">
+                              <b>Score:</b> {item.evaluation.score}/5
                             </p>
-                            <p>
-                              <b>Relevance:</b> {item.evaluation.relevance}
-                            </p>
-                            <p>
-                              <b>Coherence:</b> {item.evaluation.coherence}
+                            <p className="text-xs text-gray-600 italic">
+                              {item.evaluation.finalEvaluation}
                             </p>
                           </div>
-
-                          <p className="text-sm">
-                            <b>Score:</b> {item.evaluation.score}/5
-                          </p>
-                          <p className="text-xs text-gray-600 italic">
-                            {item.evaluation.finalEvaluation}
-                          </p>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </CardContent>
-            </Card>
-          </div>
-                {/* ✅ Try Again Button */}
-          <div className="text-center mt-6">
-            <button
-              onClick={() => router.push("/")}
-              className="text-sky-600 font-semibold underline hover:text-sky-800 transition"
-            >
-              Try Again
-            </button>
-          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </CardContent>
+              </Card>
+            </div>
+            {/* ✅ Try Again Button */}
+            <div className="text-center mt-6">
+              <button
+                onClick={() => router.push("/")}
+                className="text-sky-600 font-semibold underline hover:text-sky-800 transition"
+              >
+                Try Again
+              </button>
+            </div>
           </>
         )}
       </main>

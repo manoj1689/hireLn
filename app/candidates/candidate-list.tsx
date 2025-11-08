@@ -33,7 +33,7 @@ export const CandidateCard = ({ candidate }: CandidateProps) => {
     technicalSkills = [],
     createdAt
   } = candidate
-
+ 
   const applicationStatusColor: Record<string, string> = {
     NEW: "bg-red-100 text-red-600",
     INVITED:"bg-pink-100 text-pink-600",
@@ -55,7 +55,7 @@ export const CandidateCard = ({ candidate }: CandidateProps) => {
     NO_SHOW: "bg-orange-100 text-orange-700",
     RESCHEDULED: "bg-purple-100 text-purple-700"
   }
-
+ console.log("candidate data",candidate)
   return (
     <Card className="flex flex-row gap-4 p-4 rounded-xl shadow-md bg-white">
       {/* Candidate Info */}

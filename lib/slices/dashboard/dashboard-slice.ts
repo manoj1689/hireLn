@@ -37,7 +37,7 @@ export const fetchActivities = createAsyncThunk<ActivityItem[]>(
       const response = await axiosApi.get('/api/dashboard/activities');
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.detail || 'Failed to load activities');
+      return rejectWithValue(error.response?.data?.message || 'Failed to load activities');
     }
   }
 );

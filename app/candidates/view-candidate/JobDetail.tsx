@@ -2,14 +2,7 @@
 
 import { Calendar, Clock, MapPin, Video } from "lucide-react"
 import { JSX } from "react"
-import {
-    FaMapMarkerAlt,
-    
-    
-   
-    FaCheck,
-   
-} from "react-icons/fa"
+import { FaMapMarkerAlt,FaCheck } from "react-icons/fa"
 
 type JobData = {
     title: string

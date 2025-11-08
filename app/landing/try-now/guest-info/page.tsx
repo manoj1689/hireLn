@@ -12,7 +12,7 @@ import { fetchCandidateById } from "@/lib/slices/candidate/candidate-slice";
 import { fetchApplications } from "@/lib/slices/applicant/getapplications-slice";
 import { postApplication } from "@/lib/slices/applicant/application-slice";
 import { scheduleInterview } from "@/lib/slices/interview/scheduleInterviewSlice";
-
+import { logout } from "@/lib/slices/auth-slice";
 import { Loader2, Briefcase, User, Clock } from "lucide-react";
 import { FaSignOutAlt } from "react-icons/fa";
 
@@ -118,7 +118,10 @@ ${candidateData?.name}`,
       </div>
     );
   }
-
+  const handleLogout = () => {
+    dispatch(logout())
+    router.push("/")
+  }
   return (
     <div>
       {/* Header */}
@@ -131,7 +134,7 @@ ${candidateData?.name}`,
           />
         </div>
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 text-gray-500 hover:scale-105 transition-all">
+          <button className="flex items-center gap-2 text-gray-500 hover:scale-105 transition-all" onClick={handleLogout}>
             <FaSignOutAlt size={25} className="text-gray-500" />
             <span>Logout</span>
           </button>

@@ -1,5 +1,6 @@
 "use client";
 import FirebaseTryNowButton from "@/components/firebase/FirebaseTryNowButton";
+import GuestTryNowButton from "@/components/firebase/GuestTryNowButton";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { FaRegPlayCircle } from "react-icons/fa";
@@ -62,18 +63,17 @@ function Header() {
             {/* Buttons */}
             <section className="flex w-full mx-auto flex-col justify-start mt-8">
               <section className="flex gap-5">
-              <div>
-                <FirebaseTryNowButton/>
-              </div>
+                <div>
+               <GuestTryNowButton/> 
+                </div>
                 <button
                   onClick={onOpenModal}
-                  className="flex gap-2 px-4 py-2 border border-white rounded-md text-md md:text-lg text-white justify-center items-center hover:bg-white hover:text-[#15B8A6] transition-all"
+                  className="flex gap-2 px-4 py-2 border border-white rounded-md text-md md:text-lg text-white justify-center items-center hover:bg-gray-100 hover:text-[#15B8A6] transition-all"
                 >
                   <FaRegPlayCircle /> <span>Watch Demo</span>
                 </button>
               </section>
-      
-            
+
               {/* Stats */}
               <section className="flex w-full xl:w-2/3 mt-8 bg-gray-100 py-4 my-8 rounded-2xl">
                 <div className="w-1/3 flex flex-col justify-center items-center">
