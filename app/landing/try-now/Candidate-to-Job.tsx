@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import Select from "react-select";
+import { useState, useEffect } from "react";
+import Select, { components } from "react-select";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/lib/store";
 import { Button } from "@/components/ui/button";
@@ -10,16 +10,29 @@ import { Loader2 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import { useRouter } from "next/navigation";
 import AddGuestCandidatePage from "@/app/landing/try-now/guest-candidate";
+import {
+  fetchSkillSuggestions,
+  fetchSkillSuggestionsByDept,
+  updateSkillSuggestion,
+  deleteSkillSuggestion,
+} from "@/lib/slices/skill_suggestion/skill-suggestion-slice";
+import { Input } from "@/components/ui/input";
+import ReactSelect from "react-select";
+import { Label } from "@/components/ui/label";
 
-enum EmploymentType { FULL_TIME = "FULL_TIME", PART_TIME = "PART_TIME", CONTRACT = "CONTRACT", TEMPORARY = "TEMPORARY", INTERNSHIP = "INTERNSHIP", }
-enum SalaryPeriod { yearly = "yearly", monthly = "monthly", weekly = "weekly", hourly = "hourly", }
-const departmentOptions = [
-  { value: "Engineering", label: "Engineering" },
-  { value: "Product", label: "Product" },
-  { value: "HR", label: "Human Resources" },
-  { value: "Marketing", label: "Marketing" },
-  { value: "Sales", label: "Sales" },
-];
+enum EmploymentType {
+  FULL_TIME = "FULL_TIME",
+  PART_TIME = "PART_TIME",
+  CONTRACT = "CONTRACT",
+  TEMPORARY = "TEMPORARY",
+  INTERNSHIP = "INTERNSHIP",
+}
+enum SalaryPeriod {
+  yearly = "yearly",
+  monthly = "monthly",
+  weekly = "weekly",
+  hourly = "hourly",
+}
 
 export default function JobStepper() {
   const dispatch = useDispatch<AppDispatch>();
@@ -29,29 +42,160 @@ export default function JobStepper() {
   const [job, setJob] = useState({
     title: "",
     department: "",
-    languages: [] as { language: string; level: string }[],
     skills: [] as string[],
     description: "",
     education: "",
+    languages: [] as { language: string; level: string }[],
     location: "Remote",
     employmentType: EmploymentType.FULL_TIME,
-    salaryMin:  100000,
-    salaryMax:  200000,
-    salaryPeriod: SalaryPeriod.yearly, 
-    
+    salaryMin: 100000,
+    salaryMax: 200000,
+    salaryPeriod: SalaryPeriod.yearly,
   });
 
-  const [languageInput, setLanguageInput] = useState("");
-  const [selectedLevel, setSelectedLevel] = useState("Fluent");
-  const [skillInput, setSkillInput] = useState("");
-
-  const { singleCandidate } = useSelector(
-    (state: RootState) => state.candidate
-  );
+  const { singleCandidate } = useSelector((state: RootState) => state.candidate);
   const { loading: jobLoading } = useSelector(
     (state: RootState) => state.createJob
   );
+  const { departments, suggestions, loading: skillLoading } = useSelector(
+    (state: RootState) => state.skillSuggestions
+  );
 
+  const [department, setDepartment] = useState<{
+    value: string;
+    label: string;
+    skillSuggestionId: string;
+  } | null>(null);
+  const [technicalSkills, setTechnicalSkills] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState("");
+  const [updating, setUpdating] = useState(false);
+
+  // ✅ Fetch all departments
+  useEffect(() => {
+    dispatch(fetchSkillSuggestions());
+  }, [dispatch]);
+
+  // ✅ Department dropdown options
+  const departmentOptions =
+    departments?.map((dept) => ({
+      value: dept.name,
+      label: dept.name,
+      skillSuggestionId: dept.id,
+    })) || [];
+
+  // ✅ Handle department change
+  const handleDepartmentChange = async (selected: any) => {
+    setDepartment(selected);
+    setTechnicalSkills([]);
+    setSkillInput("");
+    setJob({ ...job, department: selected?.value || "" });
+    if (selected?.skillSuggestionId) {
+      await dispatch(fetchSkillSuggestionsByDept(selected.skillSuggestionId));
+    }
+  };
+
+  // ✅ Get skill suggestions for department
+  const suggestionList = Array.isArray(suggestions)
+    ? suggestions
+    : suggestions?.suggestions || [];
+
+  const skillOptions = suggestionList.map((skill: string) => ({
+    value: skill,
+    label: skill,
+  }));
+
+  // ✅ Handle skill selection
+  const handleSkillSelect = (selected: any) => {
+    const newSkills = selected ? selected.map((s: any) => s.value) : [];
+    setTechnicalSkills(newSkills);
+    setJob({ ...job, skills: newSkills });
+  };
+
+  // ✅ Add new skill to backend
+  const handleAddNewSuggestion = async () => {
+    if (!department?.skillSuggestionId || !skillInput.trim()) return;
+    const trimmedSkill = skillInput.trim();
+
+    if (
+      suggestionList.some(
+        (s: string) => s.toLowerCase() === trimmedSkill.toLowerCase()
+      )
+    ) {
+      toast.info("Skill already exists in suggestions.");
+      return;
+    }
+
+    try {
+      setUpdating(true);
+      const updatedSuggestions = [...suggestionList, trimmedSkill];
+      await dispatch(
+        updateSkillSuggestion({
+          id: department.skillSuggestionId,
+          data: { suggestions: updatedSuggestions },
+        })
+      ).unwrap();
+
+      toast.success("New skill added successfully ✅");
+      setTechnicalSkills((prev) => [...prev, trimmedSkill]);
+      setJob({ ...job, skills: [...technicalSkills, trimmedSkill] });
+      setSkillInput("");
+      await dispatch(fetchSkillSuggestionsByDept(department.skillSuggestionId));
+    } catch (err) {
+      console.error("Failed to add new skill suggestion:", err);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // ✅ Delete skill suggestion
+  const handleDeleteSkill = async (skill: string) => {
+    if (!department?.skillSuggestionId) return;
+    try {
+      setUpdating(true);
+      await dispatch(
+        deleteSkillSuggestion({
+          id: department.skillSuggestionId,
+          skill,
+        })
+      ).unwrap();
+
+      toast.success("Skill deleted successfully ❌");
+      setTechnicalSkills((prev) => prev.filter((s) => s !== skill));
+      setJob({
+        ...job,
+        skills: technicalSkills.filter((s) => s !== skill),
+      });
+      await dispatch(fetchSkillSuggestionsByDept(department.skillSuggestionId));
+    } catch (err) {
+      console.error("Failed to delete skill suggestion:", err);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // ✅ Custom dropdown option with delete button
+  const CustomOption = (props: any) => {
+    const skill = props.data.value;
+    return (
+      <components.Option {...props}>
+        <div className="flex justify-between items-center">
+          <span>{skill}</span>
+          <button
+            type="button"
+            className="text-red-500 hover:text-red-700 text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteSkill(skill);
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      </components.Option>
+    );
+  };
+
+  // ✅ Validate job form
   const validateJobForm = () => {
     if (!job.title.trim()) return toast.error("Job title is required"), false;
     if (!job.department) return toast.error("Please select department"), false;
@@ -61,17 +205,15 @@ export default function JobStepper() {
       return toast.error("Job description is required"), false;
     if (job.skills.length === 0)
       return toast.error("Add at least one skill"), false;
-    if (job.languages.length === 0)
-      return toast.error("Add at least one language"), false;
     return true;
   };
 
+  // ✅ Submit job
   const submitJob = async () => {
     if (!validateJobForm()) return;
 
     const payload = {
       ...job,
-      
       candidateId: singleCandidate?.id || null,
     };
 
@@ -130,175 +272,109 @@ export default function JobStepper() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Job Title */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Job Title
-              </label>
-              <input
-                className="border p-2 w-full bg-gray-50 rounded-md outline-none focus:ring-2 focus:ring-teal-500"
+              <Label>Job Title</Label>
+              <Input
                 placeholder="Enter job title"
                 value={job.title}
                 onChange={(e) => setJob({ ...job, title: e.target.value })}
               />
             </div>
 
-            {/* Department */}
+            {/* Qualification */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Department
-              </label>
-              <Select
-                options={departmentOptions}
-                placeholder="Select Department"
-                onChange={(opt) =>
-                  setJob({ ...job, department: opt?.value || "" })
-                }
-                className="text-sm"
-              />
-            </div>
-
-            {/* Education */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Qualification
-              </label>
-              <input
-                type="text"
-                className="border p-2 w-full outline-none bg-gray-50 rounded-md focus:ring-2 focus:ring-teal-500"
+              <Label>Qualification</Label>
+              <Input
                 placeholder="Enter education"
                 value={job.education}
                 onChange={(e) => setJob({ ...job, education: e.target.value })}
               />
             </div>
 
-            {/* Skills */}
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Skills
-              </label>
-              <input
-                className="border p-2 w-full bg-gray-50 rounded-md outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder="Press Enter to add skill"
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && skillInput.trim()) {
-                    setJob({
-                      ...job,
-                      skills: [...job.skills, skillInput.trim()],
-                    });
-                    setSkillInput("");
-                  }
+            {/* Department */}
+            <div>
+              <Label>Department</Label>
+              <ReactSelect
+                placeholder={skillLoading ? "Loading..." : "Select Department"}
+                options={departmentOptions}
+                value={department}
+                onChange={handleDepartmentChange}
+                isDisabled={skillLoading}
+              />
+            </div>
+          </div>
+
+          {/* Technical Skills */}
+          {department && (
+            <div className="space-y-3 mt-4">
+              <Label>Technical Skills</Label>
+              <ReactSelect
+                isMulti
+                options={skillOptions}
+                components={{ Option: CustomOption }}
+                value={technicalSkills.map((s) => ({ value: s, label: s }))}
+                onChange={handleSkillSelect}
+                onInputChange={(input, action) => {
+                  if (action.action === "input-change") setSkillInput(input);
                 }}
+                placeholder="Select or type to add new skill"
+                noOptionsMessage={() => null}
               />
 
-              <div className="flex gap-2 flex-wrap mt-2">
-                {job.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="bg-amber-100 px-2 py-1 rounded-md text-sm cursor-pointer hover:bg-amber-200"
-                    onClick={() =>
-                      setJob({
-                        ...job,
-                        skills: job.skills.filter((s) => s !== skill),
-                      })
-                    }
-                  >
-                    {skill} ✕
-                  </span>
-                ))}
-              </div>
+              {/* Add new skill */}
+              {skillInput &&
+                !suggestionList.some(
+                  (s: string) =>
+                    s.toLowerCase() === skillInput.toLowerCase()
+                ) && (
+                  <div className="flex mt-2">
+                    <Input
+                      className="w-auto h-8 max-w-32 rounded-l-full"
+                      placeholder="New skill"
+                      value={skillInput}
+                      onChange={(e) => setSkillInput(e.target.value)}
+                      onKeyDown={async (e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          await handleAddNewSuggestion();
+                        }
+                      }}
+                    />
+                    <Button
+                      className="rounded-l-none h-8 rounded-r-full"
+                      type="button"
+                      onClick={handleAddNewSuggestion}
+                      disabled={updating || !skillInput.trim() || !department}
+                    >
+                      {updating ? "Saving..." : "Update Skill"}
+                    </Button>
+                  </div>
+                )}
             </div>
+          )}
 
-            {/* Languages */}
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Languages
-              </label>
-              <div className="flex gap-2">
-                <input
-                  className="border p-2 w-full bg-gray-50 rounded-md outline-none focus:ring-2 focus:ring-teal-500"
-                  placeholder="Enter language"
-                  value={languageInput}
-                  onChange={(e) => setLanguageInput(e.target.value)}
-                />
+          {/* Job Description */}
+          <div className="col-span-2 mt-6">
+            <Label>Job Description</Label>
+            <textarea
+              className="border p-2 w-full bg-gray-50 rounded-md h-24 outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Enter job description"
+              value={job.description}
+              onChange={(e) => setJob({ ...job, description: e.target.value })}
+            />
+          </div>
 
-                <select
-                  className="border p-2 rounded-md bg-gray-50"
-                  value={selectedLevel}
-                  onChange={(e) => setSelectedLevel(e.target.value)}
-                >
-                  <option>Fluent</option>
-                  <option>Intermediate</option>
-                  <option>Beginner</option>
-                </select>
-
-                <Button
-                  onClick={() => {
-                    if (!languageInput.trim()) return;
-                    setJob({
-                      ...job,
-                      languages: [
-                        ...job.languages,
-                        {
-                          language: languageInput.trim(),
-                          level: selectedLevel,
-                        },
-                      ],
-                    });
-                    setLanguageInput("");
-                  }}
-                  className="bg-teal-500 hover:bg-teal-600"
-                >
-                  Add
-                </Button>
-              </div>
-
-              <div className="flex gap-2 flex-wrap mt-2">
-                {job.languages.map((lang) => (
-                  <span
-                    key={lang.language}
-                    className="bg-teal-100 px-2 py-1 rounded-md text-sm cursor-pointer hover:bg-teal-200"
-                    onClick={() =>
-                      setJob({
-                        ...job,
-                        languages: job.languages.filter(
-                          (l) => l.language !== lang.language
-                        ),
-                      })
-                    }
-                  >
-                    {lang.language} ({lang.level}) ✕
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Job Description
-              </label>
-              <textarea
-                className="border p-2 w-full bg-gray-50 rounded-md h-24 outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder="Enter job description"
-                value={job.description}
-                onChange={(e) => setJob({ ...job, description: e.target.value })}
-              />
-            </div>
-
-            <div className="col-span-2 flex justify-between mt-4">
-              <Button variant="outline" onClick={() => setStep(1)}>
-                Back
-              </Button>
-              <Button
-                className="bg-teal-600 hover:bg-teal-700"
-                disabled={jobLoading}
-                onClick={submitJob}
-              >
-                {jobLoading && <Loader2 className="animate-spin mr-2" />} Submit
-                Job
-              </Button>
-            </div>
+          {/* Buttons */}
+          <div className="col-span-2 flex justify-between mt-6">
+            <Button variant="outline" onClick={() => setStep(1)}>
+              Back
+            </Button>
+            <Button
+              className="bg-teal-600 hover:bg-teal-700"
+              disabled={jobLoading}
+              onClick={submitJob}
+            >
+              {jobLoading && <Loader2 className="animate-spin mr-2" />} Submit Job
+            </Button>
           </div>
         </>
       )}

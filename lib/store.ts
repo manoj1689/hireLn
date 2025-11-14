@@ -38,6 +38,7 @@ import finalMailReducer from "@/lib/slices/interview/sendInterviewResultSlice"
 import companyProfileReducer from "@/lib/slices/company/company-profile";
 import companyLocationReducer from "@/lib/slices/company/company-location";
 import settingReducer from "@/lib/slices/settings/settings-slice";
+import skillSuggestionsReducer from "@/lib/slices/skill_suggestion/skill-suggestion-slice"
 
 const rootReducer = combineReducers({
   registerStep1: registerStep1Reducer,
@@ -67,6 +68,7 @@ const rootReducer = combineReducers({
   companyProfile: companyProfileReducer,
   companyLocation: companyLocationReducer,
   setting: settingReducer,
+  skillSuggestions:skillSuggestionsReducer
 });
 
 const persistConfig = {

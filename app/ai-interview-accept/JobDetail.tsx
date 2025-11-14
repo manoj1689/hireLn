@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "next/navigation";
-import { fetchJobById } from "@/lib/slices/job/jobsList-slice";
+import { fetchInviteJobById } from "@/lib/slices/job/jobsList-slice";
 import {
   acceptApplication,
   getApplication,
@@ -39,7 +39,7 @@ export default function JobDetailsPage() {
   // Fetch job data
   useEffect(() => {
     if (jobId) {
-      dispatch(fetchJobById({ jobId, token })).then((data) => setJobData(data.payload));
+      dispatch(fetchInviteJobById({ jobId, token })).then((data) => setJobData(data.payload));
     }
   }, [jobId, dispatch]);
 
