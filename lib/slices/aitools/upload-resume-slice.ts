@@ -1,64 +1,102 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { ResumeUploadState, ResumeUploadResponseItem, ResumeUploadApiResponse } from "@/interface/ai-tools";
 import axiosApi from "@/services/api";
 
-// Initial state typed using ResumeUploadState
+export interface UploadMeta {
+  id: string;
+  name: string;
+  status: "pending" | "uploading" | "success" | "error";
+  response?: any;
+  error?: string;
+}
+
+export interface ResumeUploadState {
+  items: UploadMeta[];
+  loading: boolean;
+}
+
 const initialState: ResumeUploadState = {
-  uploaded: [],
+  items: [],
   loading: false,
-  error: null,
 };
 
-// Async thunk for uploading resumes
-export const uploadResumes = createAsyncThunk<
-  ResumeUploadApiResponse, // return type
-  File[],                     // argument type
+export const uploadResume = createAsyncThunk<
+  { filename: string; data: any },
+  File,
   { rejectValue: string }
->(
-  "uploadResumes/upload",
-  async (files, { rejectWithValue }) => {
-    try {
-      const formData = new FormData();
-      files.forEach((file) => formData.append("files", file));
+>("uploadResume/upload", async (file, { rejectWithValue }) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
 
-      const response = await axiosApi.post("/api/ai-tools/parse-resumes-upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      return response.data;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.detail || err.message || "Upload failed");
-    }
+    const response = await axiosApi.post(
+      "/api/ai-tools/parse-resume-upload",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    console.log(response);
+    return {
+      filename: file.name,
+      data: response.data,
+    };
+  } catch (err: any) {
+    console.log(err);
+    // ✅ UPDATED AS PER YOUR REQUEST
+    return rejectWithValue(err.response?.data?.message || err.message || "Upload failed");
   }
-);
+});
 
-// Slice using ResumeUploadState
 const uploadResumeSlice = createSlice({
-  name: "uploadResumes",
+  name: "uploadResume",
   initialState,
   reducers: {
-    clearUploads(state) {
-      state.uploaded = [];
-      state.error = null;
+    clearUpload(state) {
+      state.items = [];
       state.loading = false;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(uploadResumes.pending, (state) => {
+      .addCase(uploadResume.pending, (state, action) => {
+        const file = action.meta.arg;
+
+        state.items.push({
+          id: crypto.randomUUID(),
+          name: file.name,
+          status: "uploading",
+        });
+
         state.loading = true;
-        state.error = null;
       })
-      .addCase(uploadResumes.fulfilled, (state, action: PayloadAction<ResumeUploadApiResponse>) => {
+
+      .addCase(
+        uploadResume.fulfilled,
+        (state, action: PayloadAction<{ filename: string; data: any }>) => {
+          state.loading = false;
+
+          const uploaded = state.items.find(
+            (i) => i.name === action.payload.filename
+          );
+
+          if (uploaded) {
+            uploaded.status = "success";
+            uploaded.response = action.payload.data;
+          }
+        }
+      )
+
+      .addCase(uploadResume.rejected, (state, action) => {
         state.loading = false;
-        state.uploaded = action.payload.summary; 
-      })
-      .addCase(uploadResumes.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload ?? "Unknown error occurred";
+
+        const file = action.meta.arg;
+
+        const failed = state.items.find((i) => i.name === file.name);
+        if (failed) {
+          failed.status = "error";
+          failed.error = action.payload ?? "Upload failed";
+        }
       });
   },
 });
 
-export const { clearUploads } = uploadResumeSlice.actions;
+export const { clearUpload } = uploadResumeSlice.actions;
 export default uploadResumeSlice.reducer;

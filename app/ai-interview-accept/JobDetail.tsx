@@ -35,7 +35,7 @@ export default function JobDetailsPage() {
     const { applications, loading, error } = useSelector(
     (state: RootState) => state.application
   );
-
+   console.log("job_id",jobId,"token",token)
   // Fetch job data
   useEffect(() => {
     if (jobId) {

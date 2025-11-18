@@ -4,6 +4,7 @@ export interface JobStep1Request {
   jobTitle: string;
   department: string;
   location: string;
+  requiredSkills: string[]
   employmentType: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'TEMPORARY' | 'INTERN';
   salaryMin: number;
   salaryMax: number;
@@ -60,7 +61,6 @@ export interface LanguageRequirement {
 }
 
 export interface JobRequirementsRequest {
-  requiredSkills: string[]
   educationLevel: string
   certifications: string[]
   requirements:string[]

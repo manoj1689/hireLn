@@ -53,13 +53,17 @@ export default function JobStepper() {
     salaryPeriod: SalaryPeriod.yearly,
   });
 
-  const { singleCandidate } = useSelector((state: RootState) => state.candidate);
+  const { singleCandidate } = useSelector(
+    (state: RootState) => state.candidate
+  );
   const { loading: jobLoading } = useSelector(
     (state: RootState) => state.createJob
   );
-  const { departments, suggestions, loading: skillLoading } = useSelector(
-    (state: RootState) => state.skillSuggestions
-  );
+  const {
+    departments,
+    suggestions,
+    loading: skillLoading,
+  } = useSelector((state: RootState) => state.skillSuggestions);
 
   const [department, setDepartment] = useState<{
     value: string;
@@ -323,8 +327,7 @@ export default function JobStepper() {
               {/* Add new skill */}
               {skillInput &&
                 !suggestionList.some(
-                  (s: string) =>
-                    s.toLowerCase() === skillInput.toLowerCase()
+                  (s: string) => s.toLowerCase() === skillInput.toLowerCase()
                 ) && (
                   <div className="flex mt-2">
                     <Input
@@ -373,7 +376,8 @@ export default function JobStepper() {
               disabled={jobLoading}
               onClick={submitJob}
             >
-              {jobLoading && <Loader2 className="animate-spin mr-2" />} Submit Job
+              {jobLoading && <Loader2 className="animate-spin mr-2" />} Submit
+              Job
             </Button>
           </div>
         </>

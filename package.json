@@ -37,6 +37,7 @@
     "@radix-ui/react-toggle": "latest",
     "@radix-ui/react-toggle-group": "latest",
     "@radix-ui/react-tooltip": "latest",
+    "@ramonak/react-progress-bar": "^5.4.0",
     "@reduxjs/toolkit": "latest",
     "@tanstack/react-table": "^8.21.3",
     "@vladmandic/face-api": "^1.7.15",

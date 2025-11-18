@@ -37,7 +37,7 @@ export default function FirebaseLoginButton() {
       // Firebase login
       const result = await signInWithPopup(auth, provider);
       const firebaseToken = await result.user.getIdToken();
-
+      console.log("firebase token",firebaseToken)
       // Get FCM token
       const fcmToken = await requestFcmToken();
 
