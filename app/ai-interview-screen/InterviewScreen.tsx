@@ -214,6 +214,8 @@ const InterviewScreenPage = () => {
                 faceDetectionResults={faceDetectionResults}
                 setFaceDetectionResults={setFaceDetectionResults}
                 examStatus={status}
+                interviewId={interviewId}
+                token={token}
               />
             </div>
           <div>

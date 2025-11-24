@@ -34,6 +34,7 @@ import resumeuploadReducer from "@/lib/slices/aitools/upload-resume-slice"
 import fetchInterviewReducer from "@/lib/slices/interviews/fetch-interview-slice";
 import finalInterviewEvaluationReducer from "@/lib/slices/final_evaluation/final-evaluate-interview-slice";
 import interviewResultReducer from "@/lib/slices/interview_result/interview-result-slice";
+import screenshotsReducer from "@/lib/slices/screenshots/screenshotsSlice"
 import finalMailReducer from "@/lib/slices/interview/sendInterviewResultSlice"
 import companyProfileReducer from "@/lib/slices/company/company-profile";
 import companyLocationReducer from "@/lib/slices/company/company-location";
@@ -60,6 +61,7 @@ const rootReducer = combineReducers({
   getApplication: getApplicationReducer,
   joinInterview: joinInterviewReducer,
   interviewChat:interviewChatReducer,
+  screenshots:screenshotsReducer,
   fetchInterview: fetchInterviewReducer,
   finalInterviewEvaluation: finalInterviewEvaluationReducer,
   resumeUpload:resumeuploadReducer,

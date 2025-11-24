@@ -77,6 +77,7 @@
     "react-international-phone": "^4.6.0",
     "react-loader-spinner": "^6.1.6",
     "react-multi-carousel": "^2.8.6",
+    "react-paginate": "^8.3.0",
     "react-redux": "latest",
     "react-resizable-panels": "latest",
     "react-responsive-modal": "^6.4.2",

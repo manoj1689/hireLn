@@ -25,6 +25,8 @@ export default function VideoInterfacePage({
   faceDetectionResults,
   setFaceDetectionResults,
   examStatus,
+  interviewId,
+  token
 }) {
   const togglePermission = (key) => {
     setPermissions((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -78,6 +80,8 @@ export default function VideoInterfacePage({
                 onFacesDetected={handleFacesDetected}
                 enableAudio={permissions.microphone}
                 examStatus={examStatus}
+                interviewId={interviewId}
+                token={token}
               />
             </div>
 

@@ -277,6 +277,8 @@ export default function InterviewConfirmation() {
               faceDetectionResults={faceDetectionResults}
               setFaceDetectionResults={setFaceDetectionResults}
               examStatus={false}
+              interviewId={interviewId}
+              token={token}
             />
             <section className="flex flex-col max-w-4xl mx-auto  gap-4 h-auto   ">
               <div className="flex flex-col    space-y-4 justify-between items-center   px-4 ">

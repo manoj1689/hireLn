@@ -22,7 +22,7 @@ export const startInterviewChat = createAsyncThunk(
     try {
       const response = await axios.post(
         `${baseURL}/api/ai-interview/interview/start_chat`,
-        { interview_id: payload.interviewId, candidate: payload.candidate },
+        { interviewId: payload.interviewId, candidate: payload.candidate },
         {
           headers: {
             "X-Interview-Token": payload.token || "",

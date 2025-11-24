@@ -65,28 +65,29 @@ const CandidateResultPage: React.FC = () => {
       toast.success("Email sent successfully!");
     }
   }, [success]);
+useEffect(() => {
+  if (!interviewId) return;
+  dispatch(fetchResultByInterviewId(interviewId));
+}, [interviewId, dispatch]);
 
-  useEffect(() => {
-    if (interviewId) {
-      dispatch(fetchResultByInterviewId(interviewId));
+useEffect(() => {
+  if (!result || !interviewId) return;
+
+  const fetchInterviewInfo = async () => {
+    setLoadingLocal(true);
+    try {
+      const { payload } = await dispatch(getInterviewById(interviewId));
+      setInterviewInfo(payload || null);
+    } catch (err) {
+      console.error("Error fetching interview info:", err);
+    } finally {
+      setLoadingLocal(false);
     }
-  }, [interviewId, dispatch]);
+  };
 
-  useEffect(() => {
-    const fetchInterview = async () => {
-      if (!result) return;
-      setLoadingLocal(true);
-      try {
-        const res = await dispatch(getInterviewById(interviewId));
-        setInterviewInfo(res?.payload || null);
-      } catch (err) {
-        console.error("Error fetching interview info:", err);
-      } finally {
-        setLoadingLocal(false);
-      }
-    };
-    fetchInterview();
-  }, [result, dispatch]);
+  fetchInterviewInfo();
+}, [result?.interviewId, interviewId, dispatch]);
+
 
   const handleSendEmail = (interviewId: string) => {
     if (!interviewId) return;
@@ -341,7 +342,7 @@ const CandidateResultPage: React.FC = () => {
 
           {/* Tabs Navigation */}
           {result?.evaluations && (
-            <EvaluationTabs evaluations={result.evaluations} />
+            <EvaluationTabs evaluations={result.evaluations} interviewId={interviewId}/>
           )}
 
           {/* Action Panel */}

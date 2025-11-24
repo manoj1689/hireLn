@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-
+import InterviewScreenshotsPage from "../screenshots/InterviewScreenshots";
 const getColor = (rating?: string) => {
   if (!rating) return "text-muted-foreground";
 
@@ -21,7 +21,13 @@ const getColor = (rating?: string) => {
   }
 };
 
-export const EvaluationTabs = ({ evaluations }: { evaluations: any[] }) => {
+export const EvaluationTabs = ({
+  evaluations,
+  interviewId,
+}: {
+  evaluations: any[];
+  interviewId: string;
+}) => {
   const [openIndexes, setOpenIndexes] = useState<number[]>([]);
 
   const toggleIndex = (index: number) => {
@@ -189,9 +195,7 @@ export const EvaluationTabs = ({ evaluations }: { evaluations: any[] }) => {
             <CardTitle>Interview Recording</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center text-muted-foreground">
-              No recording available.
-            </div>
+          <InterviewScreenshotsPage interviewId={interviewId}/>
           </CardContent>
         </Card>
       </TabsContent>
