@@ -1,26 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Speech from "speak-tts";
 import { PiSpeakerHighFill } from "react-icons/pi";
-const speech = new Speech();
 
-// ✅ Initialize TTS once
-if (speech.hasBrowserSupport()) {
-  speech
-    .init({
-      volume: 1,
-      lang: "en-GB",
-      rate: 1,
-      pitch: 1,
-      voice: "Google UK English Male",
-      splitSentences: false,
-    })
-    .then(() => console.log("✅ TTS initialized"))
-    .catch((err: unknown) => console.error("❌ TTS init error:", err));
-}
-
-// ✅ Props interface
 interface TextSpeakerProps {
   text: string;
   trigger: boolean;
@@ -28,11 +10,11 @@ interface TextSpeakerProps {
 }
 
 const TextSpeaker: React.FC<TextSpeakerProps> = ({ text, trigger, onComplete }) => {
-  const [displayedText, setDisplayedText] = useState<string>("");
-  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
-  const hasSpokenRef = useRef<boolean>(false); // prevent double speak
+  const [displayedText, setDisplayedText] = useState("");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const hasPlayedRef = useRef(false);
 
-  const cleanText = (input: string): string => {
+  const cleanText = (input: string) => {
     if (!input) return "";
     return input
       .replace(/\\n/g, " ")
@@ -41,58 +23,61 @@ const TextSpeaker: React.FC<TextSpeakerProps> = ({ text, trigger, onComplete }) 
       .trim();
   };
 
-  const speakAndType = async (inputText: string): Promise<void> => {
-    if (!inputText || !speech.hasBrowserSupport()) return;
+  const playAudio = async (audioBuffer: ArrayBuffer) => {
+    const blob = new Blob([audioBuffer], { type: "audio/mpeg" });
+    const audio = new Audio(URL.createObjectURL(blob));
+    await audio.play();
+    return new Promise((resolve) => audio.onended = resolve);
+  };
 
-    const sentenceRegex = /[^.!?]+[.!?]?/g;
-    const sentences = inputText.match(sentenceRegex) || [];
-    setDisplayedText("");
+  const speakAndType = async (inputText: string) => {
+    if (!inputText) return;
+
     setIsSpeaking(true);
+    setDisplayedText("");
 
-    let cumulativeText = "";
+    // 1️⃣ Call Google TTS
+    const res = await fetch("/api/tts", {
+      method: "POST",
+      body: JSON.stringify({ text: inputText }),
+      headers: { "Content-Type": "application/json" },
+    });
 
-    for (let sentence of sentences) {
-      sentence = sentence.trim();
-      if (!sentence) continue;
+    const audioBuffer = await res.arrayBuffer();
 
-      // Speak the sentence
-      speech.speak({
-        text: sentence,
-        queue: true,
-        listeners: {
-          onstart: () => console.log("▶️ Speaking sentence:", sentence),
-          onend: () => console.log("✅ Finished sentence:", sentence),
-        },
-      });
+    // 2️⃣ Start typing effect while audio plays
+    playAudio(audioBuffer);
 
-      // Type sentence character by character while speaking
-      for (const char of sentence) {
-        cumulativeText += char;
-        setDisplayedText(cumulativeText);
-        await new Promise((res) => setTimeout(res, 80)); // adjust typing speed
-      }
-
-      // Small pause after each sentence
-      await new Promise((res) => setTimeout(res, 400));
+    let typed = "";
+    for (const char of inputText) {
+      typed += char;
+      setDisplayedText(typed);
+      await new Promise((r) => setTimeout(r, 80));
     }
 
     setIsSpeaking(false);
-    hasSpokenRef.current = false;
-    if (onComplete) onComplete(); // notify parent to move next
+    hasPlayedRef.current = false;
+
+    onComplete?.();
   };
 
   useEffect(() => {
-    if (trigger && text && !hasSpokenRef.current) {
-      hasSpokenRef.current = true;
+    if (trigger && text && !hasPlayedRef.current) {
+      hasPlayedRef.current = true;
       speakAndType(cleanText(text));
     }
   }, [trigger, text]);
 
   return (
     <div className="p-4">
-      <p className="text-2xl text-stone-700 leading-relaxed">{displayedText}</p>
+      <p className="text-2xl text-stone-700 leading-relaxed">
+        {displayedText}
+      </p>
+
       {isSpeaking && (
-        <p className="flex gap-4 text-sm justify-center text-blue-500 mt-2 animate-pulse"><span><PiSpeakerHighFill size={20} /> </span> Speaking...</p>
+        <p className="flex gap-4 text-sm justify-center text-blue-500 mt-2 animate-pulse">
+          <PiSpeakerHighFill size={20} /> Speaking...
+        </p>
       )}
     </div>
   );
