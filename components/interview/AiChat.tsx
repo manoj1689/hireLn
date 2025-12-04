@@ -76,7 +76,7 @@ const InterviewChatPage: React.FC<InterviewChatPageProps> = ({
       setStarted(true);
       setCurrentText(greeting);
     } catch (err) {
-      console.error("Failed to start interview:", err);
+      console.error("Fail to start interview:", err);
     }
   };
 
