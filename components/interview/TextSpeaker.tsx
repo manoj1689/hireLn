@@ -36,24 +36,32 @@ const TextSpeaker: React.FC<TextSpeakerProps> = ({ text, trigger, onComplete }) 
     setIsSpeaking(true);
     setDisplayedText("");
 
-    // 1️⃣ Call Google TTS
-    const res = await fetch("/api/tts", {
-      method: "POST",
-      body: JSON.stringify({ text: inputText }),
-      headers: { "Content-Type": "application/json" },
-    });
+    // Start typing with a small delay to sync with audio
+    const typeText = async () => {
+      // Wait for audio to start playing
+      await new Promise((r) => setTimeout(r, 200));
 
-    const audioBuffer = await res.arrayBuffer();
+      let typed = "";
+      for (const char of inputText) {
+        typed += char;
+        setDisplayedText(typed);
+        await new Promise((r) => setTimeout(r, 80));
+      }
+    };
 
-    // 2️⃣ Start typing effect while audio plays
-    playAudio(audioBuffer);
+    // Start audio fetching and playback in parallel with typing
+    const playAudioAsync = async () => {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        body: JSON.stringify({ text: inputText }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const audioBuffer = await res.arrayBuffer();
+      await playAudio(audioBuffer);
+    };
 
-    let typed = "";
-    for (const char of inputText) {
-      typed += char;
-      setDisplayedText(typed);
-      await new Promise((r) => setTimeout(r, 80));
-    }
+    // Run both in parallel
+    await Promise.all([typeText(), playAudioAsync()]);
 
     setIsSpeaking(false);
     hasPlayedRef.current = false;

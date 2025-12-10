@@ -226,6 +226,7 @@ const InterviewScreenPage = () => {
               candidateId={interview.candidateId}
               applicationId={interview.applicationId}
               job={jobData}
+              interviewDuration={interview.duration}
             />
           </div>
           <div className="max-md:hidden">

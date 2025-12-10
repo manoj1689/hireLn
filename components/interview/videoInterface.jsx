@@ -149,9 +149,9 @@ export default function VideoInterfacePage({
             )}
           </button>
 
-          <button className="w-12 h-10 rounded-2xl flex items-center justify-center shadow transition backdrop-blur bg-red-500 text-white hover:bg-red-600">
+          {/* <button className="w-12 h-10 rounded-2xl flex items-center justify-center shadow transition backdrop-blur bg-red-500 text-white hover:bg-red-600">
             <MdCallEnd size={25} />
-          </button>
+          </button> */}
 
           <button
             onClick={() => togglePermission("devToolsOpen")}

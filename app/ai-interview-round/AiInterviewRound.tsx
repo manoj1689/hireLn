@@ -1,32 +1,29 @@
-"use client"
+"use client";
 
-import React, { useEffect, useRef, useState } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import { useDispatch, useSelector } from "react-redux"
-import { AppDispatch, RootState } from "@/lib/store"
+import React, { useEffect, useRef, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/lib/store";
 
 import {
   fetchInterviewJoin,
   confirmInterview,
-} from "@/lib/slices/join_interview/interview-join-slice"
-import dayjs from "dayjs"
-import duration from "dayjs/plugin/duration"
-import utc from "dayjs/plugin/utc"
-import { ColorRing } from 'react-loader-spinner'
-import {
-  Bot,
-  Search,
-  ClipboardList,
-  FileText
-} from "lucide-react";
-import { ToastContainer, toast } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
-import { Calendar, Clock, Mail, MapPin, Video } from "lucide-react"
-import { FaMapMarkerAlt } from "react-icons/fa"
-import AuthNavbar from "@/components/auth-navbar/page"
+  cancelInterview,
+} from "@/lib/slices/join_interview/interview-join-slice";
+import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
+import utc from "dayjs/plugin/utc";
+import { ColorRing } from "react-loader-spinner";
+import { Bot, Search, ClipboardList, FileText } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Calendar, Clock, Mail, MapPin, Video } from "lucide-react";
+import { FaMapMarkerAlt } from "react-icons/fa";
+import AuthNavbar from "@/components/auth-navbar/page";
+import { Button } from "@/components/ui/button";
 
-dayjs.extend(duration)
-dayjs.extend(utc)
+dayjs.extend(duration);
+dayjs.extend(utc);
 const InterviewInfoPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -34,23 +31,19 @@ const InterviewInfoPage = () => {
   const token = searchParams.get("token") || "";
   const dispatch = useDispatch<AppDispatch>();
 
-  const { interview, loading,confirmationMessage, error, status } = useSelector(
-    (state: RootState) => state.joinInterview
-  );
+  const { interview, loading, confirmationMessage, error, status } =
+    useSelector((state: RootState) => state.joinInterview);
 
   const [remainingTime, setRemainingTime] = useState("");
   const [canJoin, setCanJoin] = useState(true);
   const [responseMsg, setResponseMsg] = useState("");
   const [confirming, setConfirming] = useState(false);
 
-
   // ✅ Prevent multiple fetches in Strict Mode
   const fetched = useRef(false);
 
   // ---- 1️⃣ Fetch interview data ----
   useEffect(() => {
-   
-
     if (fetched.current) return;
     fetched.current = true;
 
@@ -62,7 +55,6 @@ const InterviewInfoPage = () => {
   // ---- 2️⃣ Start timer only after interview is fetched ----
   useEffect(() => {
     if (!interview?.scheduledAt) return;
-   
 
     const interval = setInterval(() => {
       const now = dayjs();
@@ -93,13 +85,11 @@ const InterviewInfoPage = () => {
   // ---- 3️⃣ Redirect only after confirmed and interview exists ----
   useEffect(() => {
     if (status === "CONFIRMED" && interview?.id) {
-    
       router.push(
         `/ai-interview-test?interview_id=${interview.id}&token=${token}`
       );
     }
   }, [status, interview?.id, router, token]);
-
 
   const handleConfirmInterview = () => {
     if (interview?.id) {
@@ -113,7 +103,17 @@ const InterviewInfoPage = () => {
       );
     }
   };
-
+  const handleCancelInterview = () => {
+    if (interview?.id) {
+      dispatch(
+        cancelInterview({
+          interviewId: interview.id,
+          token,
+        })
+      );
+    }
+    router.push("/");
+  };
   // ---- Render states ----
   if (loading || confirming) {
     return (
@@ -127,13 +127,7 @@ const InterviewInfoPage = () => {
               ariaLabel="color-ring-loading"
               wrapperStyle={{}}
               wrapperClass="color-ring-wrapper"
-              colors={[
-                "#e15b64",
-                "#f47e60",
-                "#f8b26a",
-                "#abbd81",
-                "#849b87",
-              ]}
+              colors={["#e15b64", "#f47e60", "#f8b26a", "#abbd81", "#849b87"]}
             />
           </div>
           <div className="flex justify-center text-lg lg:text-2xl font-semibold text-stone-600">
@@ -162,20 +156,25 @@ const InterviewInfoPage = () => {
             <div className="flex flex-col w-full bg-primary-gradient rounded-t-lg py-4 justify-center items-center">
               <div className="flex flex-col items-center">
                 <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-3xl font-semibold text-stone-600">
-                  {interview.candidateName.split(" ").map((n) => n[0]).join("").toUpperCase()}
+                  {interview.candidateName
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()}
                 </div>
-                <h1 className="text-xl sm:text-2xl font-bold text-white">{interview.candidateName}</h1>
-
-
-
-
+                <h1 className="text-xl sm:text-2xl font-bold text-white">
+                  {interview.candidateName}
+                </h1>
               </div>
             </div>
 
             <div className="p-4 space-y-4 ">
               {/* Contact Info */}
               <div className="flex flex-col gap-4 w-full ">
-                <a href={`mailto:${interview.candidateEmail}`} className="block">
+                <a
+                  href={`mailto:${interview.candidateEmail}`}
+                  className="block"
+                >
                   <div className="flex items-center gap-2 text-gray-800 break-all">
                     <Mail className="text-sky-500 w-4 h-4" />
                     <span className="text-sm">{interview.candidateEmail}</span>
@@ -191,26 +190,35 @@ const InterviewInfoPage = () => {
               </div>
               <div className="">
                 {/* Education */}
-                {Array.isArray(interview.candidateEducation) && interview.candidateEducation.length > 0 && (
-                  <div className="bg-slate-100 p-4 rounded-xl border  border-gray-100 shadow-sm">
-                    <h3 className="text-blue-500 font-semibold ">Education</h3>
+                {Array.isArray(interview.candidateEducation) &&
+                  interview.candidateEducation.length > 0 && (
+                    <div className="bg-slate-100 p-4 rounded-xl border  border-gray-100 shadow-sm">
+                      <h3 className="text-blue-500 font-semibold ">
+                        Education
+                      </h3>
 
-                    {interview.candidateEducation.map((edu, index) => (
-                      <div
-                        key={index}
-                        className="flex flex-col  items-start lg:items-center gap-4 "
-                      >
-                        {/* Left: Degree + Institution + Location */}
-                        <div className="flex flex-col">
-                          <p className="text-base font-semibold text-gray-900">{edu.degree}</p>
-                          <p className="text-base font-medium text-gray-500">{edu.institution}</p>
-                          {edu.location && (
-                            <p className="text-sm text-gray-500 text-left">{edu.location}</p>
-                          )}
-                        </div>
+                      {interview.candidateEducation.map((edu, index) => (
+                        <div
+                          key={index}
+                          className="flex flex-col  items-start lg:items-center gap-4 "
+                        >
+                          {/* Left: Degree + Institution + Location */}
+                          <div className="flex flex-col">
+                            <p className="text-base font-semibold text-gray-900">
+                              {edu.degree}
+                            </p>
+                            <p className="text-base font-medium text-gray-500">
+                              {edu.institution}
+                            </p>
+                            {edu.location && (
+                              <p className="text-sm text-gray-500 text-left">
+                                {edu.location}
+                              </p>
+                            )}
+                          </div>
 
-                        {/* Right: Dates & Grade */}
-                        {/* <div className="flex flex-col items-start text-left lg:items-end text-sm text-pink-600">
+                          {/* Right: Dates & Grade */}
+                          {/* <div className="flex flex-col items-start text-left lg:items-end text-sm text-pink-600">
                           {(edu.start_date || edu.end_date) && (
                             <span>
                               {edu.start_date} - {edu.end_date || "Present"}
@@ -218,112 +226,145 @@ const InterviewInfoPage = () => {
                           )}
 
                         </div> */}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
               {/* Skills */}
               <div className=" space-y-2">
                 <span className="font-semibold text-[#3B82F6]">Skills</span>
                 {/* Candidate Skills */}
-                {Array.isArray(interview.candidateSkills) && interview.candidateSkills.length > 0 && (
-
-                  <div className="flex flex-wrap gap-2">
-                    {interview.candidateSkills.map((skill: string, idx: number) => {
-                      const hue = 180 + (idx * 40) % 360;
-                      return (
-                        <span
-                          key={idx}
-                          className="px-3 py-1 rounded-full text-xs font-medium"
-                          style={{
-                            background: `hsl(${hue}, 80%, 85%)`,
-                            color: `hsl(${hue}, 60%, 35%)`,
-                            border: `1px solid hsl(${hue}, 60%, 70%)`,
-                          }}
-                        >
-                          {skill.trim()}
-                        </span>
-                      );
-                    })}
-                  </div>
-
-                )}
+                {Array.isArray(interview.candidateSkills) &&
+                  interview.candidateSkills.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {interview.candidateSkills.map(
+                        (skill: string, idx: number) => {
+                          const hue = 180 + ((idx * 40) % 360);
+                          return (
+                            <span
+                              key={idx}
+                              className="px-3 py-1 rounded-full text-xs font-medium"
+                              style={{
+                                background: `hsl(${hue}, 80%, 85%)`,
+                                color: `hsl(${hue}, 60%, 35%)`,
+                                border: `1px solid hsl(${hue}, 60%, 70%)`,
+                              }}
+                            >
+                              {skill.trim()}
+                            </span>
+                          );
+                        }
+                      )}
+                    </div>
+                  )}
               </div>
-
 
               {/* Experience */}
               <div className="flex flex-col space-y-2">
+                {Array.isArray(interview.candidateExperience) &&
+                  interview.candidateExperience.length > 0 && (
+                    <div className="bg-slate-100 p-4 rounded-xl border border-gray-100 shadow-sm">
+                      <h3 className="text-blue-500 font-semibold ">
+                        Experience
+                      </h3>
 
+                      {interview.candidateExperience.map((exp, index) => (
+                        <div
+                          key={index}
+                          className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b last:border-b-0 pb-4 mb-4 last:pb-0 last:mb-0"
+                        >
+                          {/* Left: Job Title + Company + Location */}
+                          <div className="flex flex-col">
+                            <p className="text-base font-semibold text-gray-900">
+                              {exp.jobTitle}
+                            </p>
+                            <p className="text-base font-medium text-gray-500">
+                              {exp.company}
+                            </p>
+                            {exp.location && (
+                              <p className="text-sm text-gray-500">
+                                {exp.location}
+                              </p>
+                            )}
+                          </div>
 
-                {Array.isArray(interview.candidateExperience) && interview.candidateExperience.length > 0 && (
-                  <div className="bg-slate-100 p-4 rounded-xl border border-gray-100 shadow-sm">
-                    <h3 className="text-blue-500 font-semibold ">Experience</h3>
-
-                    {interview.candidateExperience.map((exp, index) => (
-                      <div
-                        key={index}
-                        className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b last:border-b-0 pb-4 mb-4 last:pb-0 last:mb-0"
-                      >
-                        {/* Left: Job Title + Company + Location */}
-                        <div className="flex flex-col">
-                          <p className="text-base font-semibold text-gray-900">{exp.jobTitle}</p>
-                          <p className="text-base font-medium text-gray-500">{exp.company}</p>
-                          {exp.location && (
-                            <p className="text-sm text-gray-500">{exp.location}</p>
-                          )}
+                          {/* Right: Dates & Description */}
+                          <div className="flex flex-col items-start lg:items-end text-sm text-gray-600">
+                            {(exp.start_date || exp.end_date) && (
+                              <span>
+                                {exp.start_date} - {exp.end_date || "Present"}
+                              </span>
+                            )}
+                            {exp.description && (
+                              <span className="mt-1 text-gray-600 max-w-xs text-sm">
+                                {exp.description}
+                              </span>
+                            )}
+                          </div>
                         </div>
-
-                        {/* Right: Dates & Description */}
-                        <div className="flex flex-col items-start lg:items-end text-sm text-gray-600">
-                          {(exp.start_date || exp.end_date) && (
-                            <span>
-                              {exp.start_date} - {exp.end_date || "Present"}
-                            </span>
-                          )}
-                          {exp.description && (
-                            <span className="mt-1 text-gray-600 max-w-xs text-sm">
-                              {exp.description}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
 
                 {/* <span className="text-sm font-normal text-stone-500">{interview.candidateExperience}</span> */}
               </div>
               {/* Notes */}
               {interview.notes && (
                 <>
-                  <h4 className="text-md font-semibold text-gray-800 my-2">Notes</h4>
+                  <h4 className="text-md font-semibold text-gray-800 my-2">
+                    Notes
+                  </h4>
                   <div className="bg-orange-100 p-4 rounded-lg shadow-sm border-2 border-orange-200 border-dashed">
-                    <p className="text-sm text-orange-700 leading-relaxed">{interview.notes}</p>
+                    <p className="text-sm text-orange-700 leading-relaxed">
+                      {interview.notes}
+                    </p>
                   </div>
                 </>
               )}
               {/* Candidate Links */}
               <div className="flex gap-4 justify-around px-4 py-8">
                 {interview.candidateGitHub && (
-                  <a href={interview.candidateGitHub} target="_blank" rel="noopener noreferrer">
-                    <img src="/images/candidate/github.png" alt="GitHub" className="w-12" />
+                  <a
+                    href={interview.candidateGitHub}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src="/images/candidate/github.png"
+                      alt="GitHub"
+                      className="w-12"
+                    />
                   </a>
                 )}
                 {interview.candidateLinkedIn && (
-                  <a href={interview.candidateLinkedIn} target="_blank" rel="noopener noreferrer">
-                    <img src="/images/candidate/linkedin.png" alt="LinkedIn" className="w-12" />
+                  <a
+                    href={interview.candidateLinkedIn}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src="/images/candidate/linkedin.png"
+                      alt="LinkedIn"
+                      className="w-12"
+                    />
                   </a>
                 )}
                 {interview.candidateResume && (
-                  <a href={interview.candidateResume} target="_blank" rel="noopener noreferrer">
-                    <img src="/images/candidate/download.png" alt="Download" className="w-12" />
+                  <a
+                    href={interview.candidateResume}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src="/images/candidate/download.png"
+                      alt="Download"
+                      className="w-12"
+                    />
                   </a>
                 )}
-
               </div>
             </div>
-
           </div>
         </div>
 
@@ -331,51 +372,63 @@ const InterviewInfoPage = () => {
           {/* Interview Info Block */}
           <div className="flex flex-col lg:flex-row bg-white p-4 rounded-xl shadow-sm border border-gray-200 gap-4 justify-between items-center">
             <div className="w-full lg:w-2/3 xl:w-1/2">
-              <h3 className="text-neutral-700 font-bold text-2xl">{interview.jobTitle}</h3>
-              <p className="text-sm text-sky-400 italic  ">{interview.jobEducation}</p>
-              <p className="text-lg text-gray-500 ">{interview.jobDepartment}</p>
+              <h3 className="text-neutral-700 font-bold text-2xl">
+                {interview.jobTitle}
+              </h3>
+              <p className="text-sm text-sky-400 italic  ">
+                {interview.jobEducation}
+              </p>
+              <p className="text-lg text-gray-500 ">
+                {interview.jobDepartment}
+              </p>
             </div>
 
             <div className="space-y-1 gap-4 text-sm w-full lg:w-1/3 xl:w-1/2 text-end">
               {interview.status && (
                 <div className="flex justify-end">
-                  <span className="font-medium bg-rose-400 px-2 py-1 rounded-full text-white text-sm">{interview.status}</span>
+                  <span className="font-medium bg-rose-400 px-2 py-1 rounded-full text-white text-sm">
+                    {interview.status}
+                  </span>
                 </div>
               )}
-
             </div>
           </div>
           {/* Skills & Languages */}
-          <div >
+          <div>
             {/* Job Skills */}
-            {Array.isArray(interview.jobSkills) && interview.jobSkills.length > 0 && (
-              <div className="w-full my-4 ">
-                <h4 className="text-md font-semibold text-gray-800 mb-2">Job Skills</h4>
-                <div className="flex flex-row gap-2">
-                  {interview.jobSkills.map((skill: string, index: number) => (
-                    <span
-                      key={index}
-                      className="px-4 py-0.5 rounded-lg text-white text-sm font-medium bg-emerald-400"
-                    >
-                      {skill.trim()}
-                    </span>
-                  ))}
+            {Array.isArray(interview.jobSkills) &&
+              interview.jobSkills.length > 0 && (
+                <div className="w-full my-4 ">
+                  <h4 className="text-md font-semibold text-gray-800 mb-2">
+                    Job Skills
+                  </h4>
+                  <div className="flex flex-row gap-2">
+                    {interview.jobSkills.map((skill: string, index: number) => (
+                      <span
+                        key={index}
+                        className="px-4 py-0.5 rounded-lg text-white text-sm font-medium bg-emerald-400"
+                      >
+                        {skill.trim()}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-
-
+              )}
           </div>
           {/* Interview Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {/* Type */}
             <div className="bg-red-100 rounded-xl py-4">
               <div className="flex justify-start">
-                <span className="text-sm font-semibold bg-red-400 text-white px-2 py-1 rounded-r-lg mb-2">Type</span>
+                <span className="text-sm font-semibold bg-red-400 text-white px-2 py-1 rounded-r-lg mb-2">
+                  Type
+                </span>
               </div>
               <div className="px-4 flex flex-col items-center justify-center text-center">
                 <Video className="w-10 h-10 text-red-400 mb-2" />
-                <p className="text-sm text-stone-400 capitalize">Interview Mode</p>
+                <p className="text-sm text-stone-400 capitalize">
+                  Interview Mode
+                </p>
                 <p className="text-lg font-semibold text-stone-500 capitalize">
                   {interview.interviewType || "N/A"}
                 </p>
@@ -385,36 +438,48 @@ const InterviewInfoPage = () => {
             {/* Status */}
             <div className="bg-green-100 rounded-xl py-4">
               <div className="flex justify-start">
-                <span className="text-sm font-semibold bg-green-400 text-white px-2 py-1 rounded-r-lg mb-2">Status</span>
+                <span className="text-sm font-semibold bg-green-400 text-white px-2 py-1 rounded-r-lg mb-2">
+                  Status
+                </span>
               </div>
               <div className="px-4 flex flex-col items-center justify-center text-center">
                 <Calendar className="w-10 h-10 text-green-400 mb-2" />
                 <p className="text-sm text-stone-400">Interview Status</p>
-                <p className="text-lg font-semibold text-stone-500 capitalize">{interview.status}</p>
+                <p className="text-lg font-semibold text-stone-500 capitalize">
+                  {interview.status}
+                </p>
               </div>
             </div>
 
             {/* Duration */}
             <div className="bg-blue-100 rounded-xl py-4">
               <div className="flex justify-start">
-                <span className="text-sm font-semibold bg-blue-400 text-white px-2 py-1 rounded-r-lg mb-2">Duration</span>
+                <span className="text-sm font-semibold bg-blue-400 text-white px-2 py-1 rounded-r-lg mb-2">
+                  Duration
+                </span>
               </div>
               <div className="px-4 flex flex-col items-center justify-center text-center">
                 <Clock className="w-10 h-10 text-blue-400 mb-2" />
                 <p className="text-sm text-stone-400">Duration (minutes)</p>
-                <p className="text-lg font-semibold text-stone-500">{interview.duration || "N/A"}</p>
+                <p className="text-lg font-semibold text-stone-500">
+                  {interview.duration || "N/A"}
+                </p>
               </div>
             </div>
 
             {/* Department */}
             <div className="bg-orange-100 rounded-xl py-4">
               <div className="flex justify-start">
-                <span className="text-sm font-semibold bg-orange-400 text-white px-2 py-1 rounded-r-lg mb-2">Location</span>
+                <span className="text-sm font-semibold bg-orange-400 text-white px-2 py-1 rounded-r-lg mb-2">
+                  Location
+                </span>
               </div>
               <div className="px-4 flex flex-col items-center justify-center text-center">
                 <FaMapMarkerAlt className="w-10 h-10 text-orange-400 mb-2" />
                 <p className="text-sm text-stone-400">Job Location</p>
-                <p className="text-lg font-semibold text-stone-500">{interview.location || "N/A"}</p>
+                <p className="text-lg font-semibold text-stone-500">
+                  {interview.location || "N/A"}
+                </p>
               </div>
             </div>
           </div>
@@ -441,67 +506,92 @@ const InterviewInfoPage = () => {
           </div>
         )} */}
 
-          <h4 className="text-lg font-semibold text-gray-800 my-4">Interviewer Panel</h4>
-          {Array.isArray(interview.interviewers) && interview.interviewers.length > 0 && (
-            <div className="bg-slate-200 p-4 rounded-xl border border-gray-200 shadow-sm ">
+          <h4 className="text-lg font-semibold text-gray-800 my-4">
+            Interviewer Panel
+          </h4>
+          {Array.isArray(interview.interviewers) &&
+            interview.interviewers.length > 0 && (
+              <div className="bg-slate-200 p-4 rounded-xl border border-gray-200 shadow-sm ">
+                {interview.interviewers.map((person: any, index: number) => (
+                  <div
+                    key={index}
+                    className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4"
+                  >
+                    {/* Left: Avatar + Name + Role + Tags */}
+                    <div className="flex items-start gap-4">
+                      {/* Avatar */}
+                      <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white">
+                        {person.avatar ? (
+                          <img
+                            src={person.avatar}
+                            alt={person.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-xl">
+                            <img
+                              src="./images/Avatar/MaleUsAi.jpeg"
+                              alt={person.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
 
-              {interview.interviewers.map((person: any, index: number) => (
-                <div key={index} className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                  {/* Left: Avatar + Name + Role + Tags */}
-                  <div className="flex items-start gap-4">
-                    {/* Avatar */}
-                    <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white">
-                      {person.avatar ? (
-                        <img src={person.avatar} alt={person.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-xl">
-                          <img src="./images/Avatar/MaleUsAi.jpeg" alt={person.name} className="w-full h-full object-cover" />
+                      {/* Info */}
+                      <div>
+                        <p className="text-base font-semibold text-gray-900">
+                          {person.name}
+                        </p>
+                        <p className="text-base font-medium text-gray-500 flex items-center gap-1">
+                          {" "}
+                          <Mail className="w-4 h-4 text-sky-500" />{" "}
+                          {person.email}
+                        </p>
+                        <p className="text-sm text-gray-500 flex items-center gap-1">
+                          <Bot className="w-4 h-4 text-sky-500" />
+                          {person.role || "Virtual Assistant"}
+                        </p>
+
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {person.tags?.map((tag: string, i: number) => (
+                            <span
+                              key={i}
+                              className={`text-xs font-medium px-2 py-1 rounded-full ${
+                                i === 0
+                                  ? "bg-rose-100 text-rose-600"
+                                  : i === 1
+                                  ? "bg-blue-100 text-blue-600"
+                                  : "bg-purple-100 text-purple-600"
+                              }`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
                         </div>
-                      )}
+                      </div>
                     </div>
 
-                    {/* Info */}
-                    <div>
-                      <p className="text-base font-semibold text-gray-900">{person.name}</p>
-                      <p className="text-base font-medium text-gray-500 flex items-center gap-1">  <Mail className="w-4 h-4 text-sky-500" /> {person.email}</p>
-                      <p className="text-sm text-gray-500 flex items-center gap-1">
-                        <Bot className="w-4 h-4 text-sky-500" />
-                        {person.role || "Virtual Assistant"}
-                      </p>
-
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {person.tags?.map((tag: string, i: number) => (
-                          <span
-                            key={i}
-                            className={`text-xs font-medium px-2 py-1 rounded-full ${i === 0 ? "bg-rose-100 text-rose-600" :
-                              i === 1 ? "bg-blue-100 text-blue-600" :
-                                "bg-purple-100 text-purple-600"
-                              }`}
-                          >
-                            {tag}
-                          </span>
-                        ))}
+                    {/* Right: Features */}
+                    <div className="flex flex-col gap-2 text-sm text-gray-700">
+                      <div className="flex items-center gap-2 text-sky-900 font-medium">
+                        <Search className="w-4 h-4 text-sky-500" /> Automated
+                        Q&A
+                      </div>
+                      <div className="flex items-center gap-2 text-sky-900 font-medium">
+                        <ClipboardList className="w-4 h-4 text-sky-500" />{" "}
+                        Tailored based on job profile
+                      </div>
+                      <div className="flex items-center gap-2 text-sky-900 font-medium">
+                        <FileText className="w-4 h-4 text-sky-500" /> Real-time
+                        evaluation
                       </div>
                     </div>
                   </div>
-
-                  {/* Right: Features */}
-                  <div className="flex flex-col gap-2 text-sm text-gray-700">
-                    <div className="flex items-center gap-2 text-sky-900 font-medium">
-                      <Search className="w-4 h-4 text-sky-500" /> Automated Q&A
-                    </div>
-                    <div className="flex items-center gap-2 text-sky-900 font-medium">
-                      <ClipboardList className="w-4 h-4 text-sky-500" /> Tailored based on job profile
-                    </div>
-                    <div className="flex items-center gap-2 text-sky-900 font-medium">
-                      <FileText className="w-4 h-4 text-sky-500" /> Real-time evaluation
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
 
           <div className="my-4">
             <div className="flex flex-col text-center pb-4">
@@ -509,9 +599,10 @@ const InterviewInfoPage = () => {
                 <Clock className="w-4 h-4 text-sky-500" />
                 <span>Time Left</span>
               </div>
-              <span className="text-slate-600 font-bold text-3xl">{remainingTime}</span>
+              <span className="text-slate-600 font-bold text-3xl">
+                {remainingTime}
+              </span>
             </div>
-
 
             {/* CTA Buttons */}
             {status === "JOINED" && canJoin && (
@@ -523,28 +614,36 @@ const InterviewInfoPage = () => {
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none resize-none"
                   rows={4}
                 />
-                <div className="flex w-full justify-center mt-4 ">
-
+                <div className="flex flex-col md:flex-row w-full justify-center mt-6 gap-4">
+                  {/* Confirm Button */}
                   <button
-                    className="px-12 bg-primary-gradient text-white py-3 rounded-xl font-semibold hover:scale-105 transition-all"
+                    className="px-10 py-3 rounded-xl text-white font-medium 
+               bg-gradient-to-r from-sky-300 to-sky-400 
+               hover:from-sky-500 hover:to-sky-600 
+               shadow-md hover:shadow-lg transition-all duration-300"
                     onClick={handleConfirmInterview}
                   >
                     Confirm Interview
                   </button>
-                </div>
 
+                  {/* Cancel Button */}
+                  <button
+                    className="px-10 py-3 rounded-xl font-medium 
+               bg-white text-red-600 border border-red-300 
+               hover:bg-red-50 hover:border-red-400 
+               shadow-sm hover:shadow-md transition-all duration-300"
+                    onClick={handleCancelInterview}
+                  >
+                    Cancel Interview
+                  </button>
+                </div>
               </>
             )}
           </div>
         </div>
-
-
-
       </div>
-
     </>
+  );
+};
 
-  )
-}
-
-export default InterviewInfoPage
+export default InterviewInfoPage;

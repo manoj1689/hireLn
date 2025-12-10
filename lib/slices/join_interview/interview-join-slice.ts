@@ -1,9 +1,8 @@
-import { InterviewJoinState } from '@/interface/join-interview'
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { InterviewJoinState } from "@/interface/join-interview";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-import axios from 'axios'
-
+import axios from "axios";
 
 const initialState: InterviewJoinState = {
   loading: false,
@@ -12,27 +11,24 @@ const initialState: InterviewJoinState = {
   confirmationMessage: null,
   redirectUrl: null,
   status: null,
-}
+};
 
 // ✅ Fetch interview data using GET and header token
 export const fetchInterviewJoin = createAsyncThunk(
-  'interviewJoin/fetch',
+  "interviewJoin/fetch",
   async (
     { interviewId, token }: { interviewId: string; token?: string },
     thunkAPI
   ) => {
     try {
-      const response = await axios.get(
-        `${baseURL}/api/interview-join/join`,
-        {
-          params: {
-            interview_id: interviewId, // send as query param
-          },
-          headers: {
-            "X-Interview-Token": token || "",
-          },
-        }
-      );
+      const response = await axios.get(`${baseURL}/api/interview-join/join`, {
+        params: {
+          interview_id: interviewId, // send as query param
+        },
+        headers: {
+          "X-Interview-Token": token || "",
+        },
+      });
 
       console.log("response of interview join", response.data);
 
@@ -44,16 +40,15 @@ export const fetchInterviewJoin = createAsyncThunk(
       };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.detail || 'Failed to fetch interview'
+        error.response?.data?.detail || "Failed to fetch interview"
       );
     }
   }
 );
 
-
 // ✅ Confirm interview attendance
 export const confirmInterview = createAsyncThunk(
-  'interviewJoin/confirm',
+  "interviewJoin/confirm",
   async (
     {
       interviewId,
@@ -64,7 +59,9 @@ export const confirmInterview = createAsyncThunk(
   ) => {
     try {
       const url = `${baseURL}/api/interview-join/confirm/${interviewId}?confirmed=true${
-        responseMessage ? `&response_message=${encodeURIComponent(responseMessage)}` : ''
+        responseMessage
+          ? `&response_message=${encodeURIComponent(responseMessage)}`
+          : ""
       }`;
 
       const response = await axios.post(url, null, {
@@ -79,7 +76,7 @@ export const confirmInterview = createAsyncThunk(
       };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.detail || 'Failed to confirm interview'
+        error.response?.data?.detail || "Failed to confirm interview"
       );
     }
   }
@@ -87,7 +84,7 @@ export const confirmInterview = createAsyncThunk(
 
 // ✅ Start Interview
 export const startInterview = createAsyncThunk(
-  'interviewJoin/start',
+  "interviewJoin/start",
   async (
     { interviewId, token }: { interviewId: string; token?: string },
     thunkAPI
@@ -104,20 +101,48 @@ export const startInterview = createAsyncThunk(
       return {
         message: response.data.message,
         status: response.data.status,
-        interview: response.data.interview
+        interview: response.data.interview,
       };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.detail || 'Failed to start interview'
+        error.response?.data?.detail || "Failed to start interview"
       );
     }
   }
 );
 
+// ❌ Cancel Interview
+export const cancelInterview = createAsyncThunk(
+  "interviewJoin/cancel",
+  async (
+    { interviewId, token }: { interviewId: string; token?: string },
+    thunkAPI
+  ) => {
+    try {
+      const url = `${baseURL}/api/interview-join/${interviewId}/cancel`;
+
+      const response = await axios.put(url, null, {
+        headers: {
+          "X-Interview-Token": token || "",
+        },
+      });
+
+      return {
+        message: response.data.message,
+        status: response.data.status,
+        interview: response.data.interview,
+      };
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.detail || "Failed to cancel interview"
+      );
+    }
+  }
+);
 
 // ✅ Complete Interview
 export const completeInterview = createAsyncThunk(
-  'interviewJoin/complete',
+  "interviewJoin/complete",
   async (
     { interviewId, token }: { interviewId: string; token?: string },
     thunkAPI
@@ -138,93 +163,110 @@ export const completeInterview = createAsyncThunk(
       };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.detail || 'Failed to complete interview'
+        error.response?.data?.detail || "Failed to complete interview"
       );
     }
   }
 );
 
-
 const interviewJoinSlice = createSlice({
-  name: 'interviewJoin',
+  name: "interviewJoin",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
       // 🔹 fetchInterviewJoin
       .addCase(fetchInterviewJoin.pending, (state) => {
-        state.loading = true
-        state.error = null
+        state.loading = true;
+        state.error = null;
       })
       .addCase(fetchInterviewJoin.fulfilled, (state, action) => {
-        state.loading = false
-        state.interview = action.payload.interview
-        state.confirmationMessage = action.payload.message
-        state.redirectUrl = action.payload.redirectUrl
-        state.status = action.payload.status
+        state.loading = false;
+        state.interview = action.payload.interview;
+        state.confirmationMessage = action.payload.message;
+        state.redirectUrl = action.payload.redirectUrl;
+        state.status = action.payload.status;
       })
       .addCase(fetchInterviewJoin.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
+        state.loading = false;
+        state.error = action.payload as string;
       })
 
       // 🔹 confirmInterview
       .addCase(confirmInterview.pending, (state) => {
-        state.loading = true
-        state.error = null
-        state.confirmationMessage = null
+        state.loading = true;
+        state.error = null;
+        state.confirmationMessage = null;
       })
       .addCase(confirmInterview.fulfilled, (state, action) => {
-        state.loading = false
-        state.confirmationMessage = action.payload.message
-        state.status = action.payload.status
+        state.loading = false;
+        state.confirmationMessage = action.payload.message;
+        state.status = action.payload.status;
         if (state.interview) {
-          state.interview.status = action.payload.status
+          state.interview.status = action.payload.status;
         }
       })
       .addCase(confirmInterview.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
+        state.loading = false;
+        state.error = action.payload as string;
       })
 
       // 🔹 startInterview
       .addCase(startInterview.pending, (state) => {
-        state.loading = true
-        state.error = null
+        state.loading = true;
+        state.error = null;
       })
       .addCase(startInterview.fulfilled, (state, action) => {
-        state.loading = false
-        state.confirmationMessage = action.payload.message
-        state.status = action.payload.status
-        
+        state.loading = false;
+        state.confirmationMessage = action.payload.message;
+        state.status = action.payload.status;
+
         if (state.interview) {
-          state.interview.status = action.payload.status
+          state.interview.status = action.payload.status;
         }
       })
 
       .addCase(startInterview.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // 🔹 cancelInterview
+      .addCase(cancelInterview.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(cancelInterview.fulfilled, (state, action) => {
+        state.loading = false;
+        state.confirmationMessage = action.payload.message;
+        state.status = action.payload.status;
+
+        if (state.interview) {
+          state.interview.status = action.payload.status;
+        }
+      })
+      .addCase(cancelInterview.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       })
 
       // 🔹 completeInterview
       .addCase(completeInterview.pending, (state) => {
-        state.loading = true
-        state.error = null
+        state.loading = true;
+        state.error = null;
       })
       .addCase(completeInterview.fulfilled, (state, action) => {
-        state.loading = false
-        state.confirmationMessage = action.payload.message
-        state.status = action.payload.status
+        state.loading = false;
+        state.confirmationMessage = action.payload.message;
+        state.status = action.payload.status;
         if (state.interview) {
-          state.interview.status = action.payload.status
+          state.interview.status = action.payload.status;
         }
       })
       .addCase(completeInterview.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
-      })
+        state.loading = false;
+        state.error = action.payload as string;
+      });
   },
-})
+});
 
-export default interviewJoinSlice.reducer
+export default interviewJoinSlice.reducer;

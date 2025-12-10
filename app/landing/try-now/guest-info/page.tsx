@@ -14,7 +14,7 @@ import { postApplication } from "@/lib/slices/applicant/application-slice";
 import { scheduleInterview } from "@/lib/slices/interview/scheduleInterviewSlice";
 import { logout } from "@/lib/slices/auth-slice";
 import { Loader2, Briefcase, User, Clock } from "lucide-react";
-import { FaSignOutAlt } from "react-icons/fa";
+import { FaArrowLeft, FaSignOutAlt } from "react-icons/fa";
 
 const GuestInfo: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -86,7 +86,7 @@ ${candidateData?.name}`,
         type: "VIDEO",
         scheduledDate: currentDate,
         scheduledTime: currentTime,
-        duration: 30,
+        duration: 3,
         timezone: "Asia/Kolkata",
         location: "Online",
         notes: "Guest interview",
@@ -119,9 +119,9 @@ ${candidateData?.name}`,
     );
   }
   const handleLogout = () => {
-    dispatch(logout())
-    router.push("/")
-  }
+    dispatch(logout());
+    router.push("/");
+  };
   return (
     <div>
       {/* Header */}
@@ -134,7 +134,10 @@ ${candidateData?.name}`,
           />
         </div>
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 text-gray-500 hover:scale-105 transition-all" onClick={handleLogout}>
+          <button
+            className="flex items-center gap-2 text-gray-500 hover:scale-105 transition-all"
+            onClick={handleLogout}
+          >
             <FaSignOutAlt size={25} className="text-gray-500" />
             <span>Logout</span>
           </button>
@@ -142,8 +145,16 @@ ${candidateData?.name}`,
       </header>
 
       {/* Content */}
-      <main>
+      <main className="container mx-auto px-4">
         <div className="max-w-5xl mx-auto p-6 text-center">
+          <div>
+            <button
+              onClick={() => router.push("/")}
+              className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:underline "
+            >
+              <FaArrowLeft /> Back
+            </button>
+          </div>
           <h2 className="text-4xl lg:text-5xl font-bold mb-2 bg-gradient-to-r from-pink-400 to-sky-400 text-transparent bg-clip-text">
             Welcome to Your Interview!
           </h2>

@@ -24,7 +24,7 @@ function Navbar() {
         className={`flex fixed w-full py-4 transition-all duration-300 z-50 ${
           scrolled
             ? "bg-gradient-to-r from-[#63A7D4] to-[#F295BE] shadow-md"
-            : "bg-gradient-to-r from-[#63A7D4] to-[#F295BE]"
+            : "bg-white  shadow-md"
         }`}
       >
         <div className="flex container mx-auto justify-between items-center px-4">
@@ -39,14 +39,16 @@ function Navbar() {
           </div>
 
           {/* Right: Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-6">
-            <button className="text-white text-sm font-medium hover:underline">
+          <div className={`hidden lg:flex items-center gap-6 ${scrolled
+            ? "text-white"
+            : "text-gray-500 "}`}>
+            <button className="text-sm font-medium hover:underline">
               Support
             </button>
-            <button className="text-white text-sm font-medium hover:underline">
+            <button className=" text-sm font-medium hover:underline">
               FAQ
             </button>
-            <button className="text-white text-sm font-medium hover:underline">
+            <button className=" text-sm font-medium hover:underline">
               Contact Us
             </button>
             <button

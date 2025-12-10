@@ -11,16 +11,16 @@ import {
 } from "react-icons/fi";
 import Footer from "../Footer";
 import { Mic2Icon } from "lucide-react";
-import { FaSignOutAlt } from "react-icons/fa";
+import { FaArrowLeft, FaSignOutAlt } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import CandidateToJob from "./Candidate-to-Job";
 import { logout } from "@/lib/slices/auth-slice";
 import { useDispatch } from "react-redux";
 
 const FreeTrialInterview = () => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const router = useRouter();
-   
+
   const interviewDetails = [
     {
       title: "Personalized AI Questions",
@@ -61,9 +61,9 @@ const FreeTrialInterview = () => {
     mobile: { breakpoint: { max: 768, min: 0 }, items: 1 },
   };
   const handleLogout = () => {
-    dispatch(logout())
-    router.push("/")
-  }
+    dispatch(logout());
+    router.push("/");
+  };
   return (
     <div className="min-h-screen container mx-auto flex flex-col items-center px-4 py-4">
       {/* Header */}
@@ -76,7 +76,10 @@ const FreeTrialInterview = () => {
           />
         </div>
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 text-gray-500 hover:scale-105 transition-all" onClick={handleLogout}>
+          <button
+            className="flex items-center gap-2 text-gray-500 hover:scale-105 transition-all"
+            onClick={handleLogout}
+          >
             <FaSignOutAlt size={25} className="text-gray-500" />
             <span>Logout</span>
           </button>
@@ -85,7 +88,7 @@ const FreeTrialInterview = () => {
 
       <main>
         {/* Header */}
-        <div></div>
+       
 
         {/* Header */}
         <div className="text-center">
@@ -132,7 +135,6 @@ const FreeTrialInterview = () => {
                 </div>
               ))}
             </Carousel>
-
           </div>
           {/* Right: Candidate-Job process */}
           <div>
@@ -148,5 +150,3 @@ const FreeTrialInterview = () => {
 };
 
 export default FreeTrialInterview;
-
-

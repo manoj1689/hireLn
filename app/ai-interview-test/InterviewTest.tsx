@@ -26,6 +26,7 @@ import dayjs from "dayjs";
 import VideoInterfacePage from "@/components/interview/videoInterface";
 import InterviewCard from "./interviewDetails";
 import {
+  cancelInterview,
   confirmInterview,
   startInterview,
 } from "@/lib/slices/join_interview/interview-join-slice";
@@ -87,18 +88,15 @@ export default function InterviewConfirmation() {
   // ✅ Prevent duplicate fetching due to React Strict Mode
   const fetched = useRef(false);
 
-
   // ---- 1️⃣ Fetch interview details ----
   useEffect(() => {
     if (fetched.current) return;
     fetched.current = true;
 
     if (interviewId && token) {
-     
       dispatch(confirmInterview({ interviewId, token }));
     }
   }, [dispatch, interviewId, token]);
-
 
   const handleStartInterview = async () => {
     const allOk =
@@ -121,7 +119,17 @@ export default function InterviewConfirmation() {
       setShowReadyModal(true);
     }
   };
-
+  const handleCancelInterview = () => {
+    if (interview?.id) {
+      dispatch(
+        cancelInterview({
+          interviewId: interview.id,
+          token,
+        })
+      );
+    }
+    router.push("/");
+  };
   const checkFullscreenStatus = useCallback(() => {
     setPermissions((prev) => ({
       ...prev,
@@ -175,9 +183,9 @@ export default function InterviewConfirmation() {
     );
   }
   return (
-    <div className="min-h-screen">
-      <PreventBackForward />
-    
+    <div className="">
+      {/* <PreventBackForward /> */}
+
       <Dialog open={showTipsModal} onOpenChange={setShowTipsModal}>
         <DialogContent>
           <DialogHeader>
@@ -251,7 +259,7 @@ export default function InterviewConfirmation() {
                   <Info className="text-white w-8 h-8 mt-1" />
                   <div className="flex flex-col">
                     <span className="text-3xl font-bold text-white">
-                     Interview Briefing
+                      Interview Briefing
                     </span>
                     <span className="text-lg text-blue-100 font-light">
                       Please read all guidelines carefully before starting
@@ -319,14 +327,29 @@ export default function InterviewConfirmation() {
               </div>
             </section>
 
-            <div className="flex w-full justify-center items-center ">
-              <Button
+            <div className="flex flex-col md:flex-row w-full justify-center mt-6 gap-4">
+              {/* Confirm Button */}
+              <button
+                className="flex items-center px-10 py-3 rounded-xl text-white font-medium 
+               bg-gradient-to-r from-sky-300 to-sky-400 
+               hover:from-sky-500 hover:to-sky-600 
+               shadow-md hover:shadow-lg transition-all duration-300"
                 onClick={handleStartInterview}
                 disabled={!consentChecked}
-                className=" bg-primary-gradient hover:bg-scale-105 text-white py-3 px-12 text-base font-medium mt-4"
               >
                 <Play className="w-5 h-5 mr-2" /> Join Interview
-              </Button>
+              </button>
+
+              {/* Cancel Button */}
+              <button
+                className="px-10 py-3 rounded-xl font-medium 
+               bg-white text-red-600 border border-red-300 
+               hover:bg-red-50 hover:border-red-400 
+               shadow-sm hover:shadow-md transition-all duration-300"
+                onClick={handleCancelInterview}
+              >
+                Cancel Interview
+              </button>
             </div>
           </main>
           <Dialog open={showReadyModal} onOpenChange={setShowReadyModal}>
